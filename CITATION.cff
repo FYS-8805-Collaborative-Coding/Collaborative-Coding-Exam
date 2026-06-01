@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, please consider citing it as below."
+authors:
+- family-names: "Chen"
+  given-names: "Siyan"
+  orcid: ""
+- family-names: "Løkke"
+  given-names: "Andrea"
+  orcid: ""
+- family-names: "Gelato"
+  given-names: "Riccardo"
+  orcid: ""
+- family-names: "Baburajan"
+  given-names: "Rahul"
+  orcid: ""
+- family-names: "Oei"
+  given-names: "Keyne"
+  orcid: ""
+- family-names: "Catteau"
+  given-names: "Myrthe"
+  orcid: ""
+title: "Collaborative Coding Exam"
+version: 1.1.0
+date-released: 2026-06-01
+url: "https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam"

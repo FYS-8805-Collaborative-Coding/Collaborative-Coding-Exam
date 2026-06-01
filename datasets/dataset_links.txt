@@ -1,0 +1,6 @@
+# provide links for downloading the datesets
+1. MNIST 
+
+2. SVHN
+
+3. USPS
