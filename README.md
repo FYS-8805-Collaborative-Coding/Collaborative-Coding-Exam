@@ -130,7 +130,7 @@ We use a branch → pull request → review workflow. All changes to `main` requ
 3. Open a pull request towards `main`
 4. Get a review, address feedback, then merge
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
+See [CONTRIBUTION.md](CONTRIBUTION.md) for the full guide.
 
 ---
 
