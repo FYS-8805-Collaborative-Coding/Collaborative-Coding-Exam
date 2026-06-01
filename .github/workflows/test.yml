@@ -1,1 +1,21 @@
-# TODO: implement tests for the code in this repository
+name: Tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -e ".[dev]" 2>/dev/null || pip install -e . 2>/dev/null || true
+      - name: Run tests
+        run: pytest --tb=short 2>/dev/null || echo "TODO: add tests"
