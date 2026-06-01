@@ -18,6 +18,8 @@ jobs:
       - name: Install ruff
         run: pip install ruff
       - name: Check formatting
-        run: ruff format --check . 2>/dev/null || echo "TODO: configure formatting"
+        run: |
+          ruff format --check . 2>/dev/null || echo "TODO: configure formatting"
       - name: Lint
-        run: ruff check . 2>/dev/null || echo "TODO: configure linting"
+        run: |
+          ruff check . 2>/dev/null || echo "TODO: configure linting"

@@ -15,7 +15,8 @@ jobs:
         with:
           python-version: "3.11"
       - name: Build package
-        run: pip install build && python -m build 2>/dev/null || echo "TODO: configure release build"
+        run: |
+          pip install build && python -m build 2>/dev/null || echo "TODO: configure release build"
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
