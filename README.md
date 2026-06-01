@@ -138,10 +138,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
 **Citation:**
 
-[*citation placeholder*]
-
-See also [CITATION.cff](CITATION.cff).
-
 ---
 
 ## License
