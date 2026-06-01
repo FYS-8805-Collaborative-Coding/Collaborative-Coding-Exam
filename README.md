@@ -117,7 +117,7 @@ Brief description of what this model does and what problem it solves.
 
 ## Documentation
 
-Full documentation is available at [https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/](https://https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/) (GitHub Pages).
+Full documentation is available at [https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/](https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/) (GitHub Pages).
 
 ---
 
