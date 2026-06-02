@@ -16,6 +16,31 @@ git clone git@github.com:FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam
 
 ---
 
+## Training
+
+Run training from the repository root with the CLI:
+
+```bash
+python -m src.training --dataset mnist --epochs 1 --batch-size 64 --device cpu
+```
+
+The checkpoint is written to `weights/mnist.pth` by default. The current
+training entry point supports `mnist` and can be extended with more datasets
+through the registry in `src/training.py`.
+
+## Testing
+
+Run the basic tests with:
+
+```bash
+pytest -q
+```
+
+The tests are lightweight and only validate the training CLI, argument parsing,
+and factory wiring.
+
+---
+
 ## Running Inference
 
 Suggested way to get inference from a trained model (example):
