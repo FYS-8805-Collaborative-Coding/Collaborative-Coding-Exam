@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Type
+from typing import Type, Optional, Callable
 
 import torch
 from torch import nn, optim
@@ -49,6 +49,7 @@ class Trainer(BaseTrainer):
         lr: float = 1e-3,
         checkpoint_path: str = "weights/model.pth",
         device: str | None = None,
+        loss_fn: Optional[Callable] = None,
     ):
         self.data_module = data_module
         self.model = model
@@ -56,12 +57,14 @@ class Trainer(BaseTrainer):
         self.lr = lr
         self.checkpoint_path = Path(checkpoint_path)
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
+        # Allow customizing the loss function; default to CrossEntropyLoss
+        self.loss_fn = loss_fn or getattr(torch.nn, "CrossEntropyLoss")()
 
     def train(self):
         self.model.to(self.device)
         self.model.train()
         optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
-        loss_fn = nn.CrossEntropyLoss()
+        loss_fn = self.loss_fn
         final_loss = 0.0
         final_accuracy = 0.0
 
@@ -110,10 +113,11 @@ class MNISTTrainer(Trainer):
         lr: float = 1e-3,
         checkpoint_path: str = "weights/mnist.pth",
         device: str | None = None,
+        loss_fn: Optional[Callable] = None,
     ):
         data_module = data_module or MNISTDataModule()
         model = model or MNISTNet()
-        super().__init__(data_module, model, epochs=epochs, lr=lr, checkpoint_path=checkpoint_path, device=device)
+        super().__init__(data_module, model, epochs=epochs, lr=lr, checkpoint_path=checkpoint_path, device=device, loss_fn=loss_fn)
 
 
 @dataclass
@@ -128,6 +132,12 @@ class DatasetSpec:
 # become available in `src.data` and `src.models`.
 DATASET_REGISTRY = {
     "mnist": DatasetSpec(MNISTDataModule, MNISTNet, "weights/mnist.pth", trainer_cls=MNISTTrainer),
+}
+
+# Mapping of CLI loss name -> loss class attribute name (resolved at runtime)
+LOSS_MAP = {
+    "cross_entropy": "CrossEntropyLoss",
+    "mse": "MSELoss",
 }
 
 
@@ -159,6 +169,7 @@ class TrainerFactory:
             lr=kwargs.get("lr", 1e-3),
             checkpoint_path=checkpoint,
             device=kwargs.get("device"),
+            loss_fn=kwargs.get("loss_fn"),
         )
 
 
@@ -187,6 +198,12 @@ def build_arg_parser():
     parser.add_argument("--data-dir", default="datasets", help="Directory containing the datasets.")
     parser.add_argument("--num-workers", type=int, default=2, help="DataLoader worker count.")
     parser.add_argument("--device", default=None, help="Device to use, e.g. cpu or cuda.")
+    parser.add_argument(
+        "--loss",
+        choices=["cross_entropy", "mse"],
+        default=None,
+        help="Loss function to use (defaults to CrossEntropyLoss when unspecified).",
+    )
     return parser
 
 
@@ -194,6 +211,13 @@ def main(argv=None):
     """Command-line entry point for training."""
     parser = build_arg_parser()
     args = parser.parse_args(argv)
+
+    # Map CLI loss name to a loss instance (or None to use trainer default)
+    loss_cls_name = LOSS_MAP.get(args.loss)
+    loss_fn = None
+    if loss_cls_name is not None:
+        loss_cls = getattr(nn, loss_cls_name)
+        loss_fn = loss_cls()
 
     result = train(
         dataset=args.dataset,
@@ -204,6 +228,7 @@ def main(argv=None):
         data_dir=args.data_dir,
         num_workers=args.num_workers,
         device=args.device,
+        loss_fn=loss_fn,
     )
 
     print(result)

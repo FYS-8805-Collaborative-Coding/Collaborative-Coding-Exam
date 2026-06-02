@@ -33,13 +33,14 @@ class DummyModel:
 
 
 class DummyTrainer:
-    def __init__(self, data_module, model, epochs=1, lr=1e-3, checkpoint_path="weights/model.pth", device=None):
+    def __init__(self, data_module, model, epochs=1, lr=1e-3, checkpoint_path="weights/model.pth", device=None, loss_fn=None):
         self.data_module = data_module
         self.model = model
         self.epochs = epochs
         self.lr = lr
         self.checkpoint_path = checkpoint_path
         self.device = device
+        self.loss_fn = None
 
     def train(self):
         return {
