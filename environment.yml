@@ -1,0 +1,14 @@
+name: collaborative-coding-exam
+
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python
+  - pip
+  - pytorch
+  - torchvision
+  - pillow
+  - pytest
