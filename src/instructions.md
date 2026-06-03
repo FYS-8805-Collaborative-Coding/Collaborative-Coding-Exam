@@ -41,6 +41,11 @@ Use `MNISTDataModule` in `src/data.py` as the reference pattern.
 
 6. Add training support in `src/training.py`.
    Use the new data module and the correct model.
+6. Add training support in `src/training.py`:
+   - Create a `<DatasetName>Trainer` class (inheriting from `Trainer`) if specific logic is needed.
+   - **Register the dataset**: Add a new entry to the `DATASET_REGISTRY` dictionary. 
+   - Define a `DatasetSpec` including the DataModule class, Model class, and default checkpoint path.
+   - Add the dataset name to the `--dataset` choices in `build_arg_parser()`.
 
    Typical names:
 
