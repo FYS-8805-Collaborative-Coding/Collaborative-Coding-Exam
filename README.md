@@ -135,7 +135,6 @@ Brief description of what this model does and what problem it solves.
 ```
 ├── datasets/
 ├── src/
-  ├── weights/           # Trained model weights (trained on LUMI)
   ├── data.py            # Dataset loaders (per-customer and general)
   ├── evaluation.py      # Evaluation script (precision, recall, speed)
   ├── inference.py       # Entry point for running predictions
@@ -144,6 +143,7 @@ Brief description of what this model does and what problem it solves.
   └── training.py        # General training script
 ├── tests/
   └── test_training.py   # Testing of the basic functionalities of src/training.py
+├── weights/             # Trained model weights (trained on LUMI)
 ├── README.md            #
 └── environment.yml      # Environment configuration file      
 ```
