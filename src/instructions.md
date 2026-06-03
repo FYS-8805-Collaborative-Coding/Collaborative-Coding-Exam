@@ -14,26 +14,12 @@ Use `MNISTDataModule` in `src/data.py` as the reference pattern.
    - `train_loader()`
    - `test_loader()`
 
-3. Add a loader helper in `src/data.py` to make loading the train and test dataloading easy during training.
-
-   Template:
-
-   ```python
-   def get_<dataset_name>_loaders(data_dir="datasets", batch_size=64, num_workers=2):
-       data_module = <DatasetName>DataModule(
-           data_dir=data_dir,
-           batch_size=batch_size,
-           num_workers=num_workers,
-       )
-       return data_module.train_loader(), data_module.test_loader()
-   ```
+3. Register the new data module in `src/data.py` by adding it to the `DATA_MODULES` dictionary. This allows it to be used automatically by the generic `get_loaders` function.
 
 4. Update `__all__` in `src/data.py`.
 
    Add:
-
    - `<DatasetName>DataModule`
-   - `get_<dataset_name>_loaders`
 
 5. Check `src/models.py`.
    If the dataset has a different image size, number of channels, or number of
