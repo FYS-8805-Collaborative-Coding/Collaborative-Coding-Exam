@@ -18,7 +18,7 @@ class DummyDataModule:
     # Lightweight stand-ins used across the tests so we don't need real
     # datasets, DataLoaders, or model classes.
 
-    def __init__(self, data_dir="datasets", batch_size=64, num_workers=2):
+    def __init__(self, data_dir="datasets", batch_size=64, num_workers=2, **kwargs):
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -56,7 +56,7 @@ class DummyTrainer:
 
 class DummySpec:
     def __init__(self):
-        self.data_module_cls = DummyDataModule
+        self.data_module_name = "dummy"
         self.model_cls = DummyModel
         self.default_checkpoint = "weights/dummy.pth"
         self.trainer_cls = DummyTrainer
@@ -116,8 +116,7 @@ def load_training_module():
     fake_torch.optim = fake_optim
 
     fake_data = types.ModuleType("data")
-    fake_data.MNISTDataModule = DummyDataModule
-    fake_data.USPSDataModule = DummyDataModule
+    fake_data.DATA_MODULES = {"mnist": DummyDataModule, "usps": DummyDataModule}
 
     fake_models = types.ModuleType("models")
     fake_models.MNISTNet = DummyModel
@@ -179,6 +178,7 @@ def test_build_arg_parser_defaults():
 def test_trainer_factory_uses_registry(monkeypatch):
     training = load_training_module()
     monkeypatch.setitem(training.DATASET_REGISTRY, "dummy", DummySpec())
+    monkeypatch.setitem(training.DATA_MODULES, "dummy", DummyDataModule)
 
     trainer = training.TrainerFactory.create(
         "dummy",

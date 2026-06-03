@@ -24,7 +24,7 @@ class BaseDataModule(ABC):
 class TorchvisionDataModule(BaseDataModule):
     """Generic data module for standard torchvision datasets."""
 
-    def __init__(self, dataset_cls, mean, std, data_dir="datasets", batch_size=64, num_workers=2, download=True):
+    def __init__(self, dataset_cls, mean, std, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
         self.dataset_cls = dataset_cls
         self.data_dir = Path(data_dir)
         self.batch_size = batch_size
@@ -65,7 +65,7 @@ class TorchvisionDataModule(BaseDataModule):
 class MNISTDataModule(TorchvisionDataModule):
     """MNIST data module."""
 
-    def __init__(self, data_dir="datasets", batch_size=64, num_workers=2, download=True):
+    def __init__(self, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
         super().__init__(
             dataset_cls=datasets.MNIST,
             mean=0.1307,
@@ -74,13 +74,14 @@ class MNISTDataModule(TorchvisionDataModule):
             batch_size=batch_size,
             num_workers=num_workers,
             download=download,
+            **kwargs,
         )
 
 
 class USPSDataModule(TorchvisionDataModule):
     """USPS data module."""
 
-    def __init__(self, data_dir="datasets", batch_size=64, num_workers=2, download=True):
+    def __init__(self, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
         super().__init__(
             dataset_cls=datasets.USPS,
             mean=0.2471,
@@ -89,6 +90,7 @@ class USPSDataModule(TorchvisionDataModule):
             batch_size=batch_size,
             num_workers=num_workers,
             download=download,
+            **kwargs,
         )
 
 
