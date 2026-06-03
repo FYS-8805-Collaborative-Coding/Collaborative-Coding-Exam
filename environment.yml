@@ -12,3 +12,4 @@ dependencies:
   - torchvision
   - pillow
   - pytest
+  - scikit-learn
