@@ -117,9 +117,11 @@ def load_training_module():
 
     fake_data = types.ModuleType("data")
     fake_data.MNISTDataModule = DummyDataModule
+    fake_data.USPSDataModule = DummyDataModule
 
     fake_models = types.ModuleType("models")
     fake_models.MNISTNet = DummyModel
+    fake_models.USPSNet = DummyModel
 
     original_modules = {
 

@@ -61,6 +61,46 @@ class MNISTDataModule(BaseDataModule):
         )
 
 
+class USPSDataModule(BaseDataModule):
+    """USPS data module."""
+
+    def __init__(self, data_dir="datasets", batch_size=64, num_workers=2, download=True):
+        self.data_dir = Path(data_dir)
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.download = download
+        self.transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize((0.2471,), (0.2994,)),
+            ]
+        )
+
+    def _dataset(self, train):
+        return datasets.USPS(
+            root=str(self.data_dir),
+            train=train,
+            download=self.download,
+            transform=self.transform,
+        )
+
+    def train_loader(self):
+        return DataLoader(
+            self._dataset(train=True),
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+
+    def test_loader(self):
+        return DataLoader(
+            self._dataset(train=False),
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
+
+
 def get_mnist_loaders(data_dir="datasets", batch_size=64, num_workers=2, download=True):
     data_module = MNISTDataModule(
         data_dir=data_dir,
@@ -71,4 +111,4 @@ def get_mnist_loaders(data_dir="datasets", batch_size=64, num_workers=2, downloa
     return data_module.train_loader(), data_module.test_loader()
 
 
-__all__ = ["BaseDataModule", "MNISTDataModule", "get_mnist_loaders"]
+__all__ = ["BaseDataModule", "MNISTDataModule", "USPSDataModule", "get_mnist_loaders"]

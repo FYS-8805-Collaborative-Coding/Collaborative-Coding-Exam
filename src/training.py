@@ -17,11 +17,11 @@ import torch
 from torch import nn, optim
 
 try:
-    from .data import MNISTDataModule
-    from .models import MNISTNet
+    from .data import MNISTDataModule, USPSDataModule
+    from .models import MNISTNet, USPSNet
 except ImportError:
-    from data import MNISTDataModule
-    from models import MNISTNet
+    from data import MNISTDataModule, USPSDataModule
+    from models import MNISTNet, USPSNet
 
 
 class BaseTrainer(ABC):
@@ -132,6 +132,7 @@ class DatasetSpec:
 # become available in `src.data` and `src.models`.
 DATASET_REGISTRY = {
     "mnist": DatasetSpec(MNISTDataModule, MNISTNet, "weights/mnist.pth", trainer_cls=MNISTTrainer),
+    "usps":  DatasetSpec(USPSDataModule, USPSNet, "weights/usps.pth"),
 }
 
 # Mapping of CLI loss name -> loss class attribute name (resolved at runtime)
