@@ -129,13 +129,19 @@ Brief description of what this model does and what problem it solves.
 ## Repository Structure
 
 ```
-├── models.py          # Model definitions (per-customer and general)
-├── data.py            # Dataset loaders (per-customer and general)
-├── training.py        # General training script
-├── evaluation.py      # Evaluation script (precision, recall, speed)
-├── inference.py       # Entry point for running predictions
-├── weights/           # Trained model weights (trained on LUMI)
-└── docs/              # Sphinx documentation
+├── datasets/
+├── src/
+  ├── weights/           # Trained model weights (trained on LUMI)
+  ├── data.py            # Dataset loaders (per-customer and general)
+  ├── evaluation.py      # Evaluation script (precision, recall, speed)
+  ├── inference.py       # Entry point for running predictions
+  ├── instructions.md    # Instructions to use the scripts and extend the code
+  ├── models.py          # Model definitions (per-customer and general)
+  └── training.py        # General training script
+├── tests/
+  └── test_training.py   # Testing of the basic functionalities of src/training.py
+├── README.md            #
+└── environment.yml      # Environment configuration file      
 ```
 
 ---
