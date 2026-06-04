@@ -13,3 +13,5 @@ dependencies:
   - pillow
   - pytest
   - scikit-learn
+  - ruff
+  - scalene
