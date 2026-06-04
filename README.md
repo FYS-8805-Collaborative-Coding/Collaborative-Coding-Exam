@@ -55,7 +55,7 @@ print(results)
 Or from the command line:
 
 ```bash
-python -m src.inference --model model-a --input path/to/your/data
+python -m src.inference --model model-a --input datasets/inference/mnist_test_0_label_7.png
 ```
 
 Trained model weights are stored in the `weights/` folder and are loaded automatically.
