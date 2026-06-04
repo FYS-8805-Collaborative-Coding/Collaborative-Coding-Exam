@@ -1,4 +1,4 @@
-"""Inference base classes and MNIST inference helpers."""
+"""Inference base classes and registry helpers."""
 
 import argparse
 from abc import ABC, abstractmethod
@@ -46,13 +46,6 @@ def load_model(
     return model
 
 
-def load_mnist_model(
-    checkpoint_path: str | Path = "weights/mnist.pth",
-    device: str | torch.device | None = None,
-) -> MNISTNet:
-    return load_model(MNISTNet, checkpoint_path, device)
-
-
 class MNISTInference(BaseInference):
     """MNIST inference wrapper."""
 
@@ -63,7 +56,7 @@ class MNISTInference(BaseInference):
         device: str | torch.device | None = None,
     ) -> None:
         self.device = _default_device(device)
-        self.model = model or load_mnist_model(checkpoint_path, self.device)
+        self.model = model or load_model(MNISTNet, checkpoint_path, self.device)
         self.model.to(self.device)
         self.model.eval()
         self.transform = transforms.Compose(
@@ -89,14 +82,6 @@ class MNISTInference(BaseInference):
         with torch.no_grad():
             logits = self.model(tensor)
         return int(logits.argmax(dim=1).item())
-
-
-def predict_mnist(
-    image: str | Path | Image.Image,
-    checkpoint_path: str | Path = "weights/mnist.pth",
-    device: str | torch.device | None = None,
-) -> int:
-    return MNISTInference(checkpoint_path=checkpoint_path, device=device).predict(image)
 
 
 @dataclass
@@ -222,15 +207,5 @@ if __name__ == "__main__":
 
 
 __all__ = [
-    "BaseInference",
-    "InferenceFactory",
-    "InferenceSpec",
-    "MNISTInference",
-    "build_arg_parser",
-    "iter_image_paths",
-    "load_model",
-    "load_mnist_model",
-    "main",
-    "predict_mnist",
     "run_inference",
 ]
