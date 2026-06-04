@@ -66,25 +66,30 @@ class TorchvisionDataModule(BaseDataModule):
 
 
 class MNISTDataModule(TorchvisionDataModule):
-    """MNIST data module."""
-
-    def __init__(self, mean=0.1307, std=0.3081, **kwargs):
+    def __init__(self, mean=0.1307, std=0.3081, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
         super().__init__(
             dataset_cls=datasets.MNIST,
             mean=mean,
             std=std,
+            data_dir=data_dir,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            download=download,
             **kwargs,
         )
-
 
 class USPSDataModule(TorchvisionDataModule):
     """USPS data module."""
 
-    def __init__(self, mean=0.2471, std=0.2994, **kwargs):
+    def __init__(self, mean=0.2471, std=0.2994, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
         super().__init__(
             dataset_cls=datasets.USPS,
             mean=mean,
             std=std,
+            data_dir=data_dir,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            download=download,
             **kwargs,
         )
 
@@ -95,17 +100,23 @@ DATA_MODULES = {
 }
 
 
-def get_loaders(dataset="mnist", data_dir="datasets", batch_size=64, num_workers=2, download=True):
-    """Generic helper to get train and test loaders for any registered dataset."""
+def get_loaders(dataset="mnist", mean=0.1307, std=0.3081, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwarg):
+    """Convenience entry point: get train and test loaders for a registered dataset.
+
+    Example: `get_loaders(dataset="mnist", batch_size=32)`
+    """
     if dataset not in DATA_MODULES:
         raise ValueError(f"Unknown dataset: {dataset}. Available: {list(DATA_MODULES.keys())}")
 
     data_module_cls = DATA_MODULES[dataset]
     data_module = data_module_cls(
+        mean=mean,
+        std=std,
         data_dir=data_dir,
         batch_size=batch_size,
         num_workers=num_workers,
         download=download,
+        **kwarg
     )
     return data_module.train_loader(), data_module.test_loader()
 
