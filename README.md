@@ -46,16 +46,16 @@ and factory wiring.
 Suggested way to get inference from a trained model (example):
 
 ```python
-from inference import run_inference
+from src import run_inference
 
-results = run_inference(model="model-a", input="path/to/your/data")
+results = run_inference(model="model-a", input_path="path/to/your/data")
 print(results)
 ```
 
 Or from the command line:
 
 ```bash
-python inference.py --model model-a --input path/to/your/data
+python -m src.inference --model model-a --input path/to/your/data
 ```
 
 Trained model weights are stored in the `weights/` folder and are loaded automatically.
