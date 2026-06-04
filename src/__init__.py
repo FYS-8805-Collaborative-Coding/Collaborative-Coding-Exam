@@ -1,12 +1,3 @@
-from .data import get_mnist_loaders
-
-__all__ = [
-    "get_mnist_loaders",
-    "run_inference",
-    "train",
-]
-
-
 def __getattr__(name: str) -> object:
     if name == "run_inference":
         from .inference import run_inference

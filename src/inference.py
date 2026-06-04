@@ -1,10 +1,12 @@
-"""Inference base classes and registry helpers."""
+"""Inference base classes and a dataset-agnostic predictor + factory."""
+
+from __future__ import annotations
 
 import argparse
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, TypeVar
+from typing import Callable, Iterable, TypeVar
 
 import torch
 from torch import nn
@@ -12,12 +14,13 @@ from PIL import Image
 from torchvision import transforms
 
 try:
-    from .models import MNISTNet
+    from .models import MNISTNet, USPSNet
 except ImportError:
-    from models import MNISTNet
+    from models import MNISTNet, USPSNet
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png"}
 ModelT = TypeVar("ModelT", bound=nn.Module)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 class BaseInference(ABC):
@@ -33,6 +36,13 @@ def _default_device(device: str | torch.device | None = None) -> torch.device:
     return torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
 
 
+def _resolve_checkpoint_path(checkpoint_path: str | Path) -> Path:
+    path = Path(checkpoint_path)
+    if path.is_absolute():
+        return path
+    return PROJECT_ROOT / path
+
+
 def load_model(
     model_cls: type[ModelT],
     checkpoint_path: str | Path,
@@ -40,33 +50,45 @@ def load_model(
 ) -> ModelT:
     device = _default_device(device)
     model = model_cls()
-    model.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    model.load_state_dict(torch.load(_resolve_checkpoint_path(checkpoint_path), map_location=device))
     model.to(device)
     model.eval()
     return model
 
 
-class MNISTInference(BaseInference):
-    """MNIST inference wrapper."""
+def build_transform(
+    image_size: int | tuple[int, int],
+    mean: tuple[float, ...],
+    std: tuple[float, ...],
+) -> Callable[[Image.Image], torch.Tensor]:
+    """Build the image transform used before inference."""
+    if isinstance(image_size, int):
+        image_size = (image_size, image_size)
+
+    return transforms.Compose(
+        [
+            transforms.Grayscale(num_output_channels=1),
+            transforms.Resize(image_size),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std),
+        ]
+    )
+
+
+class Inference(BaseInference):
+    """Generic inference runner for image classification models."""
 
     def __init__(
         self,
-        model: nn.Module | None = None,
-        checkpoint_path: str | Path = "weights/mnist.pth",
+        model: nn.Module,
+        transform: Callable[[Image.Image], torch.Tensor],
         device: str | torch.device | None = None,
     ) -> None:
         self.device = _default_device(device)
-        self.model = model or load_model(MNISTNet, checkpoint_path, self.device)
+        self.model = model
         self.model.to(self.device)
         self.model.eval()
-        self.transform = transforms.Compose(
-            [
-                transforms.Grayscale(num_output_channels=1),
-                transforms.Resize((28, 28)),
-                transforms.ToTensor(),
-                transforms.Normalize((0.1307,), (0.3081,)),
-            ]
-        )
+        self.transform = transform
 
     def _prepare_image(self, image: str | Path | Image.Image) -> torch.Tensor:
         if isinstance(image, (str, Path)):
@@ -84,16 +106,21 @@ class MNISTInference(BaseInference):
         return int(logits.argmax(dim=1).item())
 
 
-@dataclass
+@dataclass(frozen=True)
 class InferenceSpec:
     model_cls: type[nn.Module]
     default_checkpoint: str
-    inference_cls: type[BaseInference] = MNISTInference
+    image_size: int | tuple[int, int]
+    mean: tuple[float, ...]
+    std: tuple[float, ...]
+    inference_cls: type[BaseInference] = Inference
 
 
 INFERENCE_REGISTRY = {
-    "mnist": InferenceSpec(MNISTNet, "weights/mnist.pth", inference_cls=MNISTInference),
-    "model-a": InferenceSpec(MNISTNet, "weights/mnist.pth", inference_cls=MNISTInference),
+    "mnist": InferenceSpec(MNISTNet, "weights/mnist.pth", (28, 28), (0.1307,), (0.3081,)),
+    "usps": InferenceSpec(USPSNet, "weights/usps.pth", (16, 16), (0.2471,), (0.2994,)),
+    "model-a": InferenceSpec(MNISTNet, "weights/mnist.pth", (28, 28), (0.1307,), (0.3081,)),
+    "model-b": InferenceSpec(USPSNet, "weights/usps.pth", (16, 16), (0.2471,), (0.2994,)),
 }
 
 
@@ -109,10 +136,15 @@ class InferenceFactory:
         device = kwargs.get("device")
         checkpoint = kwargs.get("checkpoint_path") or spec.default_checkpoint
         model = load_model(spec.model_cls, checkpoint, device)
+        transform = kwargs.get("transform") or build_transform(
+            image_size=kwargs.get("image_size", spec.image_size),
+            mean=kwargs.get("mean", spec.mean),
+            std=kwargs.get("std", spec.std),
+        )
 
         return spec.inference_cls(
             model=model,
-            checkpoint_path=checkpoint,
+            transform=transform,
             device=device,
         )
 
@@ -160,12 +192,12 @@ def run_inference(
 
 def build_arg_parser() -> argparse.ArgumentParser:
     """Build the command-line argument parser for inference."""
-    parser = argparse.ArgumentParser(description="Run MNIST image inference.")
+    parser = argparse.ArgumentParser(description="Run image inference.")
     parser.add_argument(
         "--model",
-        default="model-a",
+        default="mnist",
         choices=sorted(INFERENCE_REGISTRY.keys()),
-        help="Model alias to run. Use 'model-a' or 'mnist'.",
+        help="Model or dataset alias to run.",
     )
     parser.add_argument(
         "--input",
@@ -177,7 +209,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "--checkpoint",
         dest="checkpoint_path",
         default=None,
-        help="Path to the MNIST model checkpoint.",
+        help="Path to the model checkpoint.",
     )
     parser.add_argument(
         "--device",
@@ -207,5 +239,14 @@ if __name__ == "__main__":
 
 
 __all__ = [
+    "BaseInference",
+    "Inference",
+    "InferenceFactory",
+    "InferenceSpec",
+    "build_arg_parser",
+    "build_transform",
+    "iter_image_paths",
+    "load_model",
+    "main",
     "run_inference",
 ]
