@@ -50,6 +50,7 @@ class MNISTDataModule(BaseDataModule):
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
+            drop_last=True,
         )
 
     def test_loader(self):
@@ -90,6 +91,7 @@ class USPSDataModule(BaseDataModule):
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
+            drop_last=True,
         )
 
     def test_loader(self):
