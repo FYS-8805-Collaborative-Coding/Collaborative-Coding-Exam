@@ -23,6 +23,9 @@ except ImportError:
     from data import DATA_MODULES
     from models import MNISTNet, USPSNet
 
+# Define the project root relative to this file.
+# This ensures paths are consistent regardless of the current working directory.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 class BaseTrainer(ABC):
     """Base class for dataset-specific trainers."""
@@ -55,7 +58,7 @@ class Trainer(BaseTrainer):
         self.model = model
         self.epochs = epochs
         self.lr = lr
-        self.checkpoint_path = Path(checkpoint_path)
+        self.checkpoint_path = PROJECT_ROOT / checkpoint_path
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         # Allow customizing the loss function; default to CrossEntropyLoss
         self.loss_fn = loss_fn or getattr(torch.nn, "CrossEntropyLoss")()
