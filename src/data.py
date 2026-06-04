@@ -21,10 +21,11 @@ class BaseDataModule(ABC):
         raise NotImplementedError
 
 
-class MNISTDataModule(BaseDataModule):
-    """MNIST data module."""
+class TorchvisionDataModule(BaseDataModule):
+    """Generic data module for standard torchvision datasets."""
 
-    def __init__(self, data_dir="datasets", batch_size=64, num_workers=2, download=True):
+    def __init__(self, dataset_cls, mean, std, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
+        self.dataset_cls = dataset_cls
         self.data_dir = Path(data_dir)
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -32,16 +33,18 @@ class MNISTDataModule(BaseDataModule):
         self.transform = transforms.Compose(
             [
                 transforms.ToTensor(),
-                transforms.Normalize((0.1307,), (0.3081,)),
+                transforms.Normalize((mean,), (std,)),
             ]
         )
+        self.dataset_kwargs = kwargs
 
     def _dataset(self, train):
-        return datasets.MNIST(
+        return self.dataset_cls(
             root=str(self.data_dir),
             train=train,
             download=self.download,
             transform=self.transform,
+            **self.dataset_kwargs,
         )
 
     def train_loader(self):
@@ -62,55 +65,60 @@ class MNISTDataModule(BaseDataModule):
         )
 
 
-class USPSDataModule(BaseDataModule):
+class MNISTDataModule(TorchvisionDataModule):
+    def __init__(self, mean=0.1307, std=0.3081, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
+        super().__init__(
+            dataset_cls=datasets.MNIST,
+            mean=mean,
+            std=std,
+            data_dir=data_dir,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            download=download,
+            **kwargs,
+        )
+
+class USPSDataModule(TorchvisionDataModule):
     """USPS data module."""
 
-    def __init__(self, data_dir="datasets", batch_size=64, num_workers=2, download=True):
-        self.data_dir = Path(data_dir)
-        self.batch_size = batch_size
-        self.num_workers = num_workers
-        self.download = download
-        self.transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize((0.2471,), (0.2994,)),
-            ]
-        )
-
-    def _dataset(self, train):
-        return datasets.USPS(
-            root=str(self.data_dir),
-            train=train,
-            download=self.download,
-            transform=self.transform,
-        )
-
-    def train_loader(self):
-        return DataLoader(
-            self._dataset(train=True),
-            batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=self.num_workers,
-            drop_last=True,
-        )
-
-    def test_loader(self):
-        return DataLoader(
-            self._dataset(train=False),
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
+    def __init__(self, mean=0.2471, std=0.2994, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
+        super().__init__(
+            dataset_cls=datasets.USPS,
+            mean=mean,
+            std=std,
+            data_dir=data_dir,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            download=download,
+            **kwargs,
         )
 
 
-def get_mnist_loaders(data_dir="datasets", batch_size=64, num_workers=2, download=True):
-    data_module = MNISTDataModule(
+DATA_MODULES = {
+    "mnist": MNISTDataModule,
+    "usps": USPSDataModule,
+}
+
+
+def get_loaders(dataset="mnist", mean=0.1307, std=0.3081, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwarg):
+    """Convenience entry point: get train and test loaders for a registered dataset.
+
+    Example: `get_loaders(dataset="mnist", batch_size=32)`
+    """
+    if dataset not in DATA_MODULES:
+        raise ValueError(f"Unknown dataset: {dataset}. Available: {list(DATA_MODULES.keys())}")
+
+    data_module_cls = DATA_MODULES[dataset]
+    data_module = data_module_cls(
+        mean=mean,
+        std=std,
         data_dir=data_dir,
         batch_size=batch_size,
         num_workers=num_workers,
         download=download,
+        **kwarg
     )
     return data_module.train_loader(), data_module.test_loader()
 
 
-__all__ = ["BaseDataModule", "MNISTDataModule", "USPSDataModule", "get_mnist_loaders"]
+__all__ = ["BaseDataModule", "TorchvisionDataModule", "MNISTDataModule", "USPSDataModule", "get_loaders", "DATA_MODULES"]
