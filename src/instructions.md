@@ -4,62 +4,24 @@ Use `MNISTDataModule` in `src/data.py` as the reference pattern.
 
 ## Steps
 
-1. If dataset is avaialble in torchvision use the same format as MNIST other add the dataset name and source to `datasets/dataset_links.txt` and use accordingly. 
+1. If the dataset is available in `torchvision`, create a new data module in `src/data.py` that inherits from `TorchvisionDataModule`. Otherwise, inherit from `BaseDataModule` and implement `train_loader()` and `test_loader()`.
 
-2. Add a data module in `src/data.py` that inherits from `BaseDataModule`.
+2. Register the new data module in `src/data.py` by adding it to the `DATA_MODULES` dictionary. This allows it to be used automatically by the generic `get_loaders` function.
 
-   Add these methods:
-
-   - `__init__(...)`
-   - `train_loader()`
-   - `test_loader()`
-
-3. Add a loader helper in `src/data.py` to make loading the train and test dataloading easy during training.
-
-   Template:
-
-   ```python
-   def get_<dataset_name>_loaders(data_dir="datasets", batch_size=64, num_workers=2):
-       data_module = <DatasetName>DataModule(
-           data_dir=data_dir,
-           batch_size=batch_size,
-           num_workers=num_workers,
-       )
-       return data_module.train_loader(), data_module.test_loader()
-   ```
-
-4. Update `__all__` in `src/data.py`.
+3. Update `__all__` in `src/data.py`.
 
    Add:
-
    - `<DatasetName>DataModule`
-   - `get_<dataset_name>_loaders`
 
-5. Check `src/models.py`.
+4. Check `src/models.py`.
    If the dataset has a different image size, number of channels, or number of
    classes, add a matching model class such as `<DatasetName>Net`.
 
-6. Add training support in `src/training.py`.
-   Use the new data module and the correct model.
-6. Add training support in `src/training.py`:
-   - Create a `<DatasetName>Trainer` class (inheriting from `Trainer`) if specific logic is needed.
-   - **Register the dataset**: Add a new entry to the `DATASET_REGISTRY` dictionary. 
-   - Define a `DatasetSpec` including the DataModule class, Model class, and default checkpoint path.
-   - Add the dataset name to the `--dataset` choices in `build_arg_parser()`.
+5. Add training support in `src/training.py`.
+   Add an entry to the `DATASET_REGISTRY` in `src/training.py`, referencing your new data module by its string name and the appropriate model class.
 
-   Typical names:
-
-   - `<DatasetName>Trainer`
-   - `train_<dataset_name>`
-
-7. Add inference support in `src/inference.py`.
-
-   Typical names:
-
-   - `load_<dataset_name>_model`
-   - `<DatasetName>Inference`
-   - `predict_<dataset_name>`
-
+6. Add inference support in `src/inference.py`.
+   Add an entry to the `PredictorFactory` registry in `src/inference.py`, mapping your dataset name to its model, image size, and normalization constants.
    NB: Make sure inference transforms match the training transforms.
 
 ## Naming

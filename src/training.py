@@ -17,10 +17,10 @@ import torch
 from torch import nn, optim
 
 try:
-    from .data import MNISTDataModule, USPSDataModule
+    from .data import DATA_MODULES
     from .models import MNISTNet, USPSNet
 except ImportError:
-    from data import MNISTDataModule, USPSDataModule
+    from data import DATA_MODULES
     from models import MNISTNet, USPSNet
 
 # Define the project root relative to this file.
@@ -105,27 +105,9 @@ class Trainer(BaseTrainer):
         }
 
 
-class MNISTTrainer(Trainer):
-    """Backward-compatible MNIST trainer wrapper."""
-
-    def __init__(
-        self,
-        data_module=None,
-        model=None,
-        epochs: int = 1,
-        lr: float = 1e-3,
-        checkpoint_path: str = "weights/mnist.pth",
-        device: str | None = None,
-        loss_fn: Optional[Callable] = None,
-    ):
-        data_module = data_module or MNISTDataModule()
-        model = model or MNISTNet()
-        super().__init__(data_module, model, epochs=epochs, lr=lr, checkpoint_path=checkpoint_path, device=device, loss_fn=loss_fn)
-
-
 @dataclass
 class DatasetSpec:
-    data_module_cls: Type
+    data_module_name: str
     model_cls: Type
     default_checkpoint: str
     trainer_cls: Type = Trainer
@@ -134,8 +116,8 @@ class DatasetSpec:
 # Registry mapping dataset name -> DatasetSpec. Add SVHN/USPS entries as they
 # become available in `src.data` and `src.models`.
 DATASET_REGISTRY = {
-    "mnist": DatasetSpec(MNISTDataModule, MNISTNet, "weights/mnist.pth", trainer_cls=MNISTTrainer),
-    "usps":  DatasetSpec(USPSDataModule, USPSNet, "weights/usps.pth"),
+    "mnist": DatasetSpec("mnist", MNISTNet, "weights/mnist.pth"),
+    "usps":  DatasetSpec("usps", USPSNet, "weights/usps.pth"),
 }
 
 # Mapping of CLI loss name -> loss class attribute name (resolved at runtime)
@@ -155,11 +137,17 @@ class TrainerFactory:
 
         spec = DATASET_REGISTRY[dataset_name]
 
-        data_module = spec.data_module_cls(
-            data_dir=kwargs.get("data_dir", "datasets"),
-            batch_size=kwargs.get("batch_size", 64),
-            num_workers=kwargs.get("num_workers", 2),
-        )
+        data_module_cls = DATA_MODULES[spec.data_module_name]
+        
+        # Collect data-related arguments. We pass everything in kwargs
+        # so that different data modules can extract what they need.
+        data_args = {
+            "data_dir": kwargs.get("data_dir", "datasets"),
+            "batch_size": kwargs.get("batch_size", 64),
+            "num_workers": kwargs.get("num_workers", 2),
+            **{k: v for k, v in kwargs.items() if k not in ["epochs", "lr", "checkpoint_path", "device", "loss_fn"]}
+        }
+        data_module = data_module_cls(**data_args)
 
         model = spec.model_cls()
 
@@ -246,7 +234,6 @@ if __name__ == "__main__":
 __all__ = [
     "BaseTrainer",
     "Trainer",
-    "MNISTTrainer",
     "DatasetSpec",
     "TrainerFactory",
     "build_arg_parser",
