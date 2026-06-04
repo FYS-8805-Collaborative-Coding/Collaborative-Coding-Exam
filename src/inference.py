@@ -35,7 +35,7 @@ def _default_device(device: str | torch.device | None = None) -> torch.device:
 
 def load_model(
     model_cls: type[ModelT],
-    checkpoint_path: str | Path = "weights/mnist.pth",
+    checkpoint_path: str | Path,
     device: str | torch.device | None = None,
 ) -> ModelT:
     device = _default_device(device)
