@@ -39,8 +39,11 @@ Use `MNISTDataModule` in `src/data.py` as the reference pattern.
    If the dataset has a different image size, number of channels, or number of
    classes, add a matching model class such as `<DatasetName>Net`.
 
-6. Add training support in `src/training.py`.
-   More details provided below. 
+6. Add training support in `src/training.py`:
+   - Create a `<DatasetName>Trainer` class (inheriting from `Trainer`) if specific logic is needed.
+   - **Register the dataset**: Add a new entry to the `DATASET_REGISTRY` dictionary. 
+   - Define a `DatasetSpec` including the DataModule class, Model class, and default checkpoint path.
+   - Add the dataset name to the `--dataset` choices in `build_arg_parser()`.
 
 
 7. Add inference support in `src/inference.py`.

@@ -14,12 +14,25 @@ class BaseClassifier(nn.Module, ABC):
         raise NotImplementedError
 
 
-class MNISTNet(BaseClassifier):
-    """Small CNN for 28x28 grayscale MNIST digits."""
+class DigitCNN(BaseClassifier, ABC):
+    """Shared backbone for digit classification models.
+    
+    This base class standardizes the feature extraction layers to ensure 
+    architectural consistency across different digit datasets.
+    """
 
-    def __init__(self):
+    def __init__(self, input_size: int = 28):
         super().__init__()
-        self.features = nn.Sequential(
+        self.feature_dim = input_size // 4
+        
+        self.features = self._build_features()
+        self.classifier = self._build_classifier(in_features=64 * self.feature_dim**2)
+
+    def _build_features(self) -> nn.Sequential:
+        """Default feature extractor. 
+        Subclasses can override this to change the CNN backbone structure.
+        """
+        return nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2),
@@ -27,41 +40,41 @@ class MNISTNet(BaseClassifier):
             nn.ReLU(),
             nn.MaxPool2d(2),
         )
-        self.classifier = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(64 * 7 * 7, 128),
+
+    def _build_classifier(self, in_features: int) -> nn.Sequential:
+        """Default classifier head.
+        Subclasses can override this to change the classifier structure.
+        """
+        return nn.Sequential(
+            nn.Linear(in_features, 128),
             nn.ReLU(),
             nn.Linear(128, 10),
         )
 
     def forward(self, x):
         x = self.features(x)
+        x = x.view(64, -1)
         return self.classifier(x)
 
 
-class USPSNet(BaseClassifier):
-    """Small CNN for 16x16 grayscale USPS digits."""
+class MNISTNet(DigitCNN):
+    """CNN specialized for 28x28 MNIST digits."""
 
     def __init__(self):
-        super().__init__()
-        self.features = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2),
-            nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2),
-        )
-        self.classifier = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(64 * 4 * 4, 128),
-            nn.ReLU(),
-            nn.Linear(128, 10),
-        )
-
-    def forward(self, x):
-        x = self.features(x)
-        return self.classifier(x)
+        # Inherit both the backbone and the head logic
+        super().__init__(input_size=28)
 
 
-__all__ = ["BaseClassifier", "MNISTNet", "USPSNet"]
+class USPSNet(DigitCNN):
+    """CNN specialized for 16x16 USPS digits."""
+
+    def __init__(self):
+        # Use a custom backbone but keep the standard head logic
+        super().__init__(input_size=16)
+
+    def _build_classifier(self, in_features: int) -> nn.Sequential:
+        """Override to adjust the input features based on the smaller feature map."""
+        return super()._build_classifier(in_features=32 * self.feature_dim**2)
+
+
+__all__ = ["BaseClassifier", "DigitCNN", "MNISTNet", "USPSNet"]

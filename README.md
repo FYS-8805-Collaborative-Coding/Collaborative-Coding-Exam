@@ -18,10 +18,14 @@ git clone git@github.com:FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam
 
 ## Training
 
-Run training from the repository root with the CLI:
+You can run training from the repository root with the CLI. All arguments are entirely optional; running the command without any flags will automatically train on the default `mnist` dataset:
 
 ```bash
-python -m src.training --dataset mnist --epochs 1 --batch-size 64 --device cpu
+# Run with absolute defaults (MNIST, 1 epoch, batch size 64, automatic device selection)
+python -m src.training
+
+# Run with custom configuration overrides
+python -m src.training --dataset mnist --epochs 5 --batch-size 32 --device cuda
 ```
 
 The checkpoint is written to `weights/mnist.pth` by default. The current
@@ -129,13 +133,19 @@ Brief description of what this model does and what problem it solves.
 ## Repository Structure
 
 ```
-├── models.py          # Model definitions (per-customer and general)
-├── data.py            # Dataset loaders (per-customer and general)
-├── training.py        # General training script
-├── evaluation.py      # Evaluation script (precision, recall, speed)
-├── inference.py       # Entry point for running predictions
-├── weights/           # Trained model weights (trained on LUMI)
-└── docs/              # Sphinx documentation
+├── datasets/
+├── src/
+  ├── data.py            # Dataset loaders (per-customer and general)
+  ├── evaluation.py      # Evaluation script (precision, recall, speed)
+  ├── inference.py       # Entry point for running predictions
+  ├── instructions.md    # Instructions to use the scripts and extend the code
+  ├── models.py          # Model definitions (per-customer and general)
+  └── training.py        # General training script
+├── tests/
+  └── test_training.py   # Testing of the basic functionalities of src/training.py
+├── weights/             # Trained model weights (trained on LUMI)
+├── README.md            #
+└── environment.yml      # Environment configuration file      
 ```
 
 ---
