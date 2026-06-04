@@ -53,7 +53,7 @@ class DigitCNN(BaseClassifier, ABC):
 
     def forward(self, x):
         x = self.features(x)
-        x = x.view(64, -1)
+        x = x.flatten(start_dim=1)
         return self.classifier(x)
 
 
