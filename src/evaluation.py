@@ -6,18 +6,22 @@ and inference speed.
 """
  
 import time
+import argparse
  
 import torch
 from sklearn.metrics import precision_score, recall_score
- 
- 
-def evaluate(model, dataloader):
+
+from .data import DATA_MODULES
+from .training import DATASET_REGISTRY
+
+
+def evaluate(model, dataloader, device):
     """Evaluate a trained model on a dataset.
- 
+
     Runs the model over every batch in ``dataloader``, collects the predicted
     and true labels, and reports classification quality together with the
     average inference time per sample.
- 
+
     Parameters
     ----------
     model : torch.nn.Module
@@ -27,6 +31,9 @@ def evaluate(model, dataloader):
     dataloader : Iterable
         Yields ``(images, labels)`` batches, where ``images`` is a float
         tensor and ``labels`` is an integer tensor of true classes.
+    device : str or torch.device, optional
+        Device to run evaluation on (e.g. ``"cpu"``, ``"cuda"``, ``"mps"``).
+        The model and each batch are moved here. Defaults to ``"cpu"``.
  
     Returns
     -------
@@ -48,9 +55,14 @@ def evaluate(model, dataloader):
     model.eval()
     all_preds, all_targets = [], []
     total_time = 0.0
- 
+
+    # Move the model and each batch to the requested device.
+    device = torch.device(device)
+    model.to(device)
+
     with torch.no_grad():
         for images, labels in dataloader:
+            images = images.to(device)
             start = time.perf_counter()
             outputs = model(images)
             total_time += time.perf_counter() - start
@@ -63,3 +75,43 @@ def evaluate(model, dataloader):
     speed_ms = 1000.0 * total_time / max(len(all_preds), 1)
  
     return {"precision": precision, "recall": recall, "speed_ms": speed_ms}
+
+def build_arg_parser():
+    parser = argparse.ArgumentParser(description="Evaluate a trained dataset model on its test set.")
+    parser.add_argument(
+        "--dataset",
+        default="mnist",
+        choices=sorted(DATASET_REGISTRY.keys()),
+        help="Dataset to evaluate on.",
+    )
+    parser.add_argument("--checkpoint-path", default=None, help="Checkpoint to load (defaults to the dataset's registered path).")
+    parser.add_argument("--batch-size", type=int, default=256, help="Evaluation batch size.")
+    parser.add_argument("--data-dir", default="datasets", help="Directory containing the datasets.")
+    parser.add_argument("--num-workers", type=int, default=2, help="DataLoader worker count.")
+    parser.add_argument("--device", default="cpu", help="Device to use, e.g. cpu, cuda, or mps.")
+    return parser
+
+def main(argv=None):
+    args = build_arg_parser().parse_args(argv)
+
+    device = torch.device(args.device)
+
+    spec = DATASET_REGISTRY[args.dataset]
+    checkpoint = args.checkpoint_path or spec.default_checkpoint
+
+    model = spec.model_cls()
+    model.load_state_dict(torch.load(checkpoint, map_location=device))
+
+    data_module = DATA_MODULES[spec.data_module_name](
+        data_dir=args.data_dir,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+    )
+    test_loader = data_module.test_loader()
+
+    result = evaluate(model, test_loader, device=device)
+    print(result)
+    return 0
+
+if __name__ == "__main__":
+    main()
