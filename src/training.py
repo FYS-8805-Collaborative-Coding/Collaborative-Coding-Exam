@@ -18,10 +18,10 @@ from torch import nn, optim
 
 try:
     from .data import DATA_MODULES
-    from .models import MNISTNet, USPSNet
+    from .models import MNISTNet, USPSNet, SVHNNet
 except ImportError:
     from data import DATA_MODULES
-    from models import MNISTNet, USPSNet
+    from models import MNISTNet, USPSNet, SVHNNet
 
 # Define the project root relative to this file.
 # This ensures paths are consistent regardless of the current working directory.
@@ -118,6 +118,7 @@ class DatasetSpec:
 DATASET_REGISTRY = {
     "mnist": DatasetSpec("mnist", MNISTNet, "weights/mnist.pth"),
     "usps":  DatasetSpec("usps", USPSNet, "weights/usps.pth"),
+    "svhn":  DatasetSpec("svhn", SVHNNet, "weights/svhn.pth"),
 }
 
 # Mapping of CLI loss name -> loss class attribute name (resolved at runtime)
