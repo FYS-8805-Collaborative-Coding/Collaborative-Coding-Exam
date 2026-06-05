@@ -116,11 +116,12 @@ def load_training_module():
     fake_torch.optim = fake_optim
 
     fake_data = types.ModuleType("data")
-    fake_data.DATA_MODULES = {"mnist": DummyDataModule, "usps": DummyDataModule}
+    fake_data.DATA_MODULES = {"mnist": DummyDataModule, "usps": DummyDataModule, "svhn": DummyDataModule}
 
     fake_models = types.ModuleType("models")
     fake_models.MNISTNet = DummyModel
     fake_models.USPSNet = DummyModel
+    fake_models.SVHNNet = DummyModel
 
     original_modules = {
 
