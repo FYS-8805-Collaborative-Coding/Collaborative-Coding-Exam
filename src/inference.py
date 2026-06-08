@@ -14,9 +14,9 @@ from PIL import Image
 from torchvision import transforms
 
 try:
-    from .models import MNISTNet, USPSNet
+    from .models import MNISTNet, USPSNet, SVHNNet
 except ImportError:
-    from models import MNISTNet, USPSNet
+    from models import MNISTNet, USPSNet, SVHNNet
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png"}
 ModelT = TypeVar("ModelT", bound=nn.Module)
@@ -60,14 +60,24 @@ def build_transform(
     image_size: int | tuple[int, int],
     mean: tuple[float, ...],
     std: tuple[float, ...],
+    grayscale: bool = True,
 ) -> Callable[[Image.Image], torch.Tensor]:
-    """Build the image transform used before inference."""
+    """Build the image transform used before inference.
+
+    When ``grayscale`` is True the image is reduced to a single channel
+    (MNIST/USPS); otherwise it is converted to 3-channel RGB (SVHN).
+    """
     if isinstance(image_size, int):
         image_size = (image_size, image_size)
 
+    if grayscale:
+        channel_step = transforms.Grayscale(num_output_channels=1)
+    else:
+        channel_step = transforms.Lambda(lambda img: img.convert("RGB"))
+
     return transforms.Compose(
         [
-            transforms.Grayscale(num_output_channels=1),
+            channel_step,
             transforms.Resize(image_size),
             transforms.ToTensor(),
             transforms.Normalize(mean, std),
@@ -113,14 +123,26 @@ class InferenceSpec:
     image_size: int | tuple[int, int]
     mean: tuple[float, ...]
     std: tuple[float, ...]
+    grayscale: bool = True
     inference_cls: type[BaseInference] = Inference
 
+
+_SVHN_SPEC = InferenceSpec(
+    SVHNNet,
+    "weights/svhn.pth",
+    (32, 32),
+    (0.4377, 0.4438, 0.4728),
+    (0.1980, 0.2010, 0.1970),
+    grayscale=False,
+)
 
 INFERENCE_REGISTRY = {
     "mnist": InferenceSpec(MNISTNet, "weights/mnist.pth", (28, 28), (0.1307,), (0.3081,)),
     "usps": InferenceSpec(USPSNet, "weights/usps.pth", (16, 16), (0.2471,), (0.2994,)),
+    "svhn": _SVHN_SPEC,
     "model-a": InferenceSpec(MNISTNet, "weights/mnist.pth", (28, 28), (0.1307,), (0.3081,)),
     "model-b": InferenceSpec(USPSNet, "weights/usps.pth", (16, 16), (0.2471,), (0.2994,)),
+    "model-c": _SVHN_SPEC,
 }
 
 
@@ -140,6 +162,7 @@ class InferenceFactory:
             image_size=kwargs.get("image_size", spec.image_size),
             mean=kwargs.get("mean", spec.mean),
             std=kwargs.get("std", spec.std),
+            grayscale=kwargs.get("grayscale", spec.grayscale),
         )
 
         return spec.inference_cls(
