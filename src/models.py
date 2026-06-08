@@ -78,7 +78,9 @@ class USPSNet(DigitCNN):
 
 
 class SVHNNet(BaseClassifier):
+    """CNN classifier for the SVHN dataset."""
     def __init__(self, num_classes: int = 10, dropout: float = 0.3):
+        """Initialize the network architecture."""
         super().__init__()
 
         def block(in_ch, out_ch):
@@ -106,6 +108,7 @@ class SVHNNet(BaseClassifier):
         )
 
     def forward(self, x):
+        """Perform a forward pass."""
         x = self.features(x)
         x = x.view(x.size(0), -1)
         return self.classifier(x)
