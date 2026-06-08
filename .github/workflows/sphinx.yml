@@ -22,7 +22,7 @@ jobs:
         run: pip install sphinx 2>/dev/null || true
       - name: Build docs
         run: |
-          sphinx-build -b html doc/ doc/_build/html 2>/dev/null || echo "TODO: set up Sphinx docs"
+          sphinx-build -b html doc/ doc/_build/html 
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
@@ -30,5 +30,5 @@ jobs:
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _build/
+          publish_dir: doc/_build/html
           force_orphan: true
