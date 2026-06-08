@@ -95,10 +95,21 @@ class USPSDataModule(TorchvisionDataModule):
 
 
 class SVHNDataModule(TorchvisionDataModule):
+    """
+    Data module for the SVHN dataset.
+
+    This module handles downloading, preprocessing, and loading the SVHN
+    training and test datasets. Images are converted to tensors and
+    normalized using the standard SVHN channel-wise mean and standard
+    deviation values.
+    """
+    
     MEAN = (0.4377, 0.4438, 0.4728)
     STD = (0.1980, 0.2010, 0.1970)
 
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
+        """ Initialize the SVHN data module. """
+        
         BaseDataModule.__init__(self)
         self.dataset_cls = datasets.SVHN
         self.data_dir = Path(data_dir)
@@ -114,6 +125,21 @@ class SVHNDataModule(TorchvisionDataModule):
         self.dataset_kwargs = kwargs
 
     def _dataset(self, train):
+        """
+        Create an SVHN dataset instance.
+
+        Parameters
+        ----------
+        train : bool
+            If True, return the training split; otherwise, return the test
+            split.
+
+        Returns
+        -------
+        torchvision.datasets.SVHN
+            Configured SVHN dataset instance.
+        """
+        
         return self.dataset_cls(
             root=str(self.data_dir),
             split="train" if train else "test",

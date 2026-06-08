@@ -1,10 +1,12 @@
-from .data import get_loaders
-from .inference import load_mnist_model, predict_mnist
-from .training import train
+def __getattr__(name: str) -> object:
+    if name == "run_inference":
+        from .inference import run_inference
 
-__all__ = [
-    "get_loaders",
-    "load_mnist_model",
-    "predict_mnist",
-    "train",
-]
+        return run_inference
+
+    if name == "train":
+        from .training import train
+
+        return train
+
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
