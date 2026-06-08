@@ -77,4 +77,64 @@ class USPSNet(DigitCNN):
         return super()._build_classifier(in_features=32 * self.feature_dim**2)
 
 
-__all__ = ["BaseClassifier", "DigitCNN", "MNISTNet", "USPSNet"]
+class SVHNNet(BaseClassifier):
+    """
+    CNN classifier for the SVHN dataset.
+    
+    Args:
+        num_classes (int): Number of output classes. Defaults to 10.
+        dropout (float): Dropout probability used in the classifier head. Defaults to 0.3.
+    """
+    def __init__(self, num_classes: int = 10, dropout: float = 0.3):
+        """Initialize the network architecture."""
+        super().__init__()
+
+        def block(in_ch, out_ch):
+            """
+            Create a convolutional feature-extraction block.
+
+            Args:
+                in_ch (int): Number of input channels.
+                out_ch (int): Number of output channels.
+
+            Returns:
+                nn.Sequential (convolution, batch normalization,
+                ReLU activation, and max-pooling layers.)
+            """
+            return nn.Sequential(
+                nn.Conv2d(in_ch, out_ch, kernel_size=3, padding=1),
+                nn.BatchNorm2d(out_ch),
+                nn.ReLU(inplace=True),
+                nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
+                nn.BatchNorm2d(out_ch),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(2),
+            )
+
+        self.features = nn.Sequential(
+            block(3, 32),    # 32x32 -> 16x16
+            block(32, 64),   # 16x16 -> 8x8
+            block(64, 128),  # 8x8   -> 4x4
+        )
+        self.classifier = nn.Sequential(
+            nn.Dropout(dropout),
+            nn.Linear(128 * 4 * 4, 256),
+            nn.ReLU(inplace=True),
+            nn.Dropout(dropout),
+            nn.Linear(256, num_classes),
+        )
+
+    def forward(self, x):
+        """Perform a forward pass.
+        Args:
+            x (torch.Tensor): Input image batch of shape ``(batch_size, 3, 32, 32)``
+        
+        Returns:
+            torch.Tensor
+        """
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        return self.classifier(x)
+
+
+__all__ = ["BaseClassifier", "DigitCNN", "MNISTNet", "USPSNet", "SVHNNet"]

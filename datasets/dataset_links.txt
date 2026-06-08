@@ -1,6 +1,6 @@
 # provide links for downloading the datesets
 1. MNIST 
 
-2. SVHN
+2. SVHN: http://ufldl.stanford.edu/housenumbers/
 
 3. USPS
