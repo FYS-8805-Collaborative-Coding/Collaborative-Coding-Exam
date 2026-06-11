@@ -1,0 +1,1 @@
+{'loss': 0.014407900094152137, 'accuracy': 0.9954666666666667, 'epochs': 5, 'checkpoint_path': '/pfs/lustrep2/scratch/project_465002757/baburaja/Collaborative-Coding-Exam/weights/mnist.pth'}
