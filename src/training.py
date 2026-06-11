@@ -9,6 +9,7 @@ based on a dataset name.
 
 from abc import ABC, abstractmethod
 import argparse
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Type, Optional, Callable
@@ -26,6 +27,8 @@ except ImportError:
 # Define the project root relative to this file.
 # This ensures paths are consistent regardless of the current working directory.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+logger = logging.getLogger("training")
 
 class BaseTrainer(ABC):
     """Base class for dataset-specific trainers."""
@@ -71,12 +74,14 @@ class Trainer(BaseTrainer):
         final_loss = 0.0
         final_accuracy = 0.0
 
-        for _ in range(self.epochs):
+        logger.info("Training on %s for %d epoch(s)", self.device, self.epochs)
+
+        for epoch in range(1, self.epochs + 1):
             running_loss = 0.0
             correct = 0
             total = 0
 
-            for images, labels in self.data_module.train_loader():
+            for batch_idx, (images, labels) in enumerate(self.data_module.train_loader(), start=1):
                 images = images.to(self.device)
                 labels = labels.to(self.device)
 
@@ -91,11 +96,28 @@ class Trainer(BaseTrainer):
                 correct += (logits.argmax(dim=1) == labels).sum().item()
                 total += batch_size
 
+                # DEBUG: Log every 100 batches to avoid overwhelming the output. 
+                if batch_idx % 100 == 0:
+                    logger.debug(
+                        "epoch %d/%d  batch %d  loss=%.4f",
+                        epoch, self.epochs, batch_idx, loss.item(),
+                    )
+
             final_loss = running_loss / total if total else 0.0
             final_accuracy = correct / total if total else 0.0
 
+            logger.info(
+                "Epoch %d/%d  loss=%.4f  acc=%.4f",
+                epoch, self.epochs, final_loss, final_accuracy,
+            )
+
         self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(self.model.state_dict(), self.checkpoint_path)
+
+        logger.info(
+            "Done!  final_loss=%.4f  final_acc=%.4f  saved=%s",
+            final_loss, final_accuracy, self.checkpoint_path,
+        )
 
         return {
             "loss": final_loss,
@@ -197,6 +219,7 @@ def build_arg_parser():
         default=None,
         help="Loss function to use (defaults to CrossEntropyLoss when unspecified).",
     )
+    parser.add_argument("--log-level", default="INFO", help="Logging level, e.g. INFO or DEBUG.")
     return parser
 
 
@@ -205,6 +228,17 @@ def main(argv=None):
     parser = build_arg_parser()
     args = parser.parse_args(argv)
 
+    try:
+        from .utils import setup_logging
+    except ImportError:
+        from utils import setup_logging
+    setup_logging(args.log_level)
+
+    logger.info(
+        "Start:  dataset=%s epochs=%d batch_size=%d lr=%s device=%s",
+        args.dataset, args.epochs, args.batch_size, args.lr, args.device or "auto",
+    )
+
     # Map CLI loss name to a loss instance (or None to use trainer default)
     loss_cls_name = LOSS_MAP.get(args.loss)
     loss_fn = None
@@ -212,7 +246,7 @@ def main(argv=None):
         loss_cls = getattr(nn, loss_cls_name)
         loss_fn = loss_cls()
 
-    result = train(
+    train(
         dataset=args.dataset,
         epochs=args.epochs,
         lr=args.lr,
@@ -224,7 +258,6 @@ def main(argv=None):
         loss_fn=loss_fn,
     )
 
-    print(result)
     return 0
 
 

@@ -15,8 +15,12 @@ from torchvision import transforms
 
 try:
     from .models import MNISTNet, USPSNet, SVHNNet
+    from .utils import setup_logging, get_logger
 except ImportError:
     from models import MNISTNet, USPSNet, SVHNNet
+    from utils import setup_logging, get_logger
+
+logger = get_logger("inference")
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png"}
 ModelT = TypeVar("ModelT", bound=nn.Module)
@@ -239,6 +243,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default=None,
         help="Torch device, for example 'cpu', 'cuda', or 'mps'.",
     )
+    parser.add_argument("--log-level", default="INFO", help="Logging level, e.g. INFO or DEBUG.")
     return parser
 
 
@@ -246,6 +251,10 @@ def main(argv: list[str] | None = None) -> int:
     """Command-line entry point for inference."""
     parser = build_arg_parser()
     args = parser.parse_args(argv)
+
+    setup_logging(args.log_level)
+    logger.info("Start  model=%s device=%s input=%s", args.model, args.device or "auto", args.input)
+
     results = run_inference(
         model=args.model,
         input_path=args.input,
@@ -253,7 +262,8 @@ def main(argv: list[str] | None = None) -> int:
         device=args.device,
     )
     for image_path, prediction in results.items():
-        print(f"{image_path}: {prediction}")
+        logger.info("Predicted digit: %s  (image=%s)", prediction, image_path)
+    logger.info("Done  %d image(s) classified", len(results))
     return 0
 
 
