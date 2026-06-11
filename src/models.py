@@ -69,12 +69,9 @@ class USPSNet(DigitCNN):
     """CNN specialized for 16x16 USPS digits."""
 
     def __init__(self):
-        # Use a custom backbone but keep the standard head logic
+        # Reuse the shared backbone and head; DigitCNN sizes the classifier
+        # from the 64-channel backbone output (64 * feature_dim**2).
         super().__init__(input_size=16)
-
-    def _build_classifier(self, in_features: int) -> nn.Sequential:
-        """Override to adjust the input features based on the smaller feature map."""
-        return super()._build_classifier(in_features=32 * self.feature_dim**2)
 
 
 class SVHNNet(BaseClassifier):
