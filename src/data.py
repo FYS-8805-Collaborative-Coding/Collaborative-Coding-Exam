@@ -79,14 +79,18 @@ class MNISTDataModule(TorchvisionDataModule):
         )
 
 class USPSDataModule(TorchvisionDataModule):
-    """USPS data module."""
+    """Data module for the USPS handwritten-digit dataset.
+
+    Downloads land under ``<data_dir>/USPS/``. Defaults to USPS's
+    standard normalization (``mean=0.2471``, ``std=0.2994``).
+    """
 
     def __init__(self, mean=0.2471, std=0.2994, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
         super().__init__(
             dataset_cls=datasets.USPS,
             mean=mean,
             std=std,
-            data_dir=data_dir,
+            data_dir=str(Path(data_dir) / "USPS"),
             batch_size=batch_size,
             num_workers=num_workers,
             download=download,
