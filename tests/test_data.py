@@ -221,3 +221,96 @@ def test_test_loader_is_not_shuffled():
     loader = module.MNISTDataModule(batch_size=16).test_loader()
     assert loader.shuffle is False
     assert loader.batch_size == 16
+
+
+def test_test_loader_does_not_drop_last():
+    module, _ = _load_data_module()
+    loader = module.MNISTDataModule(batch_size=16).test_loader()
+    assert loader.drop_last is False
+
+
+# ─── USPSDataModule path behaviour ───────────────────────────────────────────
+
+def test_usps_data_dir_appends_usps_subfolder():
+    module, _ = _load_data_module()
+    dm = module.USPSDataModule(data_dir="datasets")
+    assert dm.data_dir == Path("datasets") / "USPS"
+
+
+def test_usps_data_dir_custom_path_still_appends_usps():
+    module, _ = _load_data_module()
+    dm = module.USPSDataModule(data_dir="custom/root")
+    assert dm.data_dir == Path("custom/root") / "USPS"
+
+
+# ─── SVHNDataModule ignores custom mean/std ───────────────────────────────────
+
+def test_svhn_ignores_custom_mean_std():
+    module, _ = _load_data_module()
+    dm = module.SVHNDataModule(mean=(0.9, 0.9, 0.9), std=(0.1, 0.1, 0.1))
+    n = _normalize(dm)
+    assert n.mean == pytest.approx((0.4377, 0.4438, 0.4728))
+    assert n.std == pytest.approx((0.1980, 0.2010, 0.1970))
+
+
+# ─── _dataset passes kwargs correctly ────────────────────────────────────────
+
+def test_dataset_passes_root_path():
+    module, _ = _load_data_module()
+    dm = module.MNISTDataModule(data_dir="my/data")
+    ds = dm._dataset(train=True)
+    assert ds.root == str(Path("my/data"))
+
+
+def test_dataset_passes_download_flag():
+    module, _ = _load_data_module()
+    dm = module.MNISTDataModule(download=False)
+    assert dm._dataset(train=True).download is False
+    assert dm._dataset(train=False).download is False
+
+
+def test_dataset_passes_transform():
+    module, _ = _load_data_module()
+    dm = module.MNISTDataModule()
+    assert dm._dataset(train=True).transform is dm.transform
+
+
+# ─── get_loaders kwargs passthrough ──────────────────────────────────────────
+
+def test_get_loaders_passes_num_workers():
+    module, _ = _load_data_module()
+    train_loader, test_loader = module.get_loaders(dataset="mnist", num_workers=8)
+    assert train_loader.num_workers == 8
+    assert test_loader.num_workers == 8
+
+
+def test_get_loaders_passes_data_dir():
+    module, _ = _load_data_module()
+    train_loader, _ = module.get_loaders(dataset="mnist", data_dir="custom/path")
+    assert train_loader.dataset.root == str(Path("custom/path"))
+
+
+# ─── Default parameter values ────────────────────────────────────────────────
+
+def test_torchvision_data_module_default_batch_size():
+    module, fake_datasets = _load_data_module()
+    dm = module.TorchvisionDataModule(dataset_cls=fake_datasets.MNIST, mean=0.5, std=0.5)
+    assert dm.batch_size == 64
+
+
+def test_torchvision_data_module_default_num_workers():
+    module, fake_datasets = _load_data_module()
+    dm = module.TorchvisionDataModule(dataset_cls=fake_datasets.MNIST, mean=0.5, std=0.5)
+    assert dm.num_workers == 2
+
+
+def test_torchvision_data_module_default_download():
+    module, fake_datasets = _load_data_module()
+    dm = module.TorchvisionDataModule(dataset_cls=fake_datasets.MNIST, mean=0.5, std=0.5)
+    assert dm.download is True
+
+
+def test_torchvision_data_module_default_data_dir():
+    module, fake_datasets = _load_data_module()
+    dm = module.TorchvisionDataModule(dataset_cls=fake_datasets.MNIST, mean=0.5, std=0.5)
+    assert dm.data_dir == Path("datasets")
