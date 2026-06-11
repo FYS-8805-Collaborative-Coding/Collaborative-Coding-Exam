@@ -1,0 +1,11 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) ModuleLabel/label   2) lumi-tools/26.05   3) init-lumi/0.2
+
+The following sticky modules could not be reloaded:
+
+  1) lumi-tools
+srun singularity run $CONTAINER \
+    python -m src.training --dataset mnist --epochs 5 --batch-size 32 --device cuda
++ srun singularity run /appl/local/laifs/containers/lumi-multitorch-u24r70f21m50t210-20260513_121430/lumi-multitorch-full-u24r70f21m50t210-20260513_121430.sif python -m src.training --dataset mnist --epochs 5 --batch-size 32 --device cuda
