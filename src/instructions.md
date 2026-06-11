@@ -80,7 +80,7 @@ For each new dataset:
    To save the checkpoint somewhere else:
 
    ```bash
-   python -m src.training --dataset usps --checkpoint-path path/to/usps.pth
+   python -m src.training --dataset usps --epochs 5 --checkpoint-path path/to/usps.pth
    ```
 
 After a dataset is added to `DATASET_REGISTRY`, it is automatically available
