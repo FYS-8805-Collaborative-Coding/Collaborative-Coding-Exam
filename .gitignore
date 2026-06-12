@@ -220,3 +220,4 @@ __marimo__/
 # Datasets 
 datasets/MNIST
 datasets/USPS
+*.mat

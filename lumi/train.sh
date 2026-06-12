@@ -15,7 +15,7 @@
 
 # --- Resources (shared by all runs; not dataset-specific) --------------------
 #SBATCH --account=project_465002757
-#SBATCH --partition=small-g
+#SBATCH --partition=standard-g
 #SBATCH --gpus-per-node=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=7
@@ -26,8 +26,8 @@
 # Default dataset; override per run with `sbatch -J <dataset> train.sh`.
 #SBATCH --job-name=mnist
 # %x = job name, %j = job id  ->  lumi_logs/mnist_123456.out
-#SBATCH --output=lumi_logs/%x_%j.out
-#SBATCH --error=lumi_logs/%x_%j.err
+#SBATCH --output=lumi/logs/%x_%j.out
+#SBATCH --error=lumi/logs/%x_%j.err
 
 # --- Load the experiment config ----------------------------------------------
 # The config is chosen by the job name (or CONFIG, if explicitly set).
