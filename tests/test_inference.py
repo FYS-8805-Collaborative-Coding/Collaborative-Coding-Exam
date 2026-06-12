@@ -15,7 +15,33 @@ from unittest.mock import MagicMock, patch
 import sys
 import types
 import importlib.util
-from PIL import Image
+
+# Mock PIL if not available to support isolated testing in restricted environments.
+try:
+    from PIL import Image
+except ImportError:
+    # Create fake PIL and PIL.Image modules so that @patch("PIL.Image.open")
+    # and top-level imports in src/inference.py do not raise ModuleNotFoundError.
+    _pil = types.ModuleType("PIL")
+    _pil_image = types.ModuleType("PIL.Image")
+    _pil.Image = _pil_image
+    sys.modules["PIL"] = _pil
+    sys.modules["PIL.Image"] = _pil_image
+
+    Image = MagicMock()
+    _pil_image.Image = Image
+
+    def _mock_new(mode, size):
+        img = MagicMock()
+        img.mode = mode
+        img.width, img.height = (size, size) if isinstance(size, int) else size
+        img.size = (img.width, img.height)
+        img.resize = MagicMock(side_effect=lambda s: _mock_new(mode, s))
+        img.convert = MagicMock(side_effect=lambda mod: _mock_new(mod, (img.width, img.height)))
+        return img
+    Image.new = _mock_new
+    _pil_image.new = _mock_new
+    _pil_image.open = MagicMock(side_effect=lambda p: _mock_new("RGB", (32, 32)))
 
 # --- Start of mocking setup ---
 class MockTensor:
@@ -187,6 +213,8 @@ def _make_fake_modules():
         "models": fake_models,
         "torchvision": fake_torchvision,
         "torchvision.transforms": fake_torchvision_transforms,
+        "PIL": sys.modules.get("PIL"),
+        "PIL.Image": sys.modules.get("PIL.Image"),
     }
 
 
@@ -197,6 +225,7 @@ def load_inference_module():
         for name in [
             "torch", "torch.nn", "src.models", "models",
             "inference_under_test", "torchvision", "torchvision.transforms",
+            "PIL", "PIL.Image",
         ]
     }
 
