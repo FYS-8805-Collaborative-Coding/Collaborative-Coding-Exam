@@ -7,12 +7,15 @@ and inference speed.
  
 import time
 import argparse
- 
+
 import torch
 from sklearn.metrics import precision_score, recall_score
 
 from src.data import DATA_MODULES
 from src.training import DATASET_REGISTRY
+from src.utils import setup_logging, get_logger
+
+logger = get_logger("evaluation")
 
 
 def evaluate(model, dataloader, device):
@@ -89,15 +92,20 @@ def build_arg_parser():
     parser.add_argument("--data-dir", default="datasets", help="Directory containing the datasets.")
     parser.add_argument("--num-workers", type=int, default=2, help="DataLoader worker count.")
     parser.add_argument("--device", default="cpu", help="Device to use, e.g. cpu, cuda, or mps.")
+    parser.add_argument("--log-level", default="INFO", help="Logging level, e.g. INFO or DEBUG.")
     return parser
 
 def main(argv=None):
     args = build_arg_parser().parse_args(argv)
 
+    setup_logging(args.log_level)
+
     device = torch.device(args.device)
 
     spec = DATASET_REGISTRY[args.dataset]
     checkpoint = args.checkpoint_path or spec.default_checkpoint
+
+    logger.info("Start  dataset=%s device=%s checkpoint=%s", args.dataset, device, checkpoint)
 
     model = spec.model_cls()
     model.load_state_dict(torch.load(checkpoint, map_location=device))
@@ -110,7 +118,10 @@ def main(argv=None):
     test_loader = data_module.test_loader()
 
     result = evaluate(model, test_loader, device=device)
-    print(result)
+    logger.info(
+        "Results  precision=%.4f  recall=%.4f  speed=%.3f ms/sample",
+        result["precision"], result["recall"], result["speed_ms"],
+    )
     return 0
 
 if __name__ == "__main__":
