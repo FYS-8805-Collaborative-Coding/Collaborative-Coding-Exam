@@ -390,7 +390,7 @@ def test_run_inference_integration(tmp_path, infer):
         output = infer.run_inference(model="mnist", input_path=tmp_path)
 
     assert len(output) == 1
-    assert list(output.values())[0] == 3
+    assert output[0] == 3
 
 
 def test_run_inference_empty_directory(tmp_path, infer):
@@ -399,4 +399,4 @@ def test_run_inference_empty_directory(tmp_path, infer):
         mock_factory.return_value = MagicMock()
         output = infer.run_inference(model="mnist", input_path=tmp_path)
 
-    assert output == {}
+    assert output == []
