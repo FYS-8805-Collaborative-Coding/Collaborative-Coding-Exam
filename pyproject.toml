@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "collaborative-coding-exam"
+version = "0.1.0"
+description = "Digit classifiers (MNIST / USPS / SVHN) with a unified training, evaluation and inference CLI."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "torch",
+    "torchvision",
+    "pillow",
+    "scikit-learn",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+# Console commands installed onto the user's PATH.
+[project.scripts]
+ccexam-infer = "ccexam.inference:main"
+
+[tool.setuptools]
+# Keep the code physically in src/ but install/import it as `ccexam`.
+package-dir = { "ccexam" = "src" }
+packages = ["ccexam"]
+
+# Ship the trained weights inside the wheel so inference works after a plain
+# `pip install` (no repo checkout required).
+[tool.setuptools.package-data]
+ccexam = ["weights/*.pth"]
