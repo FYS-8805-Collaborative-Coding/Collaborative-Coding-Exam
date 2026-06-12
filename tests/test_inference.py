@@ -1,3 +1,14 @@
+"""
+Unit tests for the inference pipeline (src/inference.py).
+
+These tests verify:
+1. File discovery: Correctly identifying and filtering image files in directories.
+2. Path resolution: Ensuring model weights are found relative to the project root.
+3. Transformation: Confirming image preprocessing produces correct tensor dimensions.
+4. Factory/Registry: Validating that model aliases map to correct specifications.
+5. Core Prediction: Verifying the flow from image input to final class index via mocked models.
+6. Isolation: Uses a comprehensive mocking strategy to run without real Torch/NumPy binaries.
+"""
 import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
