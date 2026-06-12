@@ -1,51 +1,30 @@
-# Collaborative-Coding-Exam
+# ACME Digit Classification
 
-Short, clear description of what this repo does and who it's for. Two or three sentences max.
+ACME Digit Classification is a machine learning framework for handwritten digit recognition developed as part of the FYS-8805 Collaborative Coding Exam at UiT.
+
+The repository provides a unified interface for training, evaluating, and deploying digit classification models for three customer datasets:
+
+- **Customer A:** MNIST
+- **Customer B:** SVHN
+- **Customer C:** USPS
 
 ---
-
 ## Installation
 
-via SSH
+Install directly from GitHub [NEED TO BE FIXED]:
+
+```bash
+pip install git+https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam.git
+```
+
+Alternatively, clone the repository via SSH:
 
 ```bash
 git clone git@github.com:FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam.git
 ```
 
-(or via pip?)
-
 ---
-
-## Training
-
-You can run training from the repository root with the CLI. All arguments are entirely optional; running the command without any flags will automatically train on the default `mnist` dataset:
-
-```bash
-# Run with absolute defaults (MNIST, 1 epoch, batch size 64, automatic device selection)
-python -m src.training
-
-# Run with custom configuration overrides
-python -m src.training --dataset mnist --epochs 5 --batch-size 32 --device cuda
-```
-
-The checkpoint is written to `weights/mnist.pth` by default. The current
-training entry point supports `mnist` and can be extended with more datasets
-through the registry in `src/training.py`.
-
-## Testing
-
-Run the basic tests with:
-
-```bash
-pytest -q
-```
-
-The tests are lightweight and only validate the training CLI, argument parsing,
-and factory wiring.
-
----
-
-## Running Inference
+# Quick start: run interference
 
 Suggested way to get inference from a trained model (example):
 
@@ -61,11 +40,9 @@ Or from the command line:
 ```bash
 python -m src.inference --model model-a --input datasets/inference/mnist_test_0_label_7.png
 ```
-
-Trained model weights are stored in the `weights/` folder and are loaded automatically.
+Trained model weights are stored in the `weights/` directory and are loaded automatically during inference.
 
 ---
-
 ## Model Cards
 
 ### Model A — `model-a`
@@ -130,33 +107,43 @@ Brief description of what this model does and what problem it solves.
 
 ---
 
-## Repository Structure
-
-```
-├── datasets/
-├── src/
-  ├── data.py            # Dataset loaders (per-customer and general)
-  ├── evaluation.py      # Evaluation script (precision, recall, speed)
-  ├── inference.py       # Entry point for running predictions
-  ├── instructions.md    # Instructions to use the scripts and extend the code
-  ├── models.py          # Model definitions (per-customer and general)
-  └── training.py        # General training script
-├── tests/
-  └── test_training.py   # Testing of the basic functionalities of src/training.py
-├── weights/             # Trained model weights (trained on LUMI)
-├── README.md            #
-└── environment.yml      # Environment configuration file      
-```
-
----
-
 ## Documentation
 
-Full documentation is available at [https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/](https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/) (GitHub Pages).
+More detailed documentation is available at [https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/](https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/).
+
+
+---
+# Model development
+## Training
+
+You can run training from the repository root with the CLI. All arguments are entirely optional; running the command without any flags will automatically train on the default `mnist` dataset:
+
+```bash
+# Run with absolute defaults (MNIST, 1 epoch, batch size 64, automatic device selection)
+python -m src.training
+
+# Run with custom configuration overrides
+python -m src.training --dataset mnist --epochs 5 --batch-size 32 --device cuda
+```
+
+The checkpoint is written to `weights/mnist.pth` by default. The current
+training entry point supports `mnist` and can be extended with more datasets
+through the registry in `src/training.py`.
+
+## Testing
+
+Run the basic tests with:
+
+```bash
+pytest -q
+```
+
+The tests are lightweight and only validate the training CLI, argument parsing,
+and factory wiring.
 
 ---
 
-## Contributing
+## Contributing to the code
 
 We use a branch → pull request → review workflow. All changes to `main` require at least one approved review — direct pushes are not allowed.
 
@@ -169,11 +156,26 @@ See [CONTRIBUTION.md](CONTRIBUTION.md) for the full guide.
 
 ---
 
-## Authors
+# Further use of the software
+If you use this software in your research, teaching, or projects, please cite this repository. This project is released under the MIT License. You are free to use, modify, and distribute the software in accordance with the terms of the license.
+## Citation
 
-**Citation:**
+**APA:**
 
----
+Chen, S., Løkke, A., Gelato, R., Baburajan, R., Oei, K., & Catteau, M. (2026). Collaborative Coding Exam (Version 1.1.0) [Computer software]. https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam
+
+**BibTex:**
+
+```
+@software{Chen_Collaborative_Coding_Exam_2026,
+author = {Chen, Siyan and Løkke, Andrea and Gelato, Riccardo and Baburajan, Rahul and Oei, Keyne and Catteau, Myrthe},
+month = jun,
+title = {{Collaborative Coding Exam}},
+url = {https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam},
+version = {1.1.0},
+year = {2026}
+}
+```
 
 ## License
 
