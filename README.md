@@ -22,6 +22,12 @@ Install the latest release from [PyPI](https://pypi.org/project/ccexam/):
 pip install ccexam
 ```
 
+To upgrade an existing installation to the latest release:
+
+```bash
+pip install --upgrade ccexam
+```
+
 Or install the latest development version directly from GitHub:
 
 ```bash
@@ -55,9 +61,25 @@ ccexam-infer --model svhn --input datasets/inference
 ccexam-infer --model svhn --input mydigit.png --device cpu
 ```
 
-Available models: `mnist`, `usps`, `svhn`.
+Available models: `mnist`, `usps`, `svhn`. The trained model weights are bundled with the package and loaded automatically — no extra setup needed.
 
-Or use the Python API:
+### Saving predictions to a file
+
+By default, predictions are only printed to the terminal. Pass `--output` (`-o`)
+to also write them to a file:
+
+```bash
+# Write predictions to results/predictions.csv (the results/ folder is created automatically)
+ccexam-infer --model svhn --input datasets/inference --output results/predictions.csv
+```
+
+Notes:
+
+- The path you give is used **exactly as written** — any folders in it (e.g. `results/`) are created for you.
+- **Existing files are never overwritten.** If `results/predictions.csv` already exists, the next run writes `results/predictions_1.csv`, then `_2`, and so on, so previous results are preserved.
+- The format follows the file extension: `.csv` writes an `image,prediction` table with a header row; `.txt` writes one `<image>\t<prediction>` line per image.
+
+### Python API
 
 ```python
 from ccexam import run_inference
@@ -66,12 +88,7 @@ results = run_inference(model="svhn", input_path="path/to/your/data")
 print(results)   # {PosixPath('.../svhn_digit_5.png'): 5}
 ```
 
-Or from the command line:
-
-```bash
-python -m src.inference --model model-a --input datasets/inference/mnist_test_0_label_7.png
-```
-Trained model weights are stored in the `weights/` directory and are loaded automatically during inference.
+> When working from a repository checkout without installing, you can run the same thing as a module: `python -m src.inference --model svhn --input <path> --output results/predictions.csv`.
 
 ---
 ## Model Cards
