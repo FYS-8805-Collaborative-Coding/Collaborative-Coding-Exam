@@ -13,10 +13,7 @@ from torch import nn
 from PIL import Image
 from torchvision import transforms
 
-try:
-    from .models import MNISTNet, USPSNet, SVHNNet
-except ImportError:
-    from models import MNISTNet, USPSNet, SVHNNet
+from src.models import MNISTNet, USPSNet, SVHNNet
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png"}
 ModelT = TypeVar("ModelT", bound=nn.Module)
@@ -187,8 +184,6 @@ def iter_image_paths(input_path: str | Path) -> Iterable[Path]:
             for candidate in path.iterdir()
             if candidate.is_file() and candidate.suffix.lower() in IMAGE_EXTENSIONS
         )
-        if not image_paths:
-            raise ValueError(f"No supported image files found in {path}")
         yield from image_paths
         return
 

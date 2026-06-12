@@ -16,12 +16,8 @@ from typing import Type, Optional, Callable
 import torch
 from torch import nn, optim
 
-try:
-    from .data import DATA_MODULES
-    from .models import MNISTNet, USPSNet, SVHNNet
-except ImportError:
-    from data import DATA_MODULES
-    from models import MNISTNet, USPSNet, SVHNNet
+from src.data import DATA_MODULES
+from src.models import MNISTNet, USPSNet, SVHNNet
 
 # Define the project root relative to this file.
 # This ensures paths are consistent regardless of the current working directory.
