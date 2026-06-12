@@ -1,5 +1,10 @@
 # ACME Digit Classification
 
+[![CI](https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/actions/workflows/test.yml/badge.svg)](https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/actions/workflows/test.yml)
+[![PyPI](https://img.shields.io/pypi/v/ccexam)](https://pypi.org/project/ccexam/)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![License](https://img.shields.io/github/license/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam)
+
 ACME Digit Classification is a machine learning framework for handwritten digit recognition developed as part of the FYS-8805 Collaborative Coding Exam at UiT.
 
 The repository provides a unified interface for training, evaluating, and deploying digit classification models for three customer datasets:
