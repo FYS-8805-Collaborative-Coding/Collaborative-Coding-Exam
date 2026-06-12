@@ -6,6 +6,8 @@ from pathlib import Path
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
+from src.constants import DATASET_STATS
+
 
 class BaseDataModule(ABC):
     """Base class for dataset-specific data loaders."""
@@ -24,27 +26,50 @@ class BaseDataModule(ABC):
 class TorchvisionDataModule(BaseDataModule):
     """Generic data module for standard torchvision datasets."""
 
-    def __init__(self, dataset_cls, mean, std, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
+    def __init__(
+        self, 
+        dataset_cls, 
+        mean, 
+        std, 
+        image_size: int | tuple[int, int] = 28, 
+        grayscale: bool = True, 
+        data_dir="datasets", 
+        batch_size=64, 
+        num_workers=2, 
+        download=True, 
+        **kwargs
+    ):
         self.dataset_cls = dataset_cls
         self.data_dir = Path(data_dir)
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.download = download
+
+        norm_mean = mean if isinstance(mean, (list, tuple)) else (mean,)
+        norm_std = std if isinstance(std, (list, tuple)) else (std,)
+
         self.transform = transforms.Compose(
             [
+                transforms.Resize(image_size if isinstance(image_size, tuple) else (image_size, image_size)),
+                transforms.Grayscale(num_output_channels=1) if grayscale else transforms.Lambda(lambda x: x.convert("RGB")),
                 transforms.ToTensor(),
-                transforms.Normalize((mean,), (std,)),
+                transforms.Normalize(norm_mean, norm_std),
             ]
         )
         self.dataset_kwargs = kwargs
 
     def _dataset(self, train):
+        ds_kwargs = self.dataset_kwargs.copy()
+        if self.dataset_cls == datasets.SVHN:
+            ds_kwargs["split"] = "train" if train else "test"
+        else:
+            ds_kwargs["train"] = train
+
         return self.dataset_cls(
             root=str(self.data_dir),
-            train=train,
             download=self.download,
             transform=self.transform,
-            **self.dataset_kwargs,
+            **ds_kwargs,
         )
 
     def train_loader(self):
@@ -66,11 +91,14 @@ class TorchvisionDataModule(BaseDataModule):
 
 
 class MNISTDataModule(TorchvisionDataModule):
-    def __init__(self, mean=0.1307, std=0.3081, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
+    def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
+        stats = DATASET_STATS["mnist"]
         super().__init__(
             dataset_cls=datasets.MNIST,
-            mean=mean,
-            std=std,
+            mean=mean or stats["mean"],
+            std=std or stats["std"],
+            image_size=image_size if image_size is not None else stats["image_size"],
+            grayscale=grayscale if grayscale is not None else stats["grayscale"],
             data_dir=data_dir,
             batch_size=batch_size,
             num_workers=num_workers,
@@ -84,12 +112,14 @@ class USPSDataModule(TorchvisionDataModule):
     Downloads land under ``<data_dir>/USPS/``. Defaults to USPS's
     standard normalization (``mean=0.2471``, ``std=0.2994``).
     """
-
-    def __init__(self, mean=0.2471, std=0.2994, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
+    def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
+        stats = DATASET_STATS["usps"]
         super().__init__(
             dataset_cls=datasets.USPS,
-            mean=mean,
-            std=std,
+            mean=mean or stats["mean"],
+            std=std or stats["std"],
+            image_size=image_size if image_size is not None else stats["image_size"],
+            grayscale=grayscale if grayscale is not None else stats["grayscale"],
             data_dir=str(Path(data_dir) / "USPS"),
             batch_size=batch_size,
             num_workers=num_workers,
@@ -107,49 +137,19 @@ class SVHNDataModule(TorchvisionDataModule):
     normalized using the standard SVHN channel-wise mean and standard
     deviation values.
     """
-    
-    MEAN = (0.4377, 0.4438, 0.4728)
-    STD = (0.1980, 0.2010, 0.1970)
-
-    def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
-        """ Initialize the SVHN data module. """
-        
-        BaseDataModule.__init__(self)
-        self.dataset_cls = datasets.SVHN
-        self.data_dir = Path(data_dir)
-        self.batch_size = batch_size
-        self.num_workers = num_workers
-        self.download = download
-        self.transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize(self.MEAN, self.STD),
-            ]
-        )
-        self.dataset_kwargs = kwargs
-
-    def _dataset(self, train):
-        """
-        Create an SVHN dataset instance.
-
-        Parameters
-        ----------
-        train : bool
-            If True, return the training split; otherwise, return the test
-            split.
-
-        Returns
-        -------
-        torchvision.datasets.SVHN
-            Configured SVHN dataset instance.
-        """
-        
-        return self.dataset_cls(
-            root=str(self.data_dir),
-            split="train" if train else "test",
-            download=self.download,
-            transform=self.transform,
-            **self.dataset_kwargs,
+    def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
+        stats = DATASET_STATS["svhn"]
+        super().__init__(
+            dataset_cls=datasets.SVHN,
+            mean=mean or stats["mean"],
+            std=std or stats["std"],
+            image_size=image_size if image_size is not None else stats["image_size"],
+            grayscale=grayscale if grayscale is not None else stats["grayscale"],
+            data_dir=data_dir,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            download=download,
+            **kwargs,
         )
 
 
@@ -160,18 +160,22 @@ DATA_MODULES = {
 }
 
 
-def get_loaders(dataset="mnist", mean=0.1307, std=0.3081, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwarg):
+def get_loaders(dataset="mnist", mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwarg):
     """Convenience entry point: get train and test loaders for a registered dataset.
 
     Example: `get_loaders(dataset="mnist", batch_size=32)`
     """
     if dataset not in DATA_MODULES:
         raise ValueError(f"Unknown dataset: {dataset}. Available: {list(DATA_MODULES.keys())}")
+    
+    stats = DATASET_STATS[dataset]
 
     data_module_cls = DATA_MODULES[dataset]
     data_module = data_module_cls(
-        mean=mean,
-        std=std,
+        mean=mean or stats["mean"],
+        std=std or stats["std"],
+        image_size=image_size if image_size is not None else stats["image_size"],
+        grayscale=grayscale if grayscale is not None else stats["grayscale"],
         data_dir=data_dir,
         batch_size=batch_size,
         num_workers=num_workers,
