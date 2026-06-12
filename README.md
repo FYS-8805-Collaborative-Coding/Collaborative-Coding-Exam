@@ -84,8 +84,13 @@ Notes:
 ```python
 from ccexam import run_inference
 
-results = run_inference(model="svhn", input_path="path/to/your/data")
-print(results)   # {PosixPath('.../svhn_digit_5.png'): 5}
+# A single image returns one label
+label = run_inference(model="svhn", input_path="digit.png")
+print(label)     # 5
+
+# A folder of images returns a list of labels (sorted by filename)
+labels = run_inference(model="svhn", input_path="folder_of_digits/")
+print(labels)    # [7, 2, 1, 0]
 ```
 
 > When working from a repository checkout without installing, you can run the same thing as a module: `python -m src.inference --model svhn --input <path> --output results/predictions.csv`.

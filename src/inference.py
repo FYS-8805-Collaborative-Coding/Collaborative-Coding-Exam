@@ -214,13 +214,12 @@ def iter_image_paths(input_path: str | Path) -> Iterable[Path]:
     raise FileNotFoundError(f"Input path does not exist: {path}")
 
 
-def run_inference(
+def _predict(
     model: str,
     input_path: str | Path,
     checkpoint_path: str | Path | None = None,
     device: str | torch.device | None = None,
 ) -> dict[Path, int]:
-    """Run inference for the requested model over one image or image directory."""
     inference = InferenceFactory.create(
         model.lower(),
         checkpoint_path=checkpoint_path,
@@ -230,6 +229,31 @@ def run_inference(
         image_path: inference.predict(image_path)
         for image_path in iter_image_paths(input_path)
     }
+
+
+def run_inference(
+    model: str,
+    input_path: str | Path,
+    checkpoint_path: str | Path | None = None,
+    device: str | torch.device | None = None,
+) -> int | list[int]:
+    """Run inference and return the predicted label(s).
+
+    Returns a single ``int`` label when ``input_path`` is one image, or a
+    ``list[int]`` of labels (in sorted filename order) when it is a directory
+    of images.
+
+    Example
+    -------
+    >>> run_inference(model="svhn", input_path="digit.png")
+    5
+    >>> run_inference(model="svhn", input_path="folder_of_digits/")
+    [7, 2, 1, 0]
+    """
+    labels = list(_predict(model, input_path, checkpoint_path, device).values())
+    if Path(input_path).is_file():
+        return labels[0]
+    return labels
 
 
 def __output_path(filename: str | Path) -> Path:
@@ -311,7 +335,7 @@ def main(argv: list[str] | None = None) -> int:
     setup_logging(args.log_level)
     logger.info("Start  model=%s device=%s input=%s", args.model, args.device or "auto", args.input)
 
-    results = run_inference(
+    results = _predict(
         model=args.model,
         input_path=args.input,
         checkpoint_path=args.checkpoint_path,
