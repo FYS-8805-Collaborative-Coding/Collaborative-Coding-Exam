@@ -159,9 +159,6 @@ INFERENCE_REGISTRY = {
     "mnist": InferenceSpec(MNISTNet, "weights/mnist.pth", (28, 28), (0.1307,), (0.3081,)),
     "usps": InferenceSpec(USPSNet, "weights/usps.pth", (16, 16), (0.2471,), (0.2994,)),
     "svhn": _SVHN_SPEC,
-    "model-a": InferenceSpec(MNISTNet, "weights/mnist.pth", (28, 28), (0.1307,), (0.3081,)),
-    "model-b": InferenceSpec(USPSNet, "weights/usps.pth", (16, 16), (0.2471,), (0.2994,)),
-    "model-c": _SVHN_SPEC,
 }
 
 
@@ -225,10 +222,13 @@ def _predict(
         checkpoint_path=checkpoint_path,
         device=device,
     )
-    return {
-        image_path: inference.predict(image_path)
-        for image_path in iter_image_paths(input_path)
-    }
+    predictions: dict[Path, int] = {}
+    for image_path in iter_image_paths(input_path):
+        try:
+            predictions[image_path] = inference.predict(image_path)
+        except (OSError, ValueError) as exc:
+            logger.error("Invalid input: failed to process '%s' (%s)", image_path, exc)
+    return predictions
 
 
 def run_inference(
@@ -252,6 +252,8 @@ def run_inference(
     """
     labels = list(_predict(model, input_path, checkpoint_path, device).values())
     if Path(input_path).is_file():
+        if not labels:
+            raise ValueError(f"Could not process image: {input_path}")
         return labels[0]
     return labels
 
@@ -298,7 +300,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--input",
         required=True,
-        help="Path to an image file or a directory of images.",
+        help=(
+            "Path to a single image file OR a directory of images. Supported "
+            f"formats: {', '.join(sorted(IMAGE_EXTENSIONS))}. Other files (e.g. "
+            "a PDF) or a missing path are reported as invalid input."
+        ),
     )
     parser.add_argument(
         "--checkpoint-path",
@@ -335,12 +341,24 @@ def main(argv: list[str] | None = None) -> int:
     setup_logging(args.log_level)
     logger.info("Start  model=%s device=%s input=%s", args.model, args.device or "auto", args.input)
 
-    results = _predict(
-        model=args.model,
-        input_path=args.input,
-        checkpoint_path=args.checkpoint_path,
-        device=args.device,
-    )
+    try:
+        results = _predict(
+            model=args.model,
+            input_path=args.input,
+            checkpoint_path=args.checkpoint_path,
+            device=args.device,
+        )
+    except FileNotFoundError as exc:
+        logger.error("Invalid input: %s", exc)
+        return 1
+    except ValueError as exc:
+        logger.error("Invalid input: %s", exc)
+        return 1
+
+    if not results:
+        logger.error("Invalid input: no valid images could be processed from '%s'", args.input)
+        return 1
+
     for image_path, prediction in results.items():
         logger.info("Predicted digit: %s  (image=%s)", prediction, image_path)
 
