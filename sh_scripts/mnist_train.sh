@@ -17,4 +17,4 @@ CONTAINER=/appl/local/laifs/containers/lumi-multitorch-u24r70f21m50t210-20260513
 
 set -xv
 srun singularity run $CONTAINER \
-    python -m src.training --dataset mnist --epochs 5 --batch-size 32 --device cuda
+    python -m src.training --dataset mnist --epochs 100 --batch-size 32 --device cuda
