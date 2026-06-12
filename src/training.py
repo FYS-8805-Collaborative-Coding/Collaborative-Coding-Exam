@@ -73,6 +73,8 @@ class Trainer(BaseTrainer):
         loss_fn = self.loss_fn
         final_loss = 0.0
         final_accuracy = 0.0
+        final_val_loss = 0.0
+        final_val_accuracy = 0.0
 
         logger.info("Training on %s for %d epoch(s)", self.device, self.epochs)
 
@@ -105,10 +107,11 @@ class Trainer(BaseTrainer):
 
             final_loss = running_loss / total if total else 0.0
             final_accuracy = correct / total if total else 0.0
+            final_val_loss, final_val_accuracy = self._evaluate_loader(self.data_module.val_loader())
 
             logger.info(
-                "Epoch %d/%d  loss=%.4f  acc=%.4f",
-                epoch, self.epochs, final_loss, final_accuracy,
+                "Epoch %d/%d  train_loss=%.4f  train_acc=%.4f  val_loss=%.4f  val_acc=%.4f",
+                epoch, self.epochs, final_loss, final_accuracy, final_val_loss, final_val_accuracy,
             )
 
         self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
@@ -122,9 +125,36 @@ class Trainer(BaseTrainer):
         return {
             "loss": final_loss,
             "accuracy": final_accuracy,
+            "val_loss": final_val_loss,
+            "val_accuracy": final_val_accuracy,
             "epochs": self.epochs,
             "checkpoint_path": str(self.checkpoint_path),
         }
+
+    def _evaluate_loader(self, dataloader):
+        self.model.eval()
+        running_loss = 0.0
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+            for images, labels in dataloader:
+                images = images.to(self.device)
+                labels = labels.to(self.device)
+
+                logits = self.model(images)
+                loss = self.loss_fn(logits, labels)
+
+                batch_size = labels.size(0)
+                running_loss += loss.item() * batch_size
+                correct += (logits.argmax(dim=1) == labels).sum().item()
+                total += batch_size
+
+        self.model.train()
+        return (
+            running_loss / total if total else 0.0,
+            correct / total if total else 0.0,
+        )
 
 
 @dataclass

@@ -3,7 +3,8 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from torch.utils.data import DataLoader
+import torch
+from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
 
 
@@ -24,12 +25,15 @@ class BaseDataModule(ABC):
 class TorchvisionDataModule(BaseDataModule):
     """Generic data module for standard torchvision datasets."""
 
-    def __init__(self, dataset_cls, mean, std, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
+    def __init__(self, dataset_cls, mean, std, data_dir="datasets", batch_size=64, num_workers=2, download=True, val_split=0.1, val_seed=42, **kwargs):
         self.dataset_cls = dataset_cls
         self.data_dir = Path(data_dir)
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.download = download
+        self.val_split = val_split
+        self.val_seed = val_seed
+        self._train_val_split = None
         self.transform = transforms.Compose(
             [
                 transforms.ToTensor(),
@@ -47,13 +51,36 @@ class TorchvisionDataModule(BaseDataModule):
             **self.dataset_kwargs,
         )
 
+    def _train_val_datasets(self):
+        if self._train_val_split is None:
+            full_train = self._dataset(train=True)
+            val_size = int(len(full_train) * self.val_split)
+            train_size = len(full_train) - val_size
+            generator = torch.Generator().manual_seed(self.val_seed)
+            self._train_val_split = random_split(
+                full_train,
+                [train_size, val_size],
+                generator=generator,
+            )
+        return self._train_val_split
+
     def train_loader(self):
+        train_dataset, _ = self._train_val_datasets()
         return DataLoader(
-            self._dataset(train=True),
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
             drop_last=True,
+        )
+
+    def val_loader(self):
+        _, val_dataset = self._train_val_datasets()
+        return DataLoader(
+            val_dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
         )
 
     def test_loader(self):
@@ -111,7 +138,7 @@ class SVHNDataModule(TorchvisionDataModule):
     MEAN = (0.4377, 0.4438, 0.4728)
     STD = (0.1980, 0.2010, 0.1970)
 
-    def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, **kwargs):
+    def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, val_split=0.1, val_seed=42, **kwargs):
         """ Initialize the SVHN data module. """
         
         BaseDataModule.__init__(self)
@@ -120,6 +147,9 @@ class SVHNDataModule(TorchvisionDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.download = download
+        self.val_split = val_split
+        self.val_seed = val_seed
+        self._train_val_split = None
         self.transform = transforms.Compose(
             [
                 transforms.ToTensor(),
