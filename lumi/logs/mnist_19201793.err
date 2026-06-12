@@ -1,0 +1,72 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) ModuleLabel/label   2) lumi-tools/26.05   3) init-lumi/0.2
+
+The following sticky modules could not be reloaded:
+
+  1) lumi-tools
+srun singularity run "$CONTAINER" \
+    python -m src.training \
+        --dataset "$dataset" \
+        --epochs "$epochs" \
+        --batch-size "$batch_size" \
+        --device "$device"
++ srun singularity run /appl/local/laifs/containers/lumi-multitorch-u24r70f21m50t210-20260513_121430/lumi-multitorch-full-u24r70f21m50t210-20260513_121430.sif python -m src.training --dataset mnist --epochs 50 --batch-size 32 --device cuda
+2026-06-12 16:32:42 | INFO    | training   | Start:  dataset=mnist epochs=50 batch_size=32 lr=0.001 device=cuda
+2026-06-12 16:32:42 | INFO    | training   | Training on cuda for 50 epoch(s)
+  0%|          | 0.00/9.91M [00:00<?, ?B/s]  0%|          | 32.8k/9.91M [00:00<00:38, 257kB/s]  1%|          | 65.5k/9.91M [00:00<00:38, 258kB/s]  1%|▏         | 131k/9.91M [00:00<00:26, 375kB/s]   2%|▏         | 229k/9.91M [00:00<00:18, 538kB/s]  5%|▍         | 492k/9.91M [00:00<00:08, 1.09MB/s] 10%|▉         | 950k/9.91M [00:00<00:04, 1.95MB/s] 20%|█▉        | 1.93M/9.91M [00:00<00:02, 3.85MB/s] 39%|███▉      | 3.87M/9.91M [00:01<00:00, 7.47MB/s] 77%|███████▋  | 7.67M/9.91M [00:01<00:00, 14.5MB/s] 94%|█████████▍| 9.31M/9.91M [00:01<00:00, 14.5MB/s]100%|██████████| 9.91M/9.91M [00:01<00:00, 7.77MB/s]
+  0%|          | 0.00/28.9k [00:00<?, ?B/s]100%|██████████| 28.9k/28.9k [00:00<00:00, 230kB/s]100%|██████████| 28.9k/28.9k [00:00<00:00, 229kB/s]
+  0%|          | 0.00/1.65M [00:00<?, ?B/s]  2%|▏         | 32.8k/1.65M [00:00<00:06, 259kB/s]  4%|▍         | 65.5k/1.65M [00:00<00:06, 257kB/s]  6%|▌         | 98.3k/1.65M [00:00<00:06, 257kB/s] 14%|█▍        | 229k/1.65M [00:00<00:02, 560kB/s]  28%|██▊       | 459k/1.65M [00:00<00:01, 1.01MB/s] 56%|█████▌    | 918k/1.65M [00:00<00:00, 1.88MB/s]100%|██████████| 1.65M/1.65M [00:00<00:00, 2.14MB/s]
+  0%|          | 0.00/4.54k [00:00<?, ?B/s]100%|██████████| 4.54k/4.54k [00:00<00:00, 48.1MB/s]
+2026-06-12 16:33:08 | INFO    | training   | Epoch 1/50  train_loss=0.1219  train_acc=0.9630  val_loss=0.0625  val_acc=0.9790
+2026-06-12 16:33:13 | INFO    | training   | Epoch 2/50  train_loss=0.0419  train_acc=0.9868  val_loss=0.0471  val_acc=0.9860
+2026-06-12 16:33:18 | INFO    | training   | Epoch 3/50  train_loss=0.0287  train_acc=0.9911  val_loss=0.0408  val_acc=0.9878
+2026-06-12 16:33:24 | INFO    | training   | Epoch 4/50  train_loss=0.0203  train_acc=0.9932  val_loss=0.0404  val_acc=0.9877
+2026-06-12 16:33:29 | INFO    | training   | Epoch 5/50  train_loss=0.0156  train_acc=0.9949  val_loss=0.0344  val_acc=0.9900
+2026-06-12 16:33:35 | INFO    | training   | Epoch 6/50  train_loss=0.0117  train_acc=0.9964  val_loss=0.0431  val_acc=0.9897
+2026-06-12 16:33:40 | INFO    | training   | Epoch 7/50  train_loss=0.0110  train_acc=0.9966  val_loss=0.0427  val_acc=0.9897
+2026-06-12 16:33:45 | INFO    | training   | Epoch 8/50  train_loss=0.0092  train_acc=0.9970  val_loss=0.0647  val_acc=0.9860
+2026-06-12 16:33:51 | INFO    | training   | Epoch 9/50  train_loss=0.0087  train_acc=0.9970  val_loss=0.0475  val_acc=0.9905
+2026-06-12 16:33:56 | INFO    | training   | Epoch 10/50  train_loss=0.0052  train_acc=0.9983  val_loss=0.0446  val_acc=0.9915
+2026-06-12 16:34:02 | INFO    | training   | Epoch 11/50  train_loss=0.0079  train_acc=0.9975  val_loss=0.0453  val_acc=0.9900
+2026-06-12 16:34:07 | INFO    | training   | Epoch 12/50  train_loss=0.0061  train_acc=0.9982  val_loss=0.0661  val_acc=0.9880
+2026-06-12 16:34:12 | INFO    | training   | Epoch 13/50  train_loss=0.0034  train_acc=0.9986  val_loss=0.0811  val_acc=0.9883
+2026-06-12 16:34:18 | INFO    | training   | Epoch 14/50  train_loss=0.0069  train_acc=0.9980  val_loss=0.0496  val_acc=0.9910
+2026-06-12 16:34:23 | INFO    | training   | Epoch 15/50  train_loss=0.0040  train_acc=0.9987  val_loss=0.0658  val_acc=0.9892
+2026-06-12 16:34:29 | INFO    | training   | Epoch 16/50  train_loss=0.0049  train_acc=0.9986  val_loss=0.0628  val_acc=0.9883
+2026-06-12 16:34:34 | INFO    | training   | Epoch 17/50  train_loss=0.0047  train_acc=0.9986  val_loss=0.0640  val_acc=0.9912
+2026-06-12 16:34:39 | INFO    | training   | Epoch 18/50  train_loss=0.0035  train_acc=0.9987  val_loss=0.0729  val_acc=0.9898
+2026-06-12 16:34:45 | INFO    | training   | Epoch 19/50  train_loss=0.0051  train_acc=0.9984  val_loss=0.0602  val_acc=0.9893
+2026-06-12 16:34:50 | INFO    | training   | Epoch 20/50  train_loss=0.0030  train_acc=0.9989  val_loss=0.0723  val_acc=0.9900
+2026-06-12 16:34:55 | INFO    | training   | Epoch 21/50  train_loss=0.0041  train_acc=0.9989  val_loss=0.0722  val_acc=0.9888
+2026-06-12 16:35:01 | INFO    | training   | Epoch 22/50  train_loss=0.0034  train_acc=0.9990  val_loss=0.0639  val_acc=0.9908
+2026-06-12 16:35:06 | INFO    | training   | Epoch 23/50  train_loss=0.0033  train_acc=0.9990  val_loss=0.0949  val_acc=0.9883
+2026-06-12 16:35:12 | INFO    | training   | Epoch 24/50  train_loss=0.0024  train_acc=0.9994  val_loss=0.0740  val_acc=0.9908
+2026-06-12 16:35:17 | INFO    | training   | Epoch 25/50  train_loss=0.0041  train_acc=0.9988  val_loss=0.0902  val_acc=0.9887
+2026-06-12 16:35:23 | INFO    | training   | Epoch 26/50  train_loss=0.0043  train_acc=0.9989  val_loss=0.0988  val_acc=0.9882
+2026-06-12 16:35:28 | INFO    | training   | Epoch 27/50  train_loss=0.0037  train_acc=0.9990  val_loss=0.0966  val_acc=0.9903
+2026-06-12 16:35:33 | INFO    | training   | Epoch 28/50  train_loss=0.0043  train_acc=0.9989  val_loss=0.0767  val_acc=0.9907
+2026-06-12 16:35:39 | INFO    | training   | Epoch 29/50  train_loss=0.0029  train_acc=0.9993  val_loss=0.0919  val_acc=0.9892
+2026-06-12 16:35:44 | INFO    | training   | Epoch 30/50  train_loss=0.0018  train_acc=0.9996  val_loss=0.0872  val_acc=0.9918
+2026-06-12 16:35:50 | INFO    | training   | Epoch 31/50  train_loss=0.0024  train_acc=0.9994  val_loss=0.0843  val_acc=0.9900
+2026-06-12 16:35:55 | INFO    | training   | Epoch 32/50  train_loss=0.0036  train_acc=0.9991  val_loss=0.0803  val_acc=0.9898
+2026-06-12 16:36:00 | INFO    | training   | Epoch 33/50  train_loss=0.0026  train_acc=0.9993  val_loss=0.0984  val_acc=0.9895
+2026-06-12 16:36:06 | INFO    | training   | Epoch 34/50  train_loss=0.0053  train_acc=0.9989  val_loss=0.0926  val_acc=0.9908
+2026-06-12 16:36:11 | INFO    | training   | Epoch 35/50  train_loss=0.0039  train_acc=0.9990  val_loss=0.0822  val_acc=0.9913
+2026-06-12 16:36:17 | INFO    | training   | Epoch 36/50  train_loss=0.0022  train_acc=0.9994  val_loss=0.1033  val_acc=0.9917
+2026-06-12 16:36:22 | INFO    | training   | Epoch 37/50  train_loss=0.0034  train_acc=0.9992  val_loss=0.1096  val_acc=0.9900
+2026-06-12 16:36:27 | INFO    | training   | Epoch 38/50  train_loss=0.0027  train_acc=0.9994  val_loss=0.0970  val_acc=0.9910
+2026-06-12 16:36:33 | INFO    | training   | Epoch 39/50  train_loss=0.0008  train_acc=0.9999  val_loss=0.1084  val_acc=0.9915
+2026-06-12 16:36:38 | INFO    | training   | Epoch 40/50  train_loss=0.0054  train_acc=0.9987  val_loss=0.0938  val_acc=0.9913
+2026-06-12 16:36:44 | INFO    | training   | Epoch 41/50  train_loss=0.0022  train_acc=0.9996  val_loss=0.0969  val_acc=0.9908
+2026-06-12 16:36:49 | INFO    | training   | Epoch 42/50  train_loss=0.0029  train_acc=0.9994  val_loss=0.1069  val_acc=0.9907
+2026-06-12 16:36:54 | INFO    | training   | Epoch 43/50  train_loss=0.0069  train_acc=0.9988  val_loss=0.0967  val_acc=0.9917
+2026-06-12 16:37:00 | INFO    | training   | Epoch 44/50  train_loss=0.0027  train_acc=0.9994  val_loss=0.1056  val_acc=0.9905
+2026-06-12 16:37:05 | INFO    | training   | Epoch 45/50  train_loss=0.0016  train_acc=0.9995  val_loss=0.1154  val_acc=0.9922
+2026-06-12 16:37:11 | INFO    | training   | Epoch 46/50  train_loss=0.0022  train_acc=0.9996  val_loss=0.1032  val_acc=0.9923
+2026-06-12 16:37:16 | INFO    | training   | Epoch 47/50  train_loss=0.0034  train_acc=0.9992  val_loss=0.1491  val_acc=0.9883
+2026-06-12 16:37:21 | INFO    | training   | Epoch 48/50  train_loss=0.0022  train_acc=0.9997  val_loss=0.1002  val_acc=0.9922
+2026-06-12 16:37:27 | INFO    | training   | Epoch 49/50  train_loss=0.0039  train_acc=0.9992  val_loss=0.1578  val_acc=0.9905
+2026-06-12 16:37:32 | INFO    | training   | Epoch 50/50  train_loss=0.0038  train_acc=0.9994  val_loss=0.1287  val_acc=0.9902
+2026-06-12 16:37:32 | INFO    | training   | Done!  final_loss=0.0038  final_acc=0.9994  saved=/pfs/lustrep2/scratch/project_465002757/baburaja/github/Collaborative-Coding-Exam/weights/mnist.pth
