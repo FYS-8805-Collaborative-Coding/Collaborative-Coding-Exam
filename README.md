@@ -140,26 +140,25 @@ CNN classifier for Street View House Numbers. It predicts a single cropped house
 | Speed (inference) | 0.470 ms / sample |
 
 ---
-### Model C — `model-c`
+### Model C — USPS
 
-Brief description of what this model does and what problem it solves.
+CNN classifier trained on the USPS (United States Postal Service) dataset consisting of ~10,000 images of handwritten digits.
 
 | | |
 |---|---|
-| **Architecture** | ... |
-| **Training data** | ... |
-| **Intended use** | ... |
-| **Limitations** | ... |
+| **Architecture** | `USPSNet`: small CNN with two convolution/ReLU/max-pool blocks and a fully connected classifier with 128 unit hidden dimension. |
+| **Training data** | USPS (United States Postal Service) dataset consisting of ~10,000 16x16 grayscale images |
+| **Intended use** | Classifying grayscale handwritten digits |
+| **Limitations** | Limited amount of data, with fixed 16x16 grid. Only grayscale. |
 
 **Performance:**
 
 | Metric | Value |
 |---|---|
-| Precision | 0.00 |
-| Recall | 0.00 |
-| Speed (inference) | 0.00 ms / sample |
+| Precision | 0.9631 |
+| Recall | 0.9631|
+| Speed (inference) | 0.033 ms / sample |
 
----
 
 ## Documentation
 
