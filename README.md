@@ -66,24 +66,24 @@ Brief description of what this model does and what problem it solves.
 
 ---
 
-### Model B — `model-b`
+### Model B — SVHN
 
-Brief description of what this model does and what problem it solves.
+CNN classifier for Street View House Numbers. It predicts a single cropped house-number digit (0–9) from a 32×32 RGB image.
 
 | | |
 |---|---|
-| **Architecture** | ... |
-| **Training data** | ... |
-| **Intended use** | ... |
-| **Limitations** | ... |
+| **Architecture** | 3-block CNN (per block: Conv-BN-ReLU ×2 + MaxPool, channels 3→32→64→128) followed by a 2-layer fully-connected head with dropout 0.3 |
+| **Training data** | SVHN `train_32x32.mat` (~73k 32×32 RGB cropped-digit images), trained 5 epochs, Adam, lr 1e-3, batch size 64 |
+| **Intended use** | Classifying house-number digits |
+| **Limitations** | Single digits only (not multi-digit house numbers). Fixed 32×32 RGB input. Trained only 5 epochs with no data augmentation |
 
-**Performance:**
+**Performance:** *(measured on the SVHN test set, `weights/svhn.pth`, LUMI-G / MI250x)*
 
 | Metric | Value |
 |---|---|
-| Precision | 0.00 |
-| Recall | 0.00 |
-| Speed (inference) | 0.00 ms / sample |
+| Precision | 0.9465 |
+| Recall | 0.9465 |
+| Speed (inference) | 0.470 ms / sample |
 
 ---
 ### Model C — `model-c`
