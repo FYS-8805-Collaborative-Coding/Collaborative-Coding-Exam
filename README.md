@@ -75,10 +75,10 @@ Model A is an MNIST digit classifier for recognizing handwritten digits from
 
 | | |
 |---|---|
-| **Architecture** | `MNISTNet`: small CNN with two convolution/ReLU/max-pool blocks and a 128-unit classifier head. |
+| **Architecture** | `MNISTNet`: small CNN with two convolution/ReLU/max-pool blocks and a fully connected classifier with 128 unit hidden dimension. |
 | **Training data** | MNIST handwritten digit training set. |
 | **Intended use** | Classify MNIST-like digit images into classes 0-9. |
-| **Limitations** | Intended for clean MNIST-style grayscale digits; performance may drop on other image styles, noise, or non-digit inputs. |
+| **Limitations** | Intended for clean MNIST style grayscale digits; performance may drop on other image styles, noise, or non digit inputs. |
 
 **Performance:**
 
