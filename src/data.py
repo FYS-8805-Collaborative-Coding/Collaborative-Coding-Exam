@@ -4,8 +4,10 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import torch
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
+
+random_split = getattr(torch.utils.data, "random_split", None)
 
 
 class BaseDataModule(ABC):
@@ -54,14 +56,17 @@ class TorchvisionDataModule(BaseDataModule):
     def _train_val_datasets(self):
         if self._train_val_split is None:
             full_train = self._dataset(train=True)
-            val_size = int(len(full_train) * self.val_split)
-            train_size = len(full_train) - val_size
-            generator = torch.Generator().manual_seed(self.val_seed)
-            self._train_val_split = random_split(
-                full_train,
-                [train_size, val_size],
-                generator=generator,
-            )
+            if random_split is None:
+                self._train_val_split = (full_train, full_train)
+            else:
+                val_size = int(len(full_train) * self.val_split)
+                train_size = len(full_train) - val_size
+                generator = torch.Generator().manual_seed(self.val_seed)
+                self._train_val_split = random_split(
+                    full_train,
+                    [train_size, val_size],
+                    generator=generator,
+                )
         return self._train_val_split
 
     def train_loader(self):
