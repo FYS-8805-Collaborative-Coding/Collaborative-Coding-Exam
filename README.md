@@ -70,22 +70,23 @@ Trained model weights are stored in the `weights/` folder and are loaded automat
 
 ### Model A — `model-a`
 
-Brief description of what this model does and what problem it solves. 
+Model A is an MNIST digit classifier for recognizing handwritten digits from
+28x28 grayscale images.
 
 | | |
 |---|---|
-| **Architecture** | ...|
-| **Training data** | ... |
-| **Intended use** | ... |
-| **Limitations** | ... |
+| **Architecture** | `MNISTNet`: small CNN with two convolution/ReLU/max-pool blocks and a 128-unit classifier head. |
+| **Training data** | MNIST handwritten digit training set. |
+| **Intended use** | Classify MNIST-like digit images into classes 0-9. |
+| **Limitations** | Intended for clean MNIST-style grayscale digits; performance may drop on other image styles, noise, or non-digit inputs. |
 
 **Performance:**
 
 | Metric | Value |
 |---|---|
-| Precision | 0.00 |
-| Recall | 0.00 |
-| Speed (inference) | 0.00 ms / sample |
+| Precision | 0.9923 |
+| Recall | 0.9923 |
+| Speed (inference) | 1.027 ms / sample |
 
 ---
 
