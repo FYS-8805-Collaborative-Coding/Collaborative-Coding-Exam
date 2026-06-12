@@ -3,8 +3,8 @@ requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "collaborative-coding-exam"
-version = "0.1.0"
+name = "ccexam"
+version = "0.0.1"
 description = "Digit classifiers (MNIST / USPS / SVHN) with a unified training, evaluation and inference CLI."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -15,6 +15,12 @@ dependencies = [
     "pillow",
     "scikit-learn",
 ]
+
+[project.urls]
+Homepage = "https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam"
+Repository = "https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam"
+Documentation = "https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/"
+Issues = "https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/issues"
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
