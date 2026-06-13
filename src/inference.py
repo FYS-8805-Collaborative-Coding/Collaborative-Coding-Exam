@@ -14,12 +14,8 @@ from torch import nn
 from PIL import Image
 from torchvision import transforms
 
-try:
-    from .models import MNISTNet, USPSNet, SVHNNet
-    from .utils import setup_logging, get_logger
-except ImportError:
-    from models import MNISTNet, USPSNet, SVHNNet
-    from utils import setup_logging, get_logger
+from src.models import MNISTNet, USPSNet, SVHNNet
+from src.utils import setup_logging, get_logger
 
 logger = get_logger("inference")
 
@@ -206,8 +202,6 @@ def iter_image_paths(input_path: str | Path) -> Iterable[Path]:
             for candidate in path.iterdir()
             if candidate.is_file() and candidate.suffix.lower() in IMAGE_EXTENSIONS
         )
-        if not image_paths:
-            raise ValueError(f"No supported image files found in {path}")
         yield from image_paths
         return
 

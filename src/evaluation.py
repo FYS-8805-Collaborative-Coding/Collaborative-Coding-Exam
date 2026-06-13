@@ -11,9 +11,9 @@ import argparse
 import torch
 from sklearn.metrics import precision_score, recall_score
 
-from .data import DATA_MODULES
-from .training import DATASET_REGISTRY
-from .utils import setup_logging, get_logger
+from src.data import DATA_MODULES
+from src.training import DATASET_REGISTRY
+from src.utils import setup_logging, get_logger
 
 logger = get_logger("evaluation")
 
