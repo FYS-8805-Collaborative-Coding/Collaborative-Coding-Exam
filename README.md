@@ -98,7 +98,7 @@ print(labels)    # [7, 2, 1, 0]
 ---
 ## Model Cards
 
-### Model A — `model-a`
+### Model A — `MNIST`
 
 Model A is an MNIST digit classifier for recognizing handwritten digits from
 28x28 grayscale images.
@@ -114,9 +114,9 @@ Model A is an MNIST digit classifier for recognizing handwritten digits from
 
 | Metric | Value |
 |---|---|
-| Precision | 0.9923 |
-| Recall | 0.9923 |
-| Speed (inference) | 1.027 ms / sample |
+| Precision | 0.9905 |
+| Recall | 0.9905 |
+| Speed (inference) | 0.060 ms / sample |
 
 ---
 
