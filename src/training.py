@@ -18,7 +18,7 @@ import torch
 from torch import nn, optim
 
 from src.data import DATA_MODULES
-from src.models import MNISTNet, USPSNet, SVHNNet
+from src.models import MNISTNet, USPSNet, USPSNetV2, USPSMLP, USPSLinearSVM, SVHNNet
 
 # Define the project root relative to this file.
 # This ensures paths are consistent regardless of the current working directory.
@@ -159,20 +159,26 @@ class DatasetSpec:
     model_cls: Type
     default_checkpoint: str
     trainer_cls: Type = Trainer
+    default_loss_fn: Optional[Callable] = None
 
 
 # Registry mapping dataset name -> DatasetSpec. Add SVHN/USPS entries as they
 # become available in `src.data` and `src.models`.
 DATASET_REGISTRY = {
-    "mnist": DatasetSpec("mnist", MNISTNet, "weights/mnist.pth"),
-    "usps":  DatasetSpec("usps", USPSNet, "weights/usps.pth"),
-    "svhn":  DatasetSpec("svhn", SVHNNet, "weights/svhn.pth"),
+    "mnist":          DatasetSpec("mnist", MNISTNet,        "weights/mnist.pth"),
+    "usps":           DatasetSpec("usps",  USPSNet,         "weights/usps.pth"),
+    "usps_v2":        DatasetSpec("usps",  USPSNetV2,       "weights/usps_v2.pth"),
+"usps_mlp":       DatasetSpec("usps",  USPSMLP,         "weights/usps_mlp.pth"),
+    "usps_svm":       DatasetSpec("usps",  USPSLinearSVM,   "weights/usps_svm.pth",
+                                  default_loss_fn=nn.MultiMarginLoss()),
+    "svhn":           DatasetSpec("svhn",  SVHNNet,         "weights/svhn.pth"),
 }
 
 # Mapping of CLI loss name -> loss class attribute name (resolved at runtime)
 LOSS_MAP = {
     "cross_entropy": "CrossEntropyLoss",
     "mse": "MSELoss",
+    "hinge": "MultiMarginLoss",
 }
 
 
@@ -194,7 +200,7 @@ class TrainerFactory:
             "data_dir": kwargs.get("data_dir", "datasets"),
             "batch_size": kwargs.get("batch_size", 64),
             "num_workers": kwargs.get("num_workers", 2),
-            **{k: v for k, v in kwargs.items() if k not in ["epochs", "lr", "checkpoint_path", "device", "loss_fn"]}
+            **{k: v for k, v in kwargs.items() if k not in ["epochs", "lr", "checkpoint_path", "device", "loss_fn", "augment"]}
         }
         data_module = data_module_cls(**data_args)
 
@@ -203,6 +209,8 @@ class TrainerFactory:
         trainer_cls = spec.trainer_cls or Trainer
         checkpoint = kwargs.get("checkpoint_path") or spec.default_checkpoint
 
+        loss_fn = kwargs.get("loss_fn") or spec.default_loss_fn
+
         return trainer_cls(
             data_module=data_module,
             model=model,
@@ -210,7 +218,7 @@ class TrainerFactory:
             lr=kwargs.get("lr", 1e-3),
             checkpoint_path=checkpoint,
             device=kwargs.get("device"),
-            loss_fn=kwargs.get("loss_fn"),
+            loss_fn=loss_fn,
         )
 
 
@@ -241,7 +249,7 @@ def build_arg_parser():
     parser.add_argument("--device", default=None, help="Device to use, e.g. cpu or cuda.")
     parser.add_argument(
         "--loss",
-        choices=["cross_entropy", "mse"],
+        choices=["cross_entropy", "mse", "hinge"],
         default=None,
         help="Loss function to use (defaults to CrossEntropyLoss when unspecified).",
     )

@@ -74,6 +74,81 @@ class USPSNet(DigitCNN):
         super().__init__(input_size=16)
 
 
+class USPSNetV2(DigitCNN):
+    """Improved CNN for 16x16 USPS digits with BatchNorm and Dropout.
+
+    Adds BatchNorm after each conv layer for training stability and Dropout
+    in the classifier head to reduce overfitting on the small USPS training set.
+    """
+
+    def __init__(self):
+        super().__init__(input_size=16)
+
+    def _build_features(self):
+        return nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+        )
+
+    def _build_classifier(self, in_features):
+        return nn.Sequential(
+            nn.Dropout(0.3),
+            nn.Linear(in_features, 128),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(128, 10),
+        )
+
+class USPSMLP(BaseClassifier):
+    """Multi-layer perceptron for 16x16 USPS digits.
+
+    Flattens the 256-dimensional input and passes it through fully-connected
+    layers with BatchNorm, ReLU, and Dropout.
+
+    Parameters
+    ----------
+    hidden_sizes : tuple of int
+        Width of each hidden layer.
+    dropout : float
+        Dropout probability applied after each hidden activation.
+    """
+
+    def __init__(self, hidden_sizes=(256, 128), dropout=0.3):
+        super().__init__()
+        layers = []
+        in_size = 16 * 16
+        for h in hidden_sizes:
+            layers += [nn.Linear(in_size, h), nn.BatchNorm1d(h), nn.ReLU(), nn.Dropout(dropout)]
+            in_size = h
+        layers.append(nn.Linear(in_size, 10))
+        self.net = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.net(x.flatten(start_dim=1))
+
+
+class USPSLinearSVM(BaseClassifier):
+    """Linear SVM for 16x16 USPS digits.
+
+    A single linear layer producing raw class scores (no softmax).
+    Train with ``nn.MultiMarginLoss`` (multi-class hinge loss) rather than
+    cross-entropy — the ``usps_svm`` registry entry sets this automatically.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.fc = nn.Linear(16 * 16, 10)
+
+    def forward(self, x):
+        return self.fc(x.flatten(start_dim=1))
+
+
 class SVHNNet(BaseClassifier):
     """
     CNN classifier for the SVHN dataset.
@@ -134,4 +209,11 @@ class SVHNNet(BaseClassifier):
         return self.classifier(x)
 
 
-__all__ = ["BaseClassifier", "DigitCNN", "MNISTNet", "USPSNet", "SVHNNet"]
+
+
+__all__ = [
+    "BaseClassifier", "DigitCNN",
+    "MNISTNet",
+    "USPSNet", "USPSNetV2", "USPSMLP", "USPSLinearSVM",
+    "SVHNNet",
+]
