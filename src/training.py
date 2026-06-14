@@ -47,7 +47,7 @@ class Trainer(BaseTrainer):
         self,
         data_module,
         model,
-        epochs: int = 1,
+        epochs: int = 10,
         lr: float = 1e-3,
         checkpoint_path: str = "weights/model.pth",
         device: str | None = None,
@@ -216,7 +216,7 @@ class TrainerFactory:
         return trainer_cls(
             data_module=data_module,
             model=model,
-            epochs=kwargs.get("epochs", 1),
+            epochs=kwargs.get("epochs", 10),
             lr=kwargs.get("lr", 1e-3),
             checkpoint_path=checkpoint,
             device=kwargs.get("device"),
@@ -242,7 +242,7 @@ def build_arg_parser():
         choices=sorted(DATASET_REGISTRY.keys()),
         help="Dataset to train on.",
     )
-    parser.add_argument("--epochs", type=int, default=1, help="Number of training epochs.")
+    parser.add_argument("--epochs", type=int, default=10, help="Number of training epochs.")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate.")
     parser.add_argument("--batch-size", type=int, default=64, help="Batch size.")
     parser.add_argument("--checkpoint-path", default=None, help="Where to save the model checkpoint.")
