@@ -74,12 +74,15 @@ class Trainer(BaseTrainer):
 
         logger.info("Training on %s for %d epoch(s)", self.device, self.epochs)
 
+        train_loader = self.data_module.train_loader()
+        val_loader = self.data_module.val_loader()
+
         for epoch in range(1, self.epochs + 1):
             running_loss = 0.0
             correct = 0
             total = 0
 
-            for batch_idx, (images, labels) in enumerate(self.data_module.train_loader(), start=1):
+            for batch_idx, (images, labels) in enumerate(train_loader, start=1):
                 images = images.to(self.device)
                 labels = labels.to(self.device)
 
@@ -103,7 +106,7 @@ class Trainer(BaseTrainer):
 
             final_loss = running_loss / total if total else 0.0
             final_accuracy = correct / total if total else 0.0
-            final_val_loss, final_val_accuracy = self._evaluate_loader(self.data_module.val_loader())
+            final_val_loss, final_val_accuracy = self._evaluate_loader(val_loader)
 
             logger.info(
                 "Epoch %d/%d  train_loss=%.4f  train_acc=%.4f  val_loss=%.4f  val_acc=%.4f",
