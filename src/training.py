@@ -93,11 +93,11 @@ class Trainer(BaseTrainer):
                 images = images.to(self.device)
                 labels = labels.to(self.device)
 
-                optimizer.zero_grad()
                 logits = self.model(images)
                 loss = loss_fn(logits, labels)
                 loss.backward()
                 optimizer.step()
+                optimizer.zero_grad()
 
                 batch_size = labels.size(0)
                 running_loss += loss.item() * batch_size
