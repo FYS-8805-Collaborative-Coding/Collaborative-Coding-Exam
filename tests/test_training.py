@@ -28,7 +28,8 @@ class DummyDataModule:
 
 
 class DummyModel:
-    def __init__(self):
+    # Accept input_size and other kwargs passed by TrainerFactory
+    def __init__(self, **kwargs):
         self.created = True
 
 
@@ -59,6 +60,10 @@ class DummySpec:
         self.data_module_name = "dummy"
         self.model_cls = DummyModel
         self.default_checkpoint = "weights/dummy.pth"
+        self.image_size = 28
+        self.mean = (0.5,)
+        self.std = (0.5,)
+        self.grayscale = True
         self.trainer_cls = DummyTrainer
 
 
@@ -123,16 +128,36 @@ def load_training_module():
     fake_models.USPSNet = DummyModel
     fake_models.SVHNNet = DummyModel
 
+    fake_constants = types.ModuleType("constants")
+    # Mock DATASET_STATS as it's used by src/training.py
+    fake_constants.DATASET_STATS = {
+        "mnist": {
+            "image_size": 28,
+            "mean": (0.1307,),
+            "std": (0.3081,),
+            "grayscale": True,
+        },
+        "usps": {
+            "image_size": 16,
+            "mean": (0.2471,),
+            "std": (0.2994,),
+            "grayscale": True,
+        },
+        "svhn": {
+            "image_size": 32,
+            "mean": (0.4377, 0.4438, 0.4728),
+            "std": (0.1980, 0.2010, 0.1970),
+            "grayscale": False,
+        },
+    }
+
     original_modules = {
-
-
-# Verify that `train()` delegates to TrainerFactory.create and calls
-# the trainer's `train()` method, returning its result.
         "torch": sys.modules.get("torch"),
         "torch.nn": sys.modules.get("torch.nn"),
         "torch.optim": sys.modules.get("torch.optim"),
         "data": sys.modules.get("data"),
         "models": sys.modules.get("models"),
+        "constants": sys.modules.get("constants"),
     }
 
     sys.modules["torch"] = fake_torch
@@ -140,6 +165,7 @@ def load_training_module():
     sys.modules["torch.optim"] = fake_optim
     sys.modules["data"] = fake_data
     sys.modules["models"] = fake_models
+    sys.modules["constants"] = fake_constants
 
     module_path = Path(__file__).resolve().parents[1] / "src" / "training.py"
     spec = importlib.util.spec_from_file_location("training_under_test", module_path)
@@ -154,11 +180,7 @@ def load_training_module():
             else:
                 sys.modules[name] = original
 
-
-# argparse should raise SystemExit for an unknown --dataset choice
     return module
-
-
 
 def test_build_arg_parser_defaults():
     training = load_training_module()

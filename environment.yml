@@ -12,6 +12,7 @@ dependencies:
   - torchvision
   - pillow
   - pytest
+  - numpy
   - scikit-learn
   - ruff
   - scalene
