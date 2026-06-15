@@ -1,0 +1,157 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About this code &mdash; Collaborative-coding-exam 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Individual contributions" href="individual.html" />
+    <link rel="prev" title="Collaborative Coding Exam" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Collaborative-coding-exam
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Code Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">About this code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#need-help">Need help?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="individual.html">Individual contributions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Collaborative-coding-exam</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">About this code</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/about.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="about-this-code">
+<h1>About this code<a class="headerlink" href="#about-this-code" title="Link to this heading"></a></h1>
+<section id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h2>
+<p>All you need is a terminal (command prompt) and Python 3.10 or newer. Follow the steps below in order.</p>
+<p><strong>Step 1 — Install the package</strong></p>
+<p>Open a terminal and run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>ccexam
+</pre></div>
+</div>
+<p>You only need to do this once.</p>
+<hr class="docutils" />
+<p><strong>Step 2 — Get a sample image to try</strong></p>
+<p>Download this example digit image and save it somewhere easy to find (e.g. your Desktop or Downloads folder):</p>
+<a class="reference internal image-reference" href="_images/sample_digit.png"><img alt="Sample digit 8" src="_images/sample_digit.png" style="width: 80px;" />
+</a>
+<p><a class="reference download internal" download="" href="_downloads/8f65794c5646416d2dd0985349b0894f/sample_digit.png"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">sample_digit.png</span></code></a></p>
+<hr class="docutils" />
+<p><strong>Step 3 — Run the tool on your image</strong></p>
+<p>In your terminal, navigate to the folder where you saved the image, then run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ccexam-infer<span class="w"> </span>--model<span class="w"> </span>usps<span class="w"> </span>--input<span class="w"> </span>sample_digit.png
+</pre></div>
+</div>
+<p>The tool will print the digit (0–9) it thinks is in the image.</p>
+<p>Want to classify all images in a folder at once?</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ccexam-infer<span class="w"> </span>--model<span class="w"> </span>usps<span class="w"> </span>--input<span class="w"> </span>path/to/your/folder
+</pre></div>
+</div>
+<p>On a laptop with no dedicated graphics card, add <code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cpu</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ccexam-infer<span class="w"> </span>--model<span class="w"> </span>usps<span class="w"> </span>--input<span class="w"> </span>sample_digit.png<span class="w"> </span>--device<span class="w"> </span>cpu
+</pre></div>
+</div>
+<p>Available models: <code class="docutils literal notranslate"><span class="pre">mnist</span></code>, <code class="docutils literal notranslate"><span class="pre">usps</span></code>, <code class="docutils literal notranslate"><span class="pre">svhn</span></code> — pick whichever matches your images.</p>
+</section>
+<hr class="docutils" />
+<section id="need-help">
+<h2>Need help?<a class="headerlink" href="#need-help" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Make sure Python 3.10 or newer is installed — check with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">--version</span></code>.</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">ccexam-infer</span></code> is not found after installing, close and reopen your terminal, then try again.</p></li>
+<li><p>Do <strong>not</strong> add extra text after the command (e.g. avoid <code class="docutils literal notranslate"><span class="pre">./</span></code> at the end).</p></li>
+<li><p>For further questions, reach out to the team listed on the <a class="reference internal" href="individual.html"><span class="std std-doc">Individual contributions</span></a> page.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Collaborative Coding Exam" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="individual.html" class="btn btn-neutral float-right" title="Individual contributions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
