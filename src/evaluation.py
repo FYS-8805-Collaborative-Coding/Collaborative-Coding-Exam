@@ -44,9 +44,16 @@ def evaluate(model, dataloader, device):
         A dictionary with the keys:
  
         ``"precision"`` : float
-            Precision, averaged across classes.
+            Macro-averaged precision (each class weighted equally),
+            where C is the number of classes::
+
+                (1/C) * sum( TP_i / (TP_i + FP_i) )
+
         ``"recall"`` : float
-            Recall, averaged across classes.
+            Macro-averaged recall (each class weighted equally),
+            where C is the number of classes::
+
+                (1/C) * sum( TP_i / (TP_i + FN_i) )
         ``"speed_ms"`` : float
             Average inference time in milliseconds per sample.
  
@@ -72,8 +79,8 @@ def evaluate(model, dataloader, device):
             all_preds.extend(outputs.argmax(dim=1).tolist())
             all_targets.extend(labels.tolist())
  
-    precision = precision_score(all_targets, all_preds, average="micro")
-    recall = recall_score(all_targets, all_preds, average="micro")
+    precision = precision_score(all_targets, all_preds, average="macro")
+    recall = recall_score(all_targets, all_preds, average="macro")
  
     speed_ms = 1000.0 * total_time / max(len(all_preds), 1)
  

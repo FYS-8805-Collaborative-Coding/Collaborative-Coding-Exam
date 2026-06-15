@@ -166,7 +166,7 @@ def test_build_arg_parser_defaults():
     args = parser.parse_args([])
 
     assert args.dataset == "mnist"
-    assert args.epochs == 1
+    assert args.epochs == 10
     assert args.lr == pytest.approx(1e-3)
     assert args.batch_size == 64
     assert args.checkpoint_path is None
