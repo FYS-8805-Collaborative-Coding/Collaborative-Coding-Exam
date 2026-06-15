@@ -172,21 +172,20 @@ class SVHNDataModule(TorchvisionDataModule):
     """
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
         stats = DATASET_STATS["svhn"]
-        self.val_split = val_split
-        self.val_seed = val_seed
-        self._train_val_split = None
         super().__init__(
             dataset_cls=datasets.SVHN,
             mean=mean or stats["mean"],
             std=std or stats["std"],
             image_size=image_size if image_size is not None else stats["image_size"],
             grayscale=grayscale if grayscale is not None else stats["grayscale"],
+            val_split=kwargs.pop("val_split", 0.1), # Default to 0.1 if not provided
+            val_seed=kwargs.pop("val_seed", 42), # Default to 42 if not provided
             data_dir=data_dir,
             batch_size=batch_size,
             num_workers=num_workers,
             download=download,
             **kwargs,
-          
+        )
     def _dataset(self, train):
         """
         Create an SVHN dataset instance.

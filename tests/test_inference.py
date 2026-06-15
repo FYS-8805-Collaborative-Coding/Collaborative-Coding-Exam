@@ -127,6 +127,10 @@ class MockTensor:
     def __len__(self):
         return self.shape[0] if self.shape else 0
 
+    @property
+    def dim(self):
+        return len(self.shape)
+
 
 class DummyModel(MagicMock):
     """A mock for torch.nn.Module."""
@@ -156,6 +160,7 @@ class FakeTorch:
         self.Tensor = MockTensor
         self.no_grad_context = MagicMock()
         self.cuda = types.SimpleNamespace(is_available=lambda: False)
+        self.ops = types.SimpleNamespace(load_library=MagicMock()) # Add mock for torch.ops
 
     def load(self, path, map_location=None):
         return {}
@@ -169,6 +174,9 @@ class FakeTorch:
     def no_grad(self):
         return self.no_grad_context
 
+    def interpolate(self, input, size, mode, align_corners):
+        # Mock F.interpolate to return a MockTensor of the correct output shape
+        return MockTensor((input.shape[0], input.shape[1], size[0], size[1]))
 
 def _make_fake_modules():
     """Build and return all fake modules needed to load inference without real torch."""
@@ -176,6 +184,10 @@ def _make_fake_modules():
     fake_nn = types.ModuleType("torch.nn")
     fake_nn.Module = DummyModel
     fake_torch.nn = fake_nn
+
+    fake_F = types.ModuleType("torch.nn.functional")
+    fake_F.interpolate = fake_torch.interpolate # Use the mock interpolate from FakeTorch
+    fake_torch.nn.functional = fake_F # Assign it to torch.nn.functional
 
     fake_models = types.ModuleType("src.models")
     fake_models.MNISTNet = DummyModel
@@ -209,6 +221,7 @@ def _make_fake_modules():
     return {
         "torch": fake_torch,
         "torch.nn": fake_nn,
+        "torch.nn.functional": fake_F, # Add functional to the injected modules
         "src.models": fake_models,
         "models": fake_models,
         "torchvision": fake_torchvision,
@@ -413,13 +426,14 @@ def test_run_inference_integration(tmp_path, infer):
 
     with patch.object(infer.InferenceFactory, "create") as mock_factory:
         mock_inf = MagicMock()
-        mock_inf.predict.return_value = 3
+        # _predict returns a dict, so predict_batch should return a list of predictions
+        mock_inf.predict_batch.return_value = [3]
         mock_factory.return_value = mock_inf
 
         output = infer.run_inference(model="mnist", input_path=tmp_path)
 
-    assert len(output) == 1
-    assert output[0] == 3
+    # run_inference now returns a dictionary mapping paths to predictions
+    assert output == {tmp_path / "test.png": 3}
 
 
 def test_run_inference_empty_directory(tmp_path, infer):
@@ -428,4 +442,4 @@ def test_run_inference_empty_directory(tmp_path, infer):
         mock_factory.return_value = MagicMock()
         output = infer.run_inference(model="mnist", input_path=tmp_path)
 
-    assert output == []
+    assert output == {} # run_inference now returns an empty dict for no images

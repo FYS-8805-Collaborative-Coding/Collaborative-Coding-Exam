@@ -93,6 +93,10 @@ def load_training_module():
     fake_torch.save = lambda *args, **kwargs: None
     fake_torch.cuda = types.SimpleNamespace(is_available=lambda: False)
 
+    # Mock torch.ops.torchvision._cuda_version for torchvision import
+    fake_torch.ops = types.SimpleNamespace(
+        load_library=lambda x: None,
+        torchvision=types.SimpleNamespace(_cuda_version=lambda: 0)) # Mock torch.ops.torchvision._cuda_version
     fake_nn = types.ModuleType("torch.nn")
 
     class FakeModule:

@@ -198,9 +198,10 @@ class InferenceSpec:
 _SVHN_SPEC = InferenceSpec(
     SVHNNet,
     "weights/svhn.pth",
-    image_size=DATASET_STATS["svhn"]["image_size"],
-    **DATASET_STATS["svhn"],
-    grayscale=DATASET_STATS["svhn"]["grayscale"],
+    image_size=DATASET_STATS["svhn"]["image_size"], # Explicitly pass
+    mean=DATASET_STATS["svhn"]["mean"],             # Explicitly pass
+    std=DATASET_STATS["svhn"]["std"],               # Explicitly pass
+    grayscale=DATASET_STATS["svhn"]["grayscale"],   # Explicitly pass
 )
 
 INFERENCE_REGISTRY = {
@@ -318,26 +319,23 @@ def run_inference(
     input_path: str | Path,
     checkpoint_path: str | Path | None = None,
     device: str | torch.device | None = None,
-) -> int | list[int]:
-    """Run inference and return the predicted label(s).
+    batch_size: int = 32,
+) -> dict[Path, int]:
+    """Run inference and return a dictionary of predicted labels.
 
-    Returns a single ``int`` label when ``input_path`` is one image, or a
-    ``list[int]`` of labels (in sorted filename order) when it is a directory
-    of images.
+    Returns a dictionary mapping image paths to their predicted integer labels.
 
     Example
     -------
     >>> run_inference(model="svhn", input_path="digit.png")
-    5
+    {PosixPath('digit.png'): 5}
     >>> run_inference(model="svhn", input_path="folder_of_digits/")
-    [7, 2, 1, 0]
+    {PosixPath('folder_of_digits/img1.png'): 7, PosixPath('folder_of_digits/img2.png'): 2}
     """
-    labels = list(_predict(model, input_path, checkpoint_path, device).values())
-    if Path(input_path).is_file():
-        if not labels:
-            raise ValueError(f"Could not process image: {input_path}")
-        return labels[0]
-    return labels
+    results = _predict(model, input_path, checkpoint_path, device, batch_size)
+    if not results and Path(input_path).is_file():
+        raise ValueError(f"Could not process image: {input_path}")
+    return results
 
 
 def __output_path(filename: str | Path) -> Path:
@@ -429,19 +427,13 @@ def main(argv: list[str] | None = None) -> int:
     setup_logging(args.log_level)
     logger.info("Start  model=%s device=%s input=%s", args.model, args.device or "auto", args.input)
 
-    results = run_inference(
-        model=args.model,
-        input_path=args.input,
-        checkpoint_path=args.checkpoint_path,
-        device=args.device,
-        batch_size=args.batch_size,
-    )
     try:
-        results = _predict(
+        results = run_inference(
             model=args.model,
             input_path=args.input,
             checkpoint_path=args.checkpoint_path,
             device=args.device,
+            batch_size=args.batch_size, # Pass batch_size
         )
     except FileNotFoundError as exc:
         logger.error("Invalid input: %s", exc)
@@ -454,8 +446,8 @@ def main(argv: list[str] | None = None) -> int:
         logger.error("Invalid input: no valid images could be processed from '%s'", args.input)
         return 1
 
-    for image_path, prediction in results.items():
-        logger.info("Predicted digit: %s  (image=%s)", prediction, image_path)
+    for path, prediction in results.items():
+        logger.info("Predicted digit: %s  (image=%s)", prediction, path)
 
     if args.output:
         output_path = write_results(results, __output_path(args.output))
