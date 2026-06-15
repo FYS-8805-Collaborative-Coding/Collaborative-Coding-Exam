@@ -68,7 +68,7 @@ class Trainer(BaseTrainer):
                 device = "cpu"
         self.device = torch.device(device)
         # Allow customizing the loss function; default to CrossEntropyLoss
-        self.loss_fn = loss_fn or getattr(torch.nn, "CrossEntropyLoss")()
+        self.loss_fn = loss_fn or nn.CrossEntropyLoss()
 
     def train(self):
         self.model.to(self.device)
@@ -144,20 +144,22 @@ class Trainer(BaseTrainer):
         correct = 0
         total = 0
 
-        with torch.no_grad():
-            for images, labels in dataloader:
-                images = images.to(self.device)
-                labels = labels.to(self.device)
+        try:
+            with torch.no_grad():
+                for images, labels in dataloader:
+                    images = images.to(self.device)
+                    labels = labels.to(self.device)
 
-                logits = self.model(images)
-                loss = self.loss_fn(logits, labels)
+                    logits = self.model(images)
+                    loss = self.loss_fn(logits, labels)
 
-                batch_size = labels.size(0)
-                running_loss += loss.item() * batch_size
-                correct += (logits.argmax(dim=1) == labels).sum().item()
-                total += batch_size
+                    batch_size = labels.size(0)
+                    running_loss += loss.item() * batch_size
+                    correct += (logits.argmax(dim=1) == labels).sum().item()
+                    total += batch_size
+        finally:
+            self.model.train()
 
-        self.model.train()
         return (
             running_loss / total if total else 0.0,
             correct / total if total else 0.0,
@@ -215,7 +217,8 @@ class TrainerFactory:
             "grayscale": kwargs.get("grayscale", spec.grayscale),
             **{k: v for k, v in kwargs.items() if k not in [
                 "epochs", "lr", "checkpoint_path", "device", "loss_fn",
-                "image_size", "mean", "std", "grayscale"
+                "image_size", "mean", "std", "grayscale",
+                "data_dir", "batch_size", "num_workers"
             ]}
         }
         data_module = data_module_cls(**data_args)
