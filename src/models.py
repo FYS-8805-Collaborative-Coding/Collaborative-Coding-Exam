@@ -82,7 +82,7 @@ class USPSNet(DigitCNN):
             nn.Conv2d(32, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.MaxPool2d(2),
+            nn.MaxPool2d(3),
         )
 
     def _build_classifier(self, in_features):

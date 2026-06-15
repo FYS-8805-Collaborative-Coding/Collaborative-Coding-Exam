@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import warnings
+warnings.filterwarnings("ignore", message=".*Failed to load image Python extension.*", category=UserWarning)
+
 import argparse
 import csv
 from abc import ABC, abstractmethod
@@ -65,7 +68,7 @@ def load_model(
 ) -> ModelT:
     device = _default_device(device)
     model = model_cls()
-    model.load_state_dict(torch.load(_resolve_checkpoint_path(checkpoint_path), map_location=device))
+    model.load_state_dict(torch.load(_resolve_checkpoint_path(checkpoint_path), map_location=device, weights_only=True))
     model.to(device)
     model.eval()
     return model

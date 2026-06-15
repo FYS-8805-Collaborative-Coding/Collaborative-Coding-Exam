@@ -5,6 +5,9 @@ model and dataloader, reporting classification quality (precision, recall)
 and inference speed.
 """
  
+import warnings
+warnings.filterwarnings("ignore", message=".*Failed to load image Python extension.*", category=UserWarning)
+
 import time
 import argparse
 
@@ -115,7 +118,7 @@ def main(argv=None):
     logger.info("Start  dataset=%s device=%s checkpoint=%s", args.dataset, device, checkpoint)
 
     model = spec.model_cls()
-    model.load_state_dict(torch.load(checkpoint, map_location=device))
+    model.load_state_dict(torch.load(checkpoint, map_location=device, weights_only=True))
 
     data_module = DATA_MODULES[spec.data_module_name](
         data_dir=args.data_dir,

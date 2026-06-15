@@ -7,6 +7,10 @@ and a convenience `train(...)` entry point that selects the right classes
 based on a dataset name.
 """
 
+import warnings
+warnings.filterwarnings("ignore", message=".*libjpeg.*", category=UserWarning)
+warnings.filterwarnings("ignore", message=".*Failed to load image Python extension.*", category=UserWarning)
+
 from abc import ABC, abstractmethod
 import argparse
 import logging
@@ -66,6 +70,9 @@ class Trainer(BaseTrainer):
             else:
                 device = "cpu"
         self.device = torch.device(device)
+        # MPS multiprocessing + DataLoader workers causes the process to hang on exit
+        if self.device.type == "mps":
+            self.data_module.num_workers = 0
         # Allow customizing the loss function; default to CrossEntropyLoss
         self.loss_fn = loss_fn or getattr(torch.nn, "CrossEntropyLoss")()
 
@@ -93,18 +100,18 @@ class Trainer(BaseTrainer):
                 images = images.to(self.device)
                 labels = labels.to(self.device)
 
+                optimizer.zero_grad()
                 logits = self.model(images)
                 loss = loss_fn(logits, labels)
                 loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
+                optimizer.step()         
 
                 batch_size = labels.size(0)
                 running_loss += loss.item() * batch_size
                 correct += (logits.argmax(dim=1) == labels).sum().item()
                 total += batch_size
 
-                # DEBUG: Log every 100 batches to avoid overwhelming the output. 
+                # DEBUG: Log every 100 batches to avoid overwhelming the output.
                 if batch_idx % 100 == 0:
                     logger.debug(
                         "epoch %d/%d  batch %d  loss=%.4f",
@@ -119,6 +126,8 @@ class Trainer(BaseTrainer):
                 "Epoch %d/%d  train_loss=%.4f  train_acc=%.4f  val_loss=%.4f  val_acc=%.4f",
                 epoch, self.epochs, final_loss, final_accuracy, final_val_loss, final_val_accuracy,
             )
+
+        del train_loader, val_loader
 
         self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(self.model.state_dict(), self.checkpoint_path)
