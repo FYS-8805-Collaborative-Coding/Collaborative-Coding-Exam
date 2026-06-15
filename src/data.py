@@ -3,10 +3,12 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
 from src.constants import DATASET_STATS
+random_split = getattr(torch.utils.data, "random_split", None)
 
 
 class BaseDataModule(ABC):
@@ -36,7 +38,9 @@ class TorchvisionDataModule(BaseDataModule):
         data_dir="datasets", 
         batch_size=64, 
         num_workers=2, 
-        download=True, 
+        download=True,
+        val_split=0.1, 
+        val_seed=42,
         **kwargs
     ):
         self.dataset_cls = dataset_cls
@@ -48,6 +52,9 @@ class TorchvisionDataModule(BaseDataModule):
         norm_mean = mean if isinstance(mean, (list, tuple)) else (mean,)
         norm_std = std if isinstance(std, (list, tuple)) else (std,)
 
+        self.val_split = val_split
+        self.val_seed = val_seed
+        self._train_val_split = None
         self.transform = transforms.Compose(
             [
                 transforms.Resize(image_size if isinstance(image_size, tuple) else (image_size, image_size)),
@@ -72,13 +79,39 @@ class TorchvisionDataModule(BaseDataModule):
             **ds_kwargs,
         )
 
+    def _train_val_datasets(self):
+        if self._train_val_split is None:
+            full_train = self._dataset(train=True)
+            if random_split is None:
+                self._train_val_split = (full_train, full_train)
+            else:
+                val_size = int(len(full_train) * self.val_split)
+                train_size = len(full_train) - val_size
+                generator = torch.Generator().manual_seed(self.val_seed)
+                self._train_val_split = random_split(
+                    full_train,
+                    [train_size, val_size],
+                    generator=generator,
+                )
+        return self._train_val_split
+
     def train_loader(self):
+        train_dataset, _ = self._train_val_datasets()
         return DataLoader(
-            self._dataset(train=True),
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
             drop_last=True,
+        )
+
+    def val_loader(self):
+        _, val_dataset = self._train_val_datasets()
+        return DataLoader(
+            val_dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
         )
 
     def test_loader(self):
@@ -139,6 +172,9 @@ class SVHNDataModule(TorchvisionDataModule):
     """
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
         stats = DATASET_STATS["svhn"]
+        self.val_split = val_split
+        self.val_seed = val_seed
+        self._train_val_split = None
         super().__init__(
             dataset_cls=datasets.SVHN,
             mean=mean or stats["mean"],
@@ -150,6 +186,29 @@ class SVHNDataModule(TorchvisionDataModule):
             num_workers=num_workers,
             download=download,
             **kwargs,
+          
+    def _dataset(self, train):
+        """
+        Create an SVHN dataset instance.
+
+        Parameters
+        ----------
+        train : bool
+            If True, return the training split; otherwise, return the test
+            split.
+
+        Returns
+        -------
+        torchvision.datasets.SVHN
+            Configured SVHN dataset instance.
+        """
+        
+        return self.dataset_cls(
+            root=str(self.data_dir),
+            split="train" if train else "test",
+            download=self.download,
+            transform=self.transform,
+            **self.dataset_kwargs,
         )
 
 

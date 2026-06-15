@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
@@ -52,7 +53,21 @@ def _resolve_checkpoint_path(checkpoint_path: str | Path) -> Path:
     path = Path(checkpoint_path)
     if path.is_absolute():
         return path
-    return PROJECT_ROOT / path
+
+    repo_path = PROJECT_ROOT / path
+    if repo_path.exists():
+        return repo_path
+
+    try:
+        from importlib import resources
+
+        bundled = resources.files(__package__ or "ccexam").joinpath(*path.parts)
+        if bundled.is_file():
+            return Path(str(bundled))
+    except (ModuleNotFoundError, AttributeError, TypeError):
+        pass
+
+    return repo_path
 
 
 def load_model(
@@ -272,22 +287,19 @@ def iter_image_paths(input_path: str | Path) -> Iterable[Path]:
             for candidate in path.iterdir()
             if candidate.is_file() and candidate.suffix.lower() in IMAGE_EXTENSIONS
         )
-        if not image_paths:
-            raise ValueError(f"No supported image files found in {path}")
         yield from image_paths
         return
 
     raise FileNotFoundError(f"Input path does not exist: {path}")
 
 
-def run_inference(
+def _predict(
     model: str,
     input_path: str | Path,
     checkpoint_path: str | Path | None = None,
     device: str | torch.device | None = None,
     batch_size: int = 32,
 ) -> dict[Path, int]:
-    """Run inference for the requested model over one image or image directory."""
     inference = InferenceFactory.create(
         model.lower(),
         checkpoint_path=checkpoint_path,
@@ -299,6 +311,63 @@ def run_inference(
     return {
         path: pred for path, pred in zip(image_paths, predictions)
     }
+
+
+def run_inference(
+    model: str,
+    input_path: str | Path,
+    checkpoint_path: str | Path | None = None,
+    device: str | torch.device | None = None,
+) -> int | list[int]:
+    """Run inference and return the predicted label(s).
+
+    Returns a single ``int`` label when ``input_path`` is one image, or a
+    ``list[int]`` of labels (in sorted filename order) when it is a directory
+    of images.
+
+    Example
+    -------
+    >>> run_inference(model="svhn", input_path="digit.png")
+    5
+    >>> run_inference(model="svhn", input_path="folder_of_digits/")
+    [7, 2, 1, 0]
+    """
+    labels = list(_predict(model, input_path, checkpoint_path, device).values())
+    if Path(input_path).is_file():
+        if not labels:
+            raise ValueError(f"Could not process image: {input_path}")
+        return labels[0]
+    return labels
+
+
+def __output_path(filename: str | Path) -> Path:
+    path = Path(filename)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    if not path.exists():
+        return path
+
+    counter = 1
+    while True:
+        candidate = path.with_name(f"{path.stem}_{counter}{path.suffix}")
+        if not candidate.exists():
+            return candidate
+        counter += 1
+
+
+def write_results(results: dict[Path, int], output_path: str | Path) -> Path:
+    path = Path(output_path)
+    if path.suffix.lower() == ".csv":
+        with path.open("w", newline="") as handle:
+            writer = csv.writer(handle)
+            writer.writerow(["image", "prediction"])
+            for image_path, prediction in results.items():
+                writer.writerow([str(image_path), prediction])
+    else:
+        with path.open("w") as handle:
+            for image_path, prediction in results.items():
+                handle.write(f"{image_path}\t{prediction}\n")
+    return path
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -313,7 +382,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--input",
         required=True,
-        help="Path to an image file or a directory of images.",
+        help=(
+            "Path to a single image file OR a directory of images. Supported "
+            f"formats: {', '.join(sorted(IMAGE_EXTENSIONS))}. Other files (e.g. "
+            "a PDF) or a missing path are reported as invalid input."
+        ),
     )
     parser.add_argument(
         "--checkpoint-path",
@@ -332,6 +405,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "--device",
         default=None,
         help="Torch device, for example 'cpu', 'cuda', or 'mps'.",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        default=None,
+        help=(
+            "Write predictions to this file (e.g. 'results/predictions.csv'). "
+            "Any folders in the path are created automatically. An existing "
+            "file is never overwritten, a numbered copy is created instead "
+            "(predictions_1.csv, ...). Use a '.csv' or '.txt' extension."
+        ),
     )
     parser.add_argument("--log-level", default="INFO", help="Logging level, e.g. INFO or DEBUG.")
     return parser
@@ -352,8 +436,31 @@ def main(argv: list[str] | None = None) -> int:
         device=args.device,
         batch_size=args.batch_size,
     )
+    try:
+        results = _predict(
+            model=args.model,
+            input_path=args.input,
+            checkpoint_path=args.checkpoint_path,
+            device=args.device,
+        )
+    except FileNotFoundError as exc:
+        logger.error("Invalid input: %s", exc)
+        return 1
+    except ValueError as exc:
+        logger.error("Invalid input: %s", exc)
+        return 1
+
+    if not results:
+        logger.error("Invalid input: no valid images could be processed from '%s'", args.input)
+        return 1
+
     for image_path, prediction in results.items():
         logger.info("Predicted digit: %s  (image=%s)", prediction, image_path)
+
+    if args.output:
+        output_path = write_results(results, __output_path(args.output))
+        logger.info("Wrote %d prediction(s) to %s", len(results), output_path)
+
     logger.info("Done  %d image(s) classified", len(results))
     return 0
 
@@ -373,4 +480,5 @@ __all__ = [
     "load_model",
     "main",
     "run_inference",
+    "write_results",
 ]

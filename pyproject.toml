@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ccexam"
-version = "0.0.1"
+version = "0.0.3"
 description = "Digit classifiers (MNIST / USPS / SVHN) with a unified training, evaluation and inference CLI."
 readme = "README.md"
 requires-python = ">=3.10"

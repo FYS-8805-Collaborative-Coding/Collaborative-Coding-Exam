@@ -22,6 +22,12 @@ Install the latest release from [PyPI](https://pypi.org/project/ccexam/):
 pip install ccexam
 ```
 
+To upgrade an existing installation to the latest release:
+
+```bash
+pip install --upgrade ccexam
+```
+
 Or install the latest development version directly from GitHub:
 
 ```bash
@@ -55,45 +61,62 @@ ccexam-infer --model svhn --input datasets/inference
 ccexam-infer --model svhn --input mydigit.png --device cpu
 ```
 
-Available models: `mnist`, `usps`, `svhn`.
+Available models: `mnist`, `usps`, `svhn`. The trained model weights are bundled with the package and loaded automatically — no extra setup needed.
 
-Or use the Python API:
+### Saving predictions to a file
+
+By default, predictions are only printed to the terminal. Pass `--output` (`-o`)
+to also write them to a file:
+
+```bash
+# Write predictions to results/predictions.csv (the results/ folder is created automatically)
+ccexam-infer --model svhn --input datasets/inference --output results/predictions.csv
+```
+
+Notes:
+
+- The path you give is used **exactly as written** — any folders in it (e.g. `results/`) are created for you.
+- **Existing files are never overwritten.** If `results/predictions.csv` already exists, the next run writes `results/predictions_1.csv`, then `_2`, and so on, so previous results are preserved.
+- The format follows the file extension: `.csv` writes an `image,prediction` table with a header row; `.txt` writes one `<image>\t<prediction>` line per image.
+
+### Python API
 
 ```python
 from ccexam import run_inference
 
-results = run_inference(model="svhn", input_path="path/to/your/data")
-print(results)   # {PosixPath('.../svhn_digit_5.png'): 5}
+# A single image returns one label
+label = run_inference(model="svhn", input_path="digit.png")
+print(label)     # 5
+
+# A folder of images returns a list of labels (sorted by filename)
+labels = run_inference(model="svhn", input_path="folder_of_digits/")
+print(labels)    # [7, 2, 1, 0]
 ```
 
-Or from the command line:
-
-```bash
-python -m src.inference --model model-a --input datasets/inference/mnist_test_0_label_7.png
-```
-Trained model weights are stored in the `weights/` directory and are loaded automatically during inference.
+> When working from a repository checkout without installing, you can run the same thing as a module: `python -m src.inference --model svhn --input <path> --output results/predictions.csv`.
 
 ---
 ## Model Cards
 
-### Model A — `model-a`
+### Model A — `MNIST`
 
-Brief description of what this model does and what problem it solves. 
+Model A is an MNIST digit classifier for recognizing handwritten digits from
+28x28 grayscale images.
 
 | | |
 |---|---|
-| **Architecture** | ...|
-| **Training data** | ... |
-| **Intended use** | ... |
-| **Limitations** | ... |
+| **Architecture** | `MNISTNet`: small CNN with two convolution/ReLU/max-pool blocks and a fully connected classifier with 128 unit hidden dimension. |
+| **Training data** | MNIST handwritten digit training set. |
+| **Intended use** | Classify MNIST-like digit images into classes 0-9. |
+| **Limitations** | Intended for clean MNIST style grayscale digits; performance may drop on other image styles, noise, or non digit inputs. |
 
 **Performance:**
 
 | Metric | Value |
 |---|---|
-| Precision | 0.00 |
-| Recall | 0.00 |
-| Speed (inference) | 0.00 ms / sample |
+| Precision | 0.9905 |
+| Recall | 0.9905 |
+| Speed (inference) | 0.060 ms / sample |
 
 ---
 
@@ -117,26 +140,25 @@ CNN classifier for Street View House Numbers. It predicts a single cropped house
 | Speed (inference) | 0.470 ms / sample |
 
 ---
-### Model C — `model-c`
+### Model C — USPS
 
-Brief description of what this model does and what problem it solves.
+CNN classifier trained on the USPS (United States Postal Service) dataset consisting of ~10,000 images of handwritten digits.
 
 | | |
 |---|---|
-| **Architecture** | ... |
-| **Training data** | ... |
-| **Intended use** | ... |
-| **Limitations** | ... |
+| **Architecture** | `USPSNet`: small CNN with two convolution/ReLU/max-pool blocks and a fully connected classifier with 128 unit hidden dimension. |
+| **Training data** | USPS (United States Postal Service) dataset consisting of ~10,000 16x16 grayscale images |
+| **Intended use** | Classifying grayscale handwritten digits |
+| **Limitations** | Limited amount of data, with fixed 16x16 grid. Only grayscale. |
 
 **Performance:**
 
 | Metric | Value |
 |---|---|
-| Precision | 0.00 |
-| Recall | 0.00 |
-| Speed (inference) | 0.00 ms / sample |
+| Precision | 0.9631 |
+| Recall | 0.9631|
+| Speed (inference) | 0.033 ms / sample |
 
----
 
 ## Documentation
 

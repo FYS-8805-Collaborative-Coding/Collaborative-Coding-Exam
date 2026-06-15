@@ -17,14 +17,9 @@ from typing import Type, Optional, Callable
 import torch
 from torch import nn, optim
 
-try:
-    from .data import DATA_MODULES
-    from .models import MNISTNet, USPSNet, SVHNNet
-    from .constants import DATASET_STATS
-except ImportError:
-    from data import DATA_MODULES
-    from models import MNISTNet, USPSNet, SVHNNet
-    from constants import DATASET_STATS
+from src.data import DATA_MODULES
+from src.models import MNISTNet, USPSNet, SVHNNet
+from src.constants import DATASET_STATS
 
 # Define the project root relative to this file.
 # This ensures paths are consistent regardless of the current working directory.
@@ -64,7 +59,14 @@ class Trainer(BaseTrainer):
         self.epochs = epochs
         self.lr = lr
         self.checkpoint_path = PROJECT_ROOT / checkpoint_path
-        self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
+        if not device:
+            if torch.cuda.is_available():
+                device = "cuda"
+            elif torch.backends.mps.is_available():
+                device = "mps"
+            else:
+                device = "cpu"
+        self.device = torch.device(device)
         # Allow customizing the loss function; default to CrossEntropyLoss
         self.loss_fn = loss_fn or getattr(torch.nn, "CrossEntropyLoss")()
 
@@ -75,15 +77,20 @@ class Trainer(BaseTrainer):
         loss_fn = self.loss_fn
         final_loss = 0.0
         final_accuracy = 0.0
+        final_val_loss = 0.0
+        final_val_accuracy = 0.0
 
         logger.info("Training on %s for %d epoch(s)", self.device, self.epochs)
+
+        train_loader = self.data_module.train_loader()
+        val_loader = self.data_module.val_loader()
 
         for epoch in range(1, self.epochs + 1):
             running_loss = 0.0
             correct = 0
             total = 0
 
-            for batch_idx, (images, labels) in enumerate(self.data_module.train_loader(), start=1):
+            for batch_idx, (images, labels) in enumerate(train_loader, start=1):
                 images = images.to(self.device)
                 labels = labels.to(self.device)
 
@@ -107,10 +114,11 @@ class Trainer(BaseTrainer):
 
             final_loss = running_loss / total if total else 0.0
             final_accuracy = correct / total if total else 0.0
+            final_val_loss, final_val_accuracy = self._evaluate_loader(val_loader)
 
             logger.info(
-                "Epoch %d/%d  loss=%.4f  acc=%.4f",
-                epoch, self.epochs, final_loss, final_accuracy,
+                "Epoch %d/%d  train_loss=%.4f  train_acc=%.4f  val_loss=%.4f  val_acc=%.4f",
+                epoch, self.epochs, final_loss, final_accuracy, final_val_loss, final_val_accuracy,
             )
 
         self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
@@ -124,9 +132,36 @@ class Trainer(BaseTrainer):
         return {
             "loss": final_loss,
             "accuracy": final_accuracy,
+            "val_loss": final_val_loss,
+            "val_accuracy": final_val_accuracy,
             "epochs": self.epochs,
             "checkpoint_path": str(self.checkpoint_path),
         }
+
+    def _evaluate_loader(self, dataloader):
+        self.model.eval()
+        running_loss = 0.0
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+            for images, labels in dataloader:
+                images = images.to(self.device)
+                labels = labels.to(self.device)
+
+                logits = self.model(images)
+                loss = self.loss_fn(logits, labels)
+
+                batch_size = labels.size(0)
+                running_loss += loss.item() * batch_size
+                correct += (logits.argmax(dim=1) == labels).sum().item()
+                total += batch_size
+
+        self.model.train()
+        return (
+            running_loss / total if total else 0.0,
+            correct / total if total else 0.0,
+        )
 
 
 @dataclass
