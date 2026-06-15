@@ -87,7 +87,7 @@ def load_training_module():
     fake_torch.device = lambda value: value
     fake_torch.save = lambda *args, **kwargs: None
     fake_torch.cuda = types.SimpleNamespace(is_available=lambda: False)
-
+    fake_torch.ops = types.SimpleNamespace()
     fake_nn = types.ModuleType("torch.nn")
 
     class FakeModule:
