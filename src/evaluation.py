@@ -52,9 +52,16 @@ def evaluate(
         A dictionary with the keys:
  
         ``"precision"`` : float
-            Precision, averaged across classes.
+            Macro-averaged precision (each class weighted equally),
+            where C is the number of classes::
+
+                (1/C) * sum( TP_i / (TP_i + FP_i) )
+
         ``"recall"`` : float
-            Recall, averaged across classes.
+            Macro-averaged recall (each class weighted equally),
+            where C is the number of classes::
+
+                (1/C) * sum( TP_i / (TP_i + FN_i) )
         ``"speed_ms"`` : float
             Average inference time in milliseconds per sample.
  

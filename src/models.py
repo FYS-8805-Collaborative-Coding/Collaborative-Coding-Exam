@@ -78,6 +78,27 @@ class USPSNet(DigitCNN):
         # Reuse the shared backbone and head; DigitCNN sizes the classifier
         # from the 64-channel backbone output (64 * feature_dim**2).
         super().__init__(input_size=input_size)
+    
+    def _build_features(self):
+        return nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+        )
+
+    def _build_classifier(self, in_features):
+        return nn.Sequential(
+            nn.Dropout(0.3),
+            nn.Linear(in_features, 128),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(128, 10),
+        )
 
 
 class SVHNNet(BaseClassifier):

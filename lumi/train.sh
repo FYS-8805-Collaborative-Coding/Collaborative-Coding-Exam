@@ -3,8 +3,9 @@
 # Train a model on LUMI and save the resulting weights.
 #
 # Usage:
-#   sbatch train.sh              # uses the default dataset (mnist)
-#   sbatch -J usps train.sh      # uses another dataset (e.g. usps)
+#   sbatch lumi/train.sh              # from repo root
+#   sbatch -J usps lumi/train.sh      # from repo root, different dataset
+#   cd lumi && sbatch train.sh        # or from inside lumi/
 #
 # How it works:
 #   The job name (-J) selects the experiment. It is used to:
@@ -25,9 +26,13 @@
 # --- Experiment selection and logs -------------------------------------------
 # Default dataset; override per run with `sbatch -J <dataset> train.sh`.
 #SBATCH --job-name=mnist
-# %x = job name, %j = job id  ->  lumi_logs/mnist_123456.out
-#SBATCH --output=lumi/logs/%x_%j.out
-#SBATCH --error=lumi/logs/%x_%j.err
+
+# Always run from repo root regardless of where sbatch was invoked.
+# Redirect logs to lumi/logs/ so the path is correct from any submission dir.
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+mkdir -p lumi/logs
+exec > "lumi/logs/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.out" \
+     2> "lumi/logs/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.err"
 
 # --- Load the experiment config ----------------------------------------------
 # The config is chosen by the job name (or CONFIG, if explicitly set).
