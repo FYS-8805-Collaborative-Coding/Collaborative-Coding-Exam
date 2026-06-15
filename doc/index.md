@@ -1,16 +1,14 @@
-# Collaborative Coding Exam
+# ACME Digit Classification
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+A machine learning framework for handwritten digit recognition, developed as part of the FYS-8805 Collaborative Coding course at UiT. Supports three datasets (MNIST, SVHN, USPS) via a unified CLI and Python API. 
+
+This document includes a User Guide for installation and CLI usage, an API Reference for the Python modules, and an Individual Contributions section describing each team member's work.
 
 :::{toctree}
 :maxdepth: 2
-:caption: Code Documentation
+:caption: Table of contents
 
 about.md
+api.md
 individual.md
 :::
