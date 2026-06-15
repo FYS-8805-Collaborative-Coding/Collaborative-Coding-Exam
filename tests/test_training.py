@@ -87,7 +87,7 @@ def load_training_module():
     fake_torch.device = lambda value: value
     fake_torch.save = lambda *args, **kwargs: None
     fake_torch.cuda = types.SimpleNamespace(is_available=lambda: False)
-
+    fake_torch.ops = types.SimpleNamespace(torchvision=types.SimpleNamespace(_cuda_version=lambda: None))
     fake_nn = types.ModuleType("torch.nn")
 
     class FakeModule:
@@ -115,31 +115,27 @@ def load_training_module():
     fake_torch.nn = fake_nn
     fake_torch.optim = fake_optim
 
-    fake_data = types.ModuleType("data")
+    fake_data = types.ModuleType("src.data")
     fake_data.DATA_MODULES = {"mnist": DummyDataModule, "usps": DummyDataModule, "svhn": DummyDataModule}
 
-    fake_models = types.ModuleType("models")
+    fake_models = types.ModuleType("src.models")
     fake_models.MNISTNet = DummyModel
     fake_models.USPSNet = DummyModel
     fake_models.SVHNNet = DummyModel
 
     original_modules = {
-
-
-# Verify that `train()` delegates to TrainerFactory.create and calls
-# the trainer's `train()` method, returning its result.
         "torch": sys.modules.get("torch"),
         "torch.nn": sys.modules.get("torch.nn"),
         "torch.optim": sys.modules.get("torch.optim"),
-        "data": sys.modules.get("data"),
-        "models": sys.modules.get("models"),
+        "src.data": sys.modules.get("src.data"),
+        "src.models": sys.modules.get("src.models"),
     }
 
     sys.modules["torch"] = fake_torch
     sys.modules["torch.nn"] = fake_nn
     sys.modules["torch.optim"] = fake_optim
-    sys.modules["data"] = fake_data
-    sys.modules["models"] = fake_models
+    sys.modules["src.data"] = fake_data
+    sys.modules["src.models"] = fake_models
 
     module_path = Path(__file__).resolve().parents[1] / "src" / "training.py"
     spec = importlib.util.spec_from_file_location("training_under_test", module_path)

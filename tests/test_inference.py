@@ -360,7 +360,7 @@ def test_inference_factory_known_alias(infer):
     """Factory returns an Inference instance for a known model alias."""
     with patch.object(infer, "load_model") as mock_load:
         mock_load.return_value = MagicMock(spec=infer.torch.nn.Module)
-        inf = infer.InferenceFactory.create("model-a")
+        inf = infer.InferenceFactory.create("mnist")
 
     assert isinstance(inf, infer.Inference)
 
