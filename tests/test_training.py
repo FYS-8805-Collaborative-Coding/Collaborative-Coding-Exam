@@ -23,12 +23,16 @@ class DummyDataModule:
         self.batch_size = batch_size
         self.num_workers = num_workers
 
+    def val_loader(self):
+        return []
+
     def train_loader(self):
         return []
 
 
 class DummyModel:
-    def __init__(self):
+    # Accept input_size and other kwargs passed by TrainerFactory
+    def __init__(self, **kwargs):
         self.created = True
 
 
@@ -38,7 +42,7 @@ class DummyTrainer:
         self.model = model
         self.epochs = epochs
         self.lr = lr
-        self.checkpoint_path = checkpoint_path
+        self.checkpoint_path = Path(__file__).resolve().parents[1] / checkpoint_path
         self.device = device
         self.loss_fn = None
 
@@ -59,6 +63,10 @@ class DummySpec:
         self.data_module_name = "dummy"
         self.model_cls = DummyModel
         self.default_checkpoint = "weights/dummy.pth"
+        self.image_size = 28
+        self.mean = (0.5,)
+        self.std = (0.5,)
+        self.grayscale = True
         self.trainer_cls = DummyTrainer
 
 
@@ -82,22 +90,28 @@ class FakeAdam:
         return None
 
 
+# Build small fake modules and temporarily install them into
+# `sys.modules`. This lets `src/training.py` import `torch`,
+# `data`, and `models` without needing the real libraries.
+
 def load_training_module():
     fake_torch = types.ModuleType("torch")
     fake_torch.device = lambda value: value
     fake_torch.save = lambda *args, **kwargs: None
     fake_torch.cuda = types.SimpleNamespace(is_available=lambda: False)
+    fake_torch.backends = types.SimpleNamespace(mps=types.SimpleNamespace(is_available=lambda: False))
 
+    # Mock torch.ops.torchvision._cuda_version for torchvision import
+    fake_torch.ops = types.SimpleNamespace(
+        load_library=lambda x: None,
+        torchvision=types.SimpleNamespace(_cuda_version=lambda: -1)) # Mock torch.ops.torchvision._cuda_version
     fake_nn = types.ModuleType("torch.nn")
 
     class FakeModule:
         def parameters(self):
             return []
 
-        def to(self, device):
-
-
-# Ensure the factory uses the registry mapping to construct trainer objects
+        def to(self, device): # Ensure the factory uses the registry mapping to construct trainer objects
             return self
 
         def train(self):
@@ -115,31 +129,32 @@ def load_training_module():
     fake_torch.nn = fake_nn
     fake_torch.optim = fake_optim
 
-    fake_data = types.ModuleType("data")
-    fake_data.DATA_MODULES = {"mnist": DummyDataModule, "usps": DummyDataModule, "svhn": DummyDataModule}
-
-    fake_models = types.ModuleType("models")
-    fake_models.MNISTNet = DummyModel
-    fake_models.USPSNet = DummyModel
-    fake_models.SVHNNet = DummyModel
-
     original_modules = {
-
-
-# Verify that `train()` delegates to TrainerFactory.create and calls
-# the trainer's `train()` method, returning its result.
         "torch": sys.modules.get("torch"),
         "torch.nn": sys.modules.get("torch.nn"),
         "torch.optim": sys.modules.get("torch.optim"),
-        "data": sys.modules.get("data"),
-        "models": sys.modules.get("models"),
+        "src.data": sys.modules.get("src.data"),
+        "src.models": sys.modules.get("src.models"),
+        "src.constants": sys.modules.get("src.constants"),
     }
 
     sys.modules["torch"] = fake_torch
     sys.modules["torch.nn"] = fake_nn
     sys.modules["torch.optim"] = fake_optim
-    sys.modules["data"] = fake_data
-    sys.modules["models"] = fake_models
+
+    sys.modules["src.data"] = types.SimpleNamespace(
+        DATA_MODULES={"mnist": DummyDataModule, "usps": DummyDataModule, "svhn": DummyDataModule}
+    )
+    sys.modules["src.models"] = types.SimpleNamespace(
+        MNISTNet=DummyModel, USPSNet=DummyModel, SVHNNet=DummyModel
+    )
+    sys.modules["src.constants"] = types.SimpleNamespace(
+        DATASET_STATS={
+            "mnist": {"image_size": 28, "mean": (0.1307,), "std": (0.3081,), "grayscale": True},
+            "usps":  {"image_size": 16, "mean": (0.2471,), "std": (0.2994,), "grayscale": True},
+            "svhn":  {"image_size": 32, "mean": (0.4377, 0.4438, 0.4728), "std": (0.1980, 0.2010, 0.1970), "grayscale": False},
+        }
+    )
 
     module_path = Path(__file__).resolve().parents[1] / "src" / "training.py"
     spec = importlib.util.spec_from_file_location("training_under_test", module_path)
@@ -154,14 +169,15 @@ def load_training_module():
             else:
                 sys.modules[name] = original
 
-
-# argparse should raise SystemExit for an unknown --dataset choice
     return module
 
 
+@pytest.fixture(scope="module")
+def training():
+    return load_training_module()
 
-def test_build_arg_parser_defaults():
-    training = load_training_module()
+
+def test_build_arg_parser_defaults(training):
     parser = training.build_arg_parser()
     args = parser.parse_args([])
 
@@ -176,8 +192,7 @@ def test_build_arg_parser_defaults():
 
 
 
-def test_trainer_factory_uses_registry(monkeypatch):
-    training = load_training_module()
+def test_trainer_factory_uses_registry(training, monkeypatch):
     monkeypatch.setitem(training.DATASET_REGISTRY, "dummy", DummySpec())
     monkeypatch.setitem(training.DATA_MODULES, "dummy", DummyDataModule)
 
@@ -194,8 +209,8 @@ def test_trainer_factory_uses_registry(monkeypatch):
 
     assert isinstance(trainer, DummyTrainer)
     assert trainer.epochs == 3
-    assert trainer.lr == pytest.approx(0.01)
-    assert trainer.checkpoint_path == "weights/custom.pth"
+    assert trainer.lr == pytest.approx(0.01) #
+    assert Path(trainer.checkpoint_path) == training.PROJECT_ROOT / "weights/custom.pth" #
     assert trainer.device == "cpu"
     assert trainer.data_module.data_dir == "sample-data"
     assert trainer.data_module.batch_size == 8
@@ -203,9 +218,7 @@ def test_trainer_factory_uses_registry(monkeypatch):
     assert isinstance(trainer.model, DummyModel)
 
 
-
-def test_train_delegates_to_factory_and_trainer(monkeypatch):
-    training = load_training_module()
+def test_train_delegates_to_factory_and_trainer(training, monkeypatch):
     captured = {}
 
     class FakeFactory:
@@ -231,8 +244,7 @@ def test_train_delegates_to_factory_and_trainer(monkeypatch):
     assert captured["kwargs"]["device"] == "cpu"
 
 
-def test_parser_rejects_unknown_dataset():
-    training = load_training_module()
+def test_parser_rejects_unknown_dataset(training):
     parser = training.build_arg_parser()
 
     with pytest.raises(SystemExit):
@@ -240,8 +252,7 @@ def test_parser_rejects_unknown_dataset():
         parser.parse_args(["--dataset", "not-a-dataset"])
 
 
-def test_parser_rejects_unknown_argument():
-    training = load_training_module()
+def test_parser_rejects_unknown_argument(training):
     parser = training.build_arg_parser()
 
     with pytest.raises(SystemExit):

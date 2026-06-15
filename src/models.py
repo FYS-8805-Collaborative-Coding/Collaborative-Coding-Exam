@@ -23,6 +23,7 @@ class DigitCNN(BaseClassifier, ABC):
 
     def __init__(self, input_size: int = 28):
         super().__init__()
+        self.input_size = input_size
         self.feature_dim = input_size // 4
         
         self.features = self._build_features()
@@ -52,6 +53,11 @@ class DigitCNN(BaseClassifier, ABC):
         )
 
     def forward(self, x):
+        if x.shape[-2:] != (self.input_size, self.input_size):
+            raise ValueError(
+                f"Input size mismatch. Expected ({self.input_size}, {self.input_size}), "
+                f"but got {x.shape[-2:]}."
+            )
         x = self.features(x)
         x = x.flatten(start_dim=1)
         return self.classifier(x)
@@ -60,18 +66,18 @@ class DigitCNN(BaseClassifier, ABC):
 class MNISTNet(DigitCNN):
     """CNN specialized for 28x28 MNIST digits."""
 
-    def __init__(self):
+    def __init__(self, input_size: int):
         # Inherit both the backbone and the head logic
-        super().__init__(input_size=28)
+        super().__init__(input_size=input_size)
 
 
 class USPSNet(DigitCNN):
     """CNN specialized for 16x16 USPS digits."""
 
-    def __init__(self):
+    def __init__(self, input_size: int):
         # Reuse the shared backbone and head; DigitCNN sizes the classifier
         # from the 64-channel backbone output (64 * feature_dim**2).
-        super().__init__(input_size=16)
+        super().__init__(input_size=input_size)
     
     def _build_features(self):
         return nn.Sequential(
@@ -101,11 +107,14 @@ class SVHNNet(BaseClassifier):
     
     Args:
         num_classes (int): Number of output classes. Defaults to 10.
+        input_size (int): Square input dimension. Defaults to 32.
         dropout (float): Dropout probability used in the classifier head. Defaults to 0.3.
     """
-    def __init__(self, num_classes: int = 10, dropout: float = 0.3):
+    def __init__(self, input_size: int, num_classes: int = 10, dropout: float = 0.3):
         """Initialize the network architecture."""
         super().__init__()
+        self.input_size = input_size
+        feature_dim = input_size // 8
 
         def block(in_ch, out_ch):
             """
@@ -136,7 +145,7 @@ class SVHNNet(BaseClassifier):
         )
         self.classifier = nn.Sequential(
             nn.Dropout(dropout),
-            nn.Linear(128 * 4 * 4, 256),
+            nn.Linear(128 * feature_dim**2, 256),
             nn.ReLU(inplace=True),
             nn.Dropout(dropout),
             nn.Linear(256, num_classes),
@@ -150,8 +159,13 @@ class SVHNNet(BaseClassifier):
         Returns:
             torch.Tensor
         """
+        if x.shape[-2:] != (self.input_size, self.input_size):
+            raise ValueError(
+                f"Input size mismatch. SVHNNet expects ({self.input_size}, {self.input_size}), "
+                f"but got {x.shape[-2:]}."
+            )
         x = self.features(x)
-        x = x.view(x.size(0), -1)
+        x = x.flatten(start_dim=1)
         return self.classifier(x)
 
 

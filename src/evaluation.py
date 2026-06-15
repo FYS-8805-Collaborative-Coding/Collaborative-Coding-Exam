@@ -7,6 +7,7 @@ and inference speed.
  
 import time
 import argparse
+from typing import Callable, Any, Iterable
 
 import torch
 from sklearn.metrics import precision_score, recall_score
@@ -14,11 +15,20 @@ from sklearn.metrics import precision_score, recall_score
 from src.data import DATA_MODULES
 from src.training import DATASET_REGISTRY
 from src.utils import setup_logging, get_logger
+from src.inference import InferenceFactory, BaseInference
 
 logger = get_logger("evaluation")
 
+DEFAULT_METRICS = {
+    "precision": lambda y_true, y_pred: precision_score(y_true, y_pred, average="micro"),
+    "recall": lambda y_true, y_pred: recall_score(y_true, y_pred, average="micro"),
+}
 
-def evaluate(model, dataloader, device):
+def evaluate(
+    inference: BaseInference, 
+    dataloader: Iterable, 
+    metrics: dict[str, Callable[[Any, Any], float]] | None = None
+):
     """Evaluate a trained model on a dataset.
 
     Runs the model over every batch in ``dataloader``, collects the predicted
@@ -27,16 +37,14 @@ def evaluate(model, dataloader, device):
 
     Parameters
     ----------
-    model : torch.nn.Module
-        A trained model. It is set to evaluation mode and called as
-        ``model(images)``, returning class logits of shape
-        ``(batch_size, num_classes)``.
+    inference : BaseInference
+        An inference instance. Its underlying model is used for batch prediction.
     dataloader : Iterable
         Yields ``(images, labels)`` batches, where ``images`` is a float
         tensor and ``labels`` is an integer tensor of true classes.
-    device : str or torch.device, optional
-        Device to run evaluation on (e.g. ``"cpu"``, ``"cuda"``, ``"mps"``).
-        The model and each batch are moved here. Defaults to ``"cpu"``.
+    metrics : dict, optional
+        Dictionary mapping metric names to callables that accept ``(y_true, y_pred)``.
+        Defaults to precision and recall (micro-averaged).
  
     Returns
     -------
@@ -62,29 +70,20 @@ def evaluate(model, dataloader, device):
     Evaluation runs under :func:`torch.no_grad`, so no gradients are tracked.
     Inference time covers only the forward pass, not data loading.
     """
-    model.eval()
+    metrics = metrics or DEFAULT_METRICS
     all_preds, all_targets = [], []
     total_time = 0.0
 
-    # Move the model and each batch to the requested device.
-    device = torch.device(device)
-    model.to(device)
+    for images, labels in dataloader:
+        start = time.perf_counter()
+        preds = inference.predict_batch_tensor(images)          # ← always safe
+        total_time += time.perf_counter() - start
+        all_preds.extend(preds)
+        all_targets.extend(labels.tolist())
 
-    with torch.no_grad():
-        for images, labels in dataloader:
-            images = images.to(device)
-            start = time.perf_counter()
-            outputs = model(images)
-            total_time += time.perf_counter() - start
-            all_preds.extend(outputs.argmax(dim=1).tolist())
-            all_targets.extend(labels.tolist())
- 
-    precision = precision_score(all_targets, all_preds, average="macro")
-    recall = recall_score(all_targets, all_preds, average="macro")
- 
-    speed_ms = 1000.0 * total_time / max(len(all_preds), 1)
- 
-    return {"precision": precision, "recall": recall, "speed_ms": speed_ms}
+    results = {name: fn(all_targets, all_preds) for name, fn in metrics.items()}
+    results["speed_ms"] = 1000.0 * total_time / max(len(all_preds), 1)
+    return results
 
 def build_arg_parser():
     parser = argparse.ArgumentParser(description="Evaluate a trained dataset model on its test set.")
@@ -107,15 +106,19 @@ def main(argv=None):
 
     setup_logging(args.log_level)
 
-    device = torch.device(args.device)
+    device = args.device
 
     spec = DATASET_REGISTRY[args.dataset]
     checkpoint = args.checkpoint_path or spec.default_checkpoint
 
     logger.info("Start  dataset=%s device=%s checkpoint=%s", args.dataset, device, checkpoint)
 
-    model = spec.model_cls()
-    model.load_state_dict(torch.load(checkpoint, map_location=device))
+    # Create the inference instance to ensure production-spec settings (mean, std, transform) are used
+    inference = InferenceFactory.create(
+        args.dataset,
+        checkpoint_path=checkpoint,
+        device=device
+    )
 
     data_module = DATA_MODULES[spec.data_module_name](
         data_dir=args.data_dir,
@@ -124,12 +127,14 @@ def main(argv=None):
     )
     test_loader = data_module.test_loader()
 
-    result = evaluate(model, test_loader, device=device)
+    result = evaluate(inference, test_loader)
+    
+    metrics_log = "  ".join([f"{k}={v:.4f}" if k != "speed_ms" else f"{k}={v:.3f} ms/sample" 
+                             for k, v in result.items()])
     logger.info(
-        "Results  precision=%.4f  recall=%.4f  speed=%.3f ms/sample",
-        result["precision"], result["recall"], result["speed_ms"],
+        "Results  %s", metrics_log
     )
     return 0
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

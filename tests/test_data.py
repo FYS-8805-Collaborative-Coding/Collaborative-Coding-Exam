@@ -23,6 +23,9 @@ def _load_data_module():
     fake_transforms = types.ModuleType("torchvision.transforms")
     fake_transforms.Compose = FakeCompose
     fake_transforms.ToTensor = object
+    fake_transforms.Resize = lambda *args, **kwargs: object()
+    fake_transforms.Grayscale = lambda *args, **kwargs: object()
+    fake_transforms.Lambda = lambda *args, **kwargs: object()
     fake_transforms.Normalize = FakeNormalize
 
     class FakeDataset:
@@ -243,14 +246,14 @@ def test_usps_data_dir_custom_path_still_appends_usps():
     assert dm.data_dir == Path("custom/root") / "USPS"
 
 
-# ─── SVHNDataModule ignores custom mean/std ───────────────────────────────────
+# ─── SVHNDataModule respects custom mean/std ──────────────────────────────────
 
-def test_svhn_ignores_custom_mean_std():
+def test_svhn_respects_custom_mean_std():
     module, _ = _load_data_module()
     dm = module.SVHNDataModule(mean=(0.9, 0.9, 0.9), std=(0.1, 0.1, 0.1))
     n = _normalize(dm)
-    assert n.mean == pytest.approx((0.4377, 0.4438, 0.4728))
-    assert n.std == pytest.approx((0.1980, 0.2010, 0.1970))
+    assert n.mean == pytest.approx((0.9, 0.9, 0.9))
+    assert n.std == pytest.approx((0.1, 0.1, 0.1))
 
 
 # ─── _dataset passes kwargs correctly ────────────────────────────────────────
