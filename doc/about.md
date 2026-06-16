@@ -45,6 +45,12 @@ Want to classify all images in a folder at once?
 ccexam-infer --model usps --input path/to/your/folder
 ```
 
+The predictions can be piped to an output file using the `--output` argument:
+
+```bash
+ccexam-infer --model usps --input path/to/your/folder --output path/to/your/output_file.csv
+```
+
 On a laptop with no dedicated graphics card, add `--device cpu`:
 
 ```bash
