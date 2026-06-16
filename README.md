@@ -39,7 +39,7 @@ pip install git+https://github.com/FYS-8805-Collaborative-Coding/Collaborative-C
 Clone the repository and create the conda environment from `environment.yml`:
 
 ```bash
-git clone git@github.com:FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam.git
+git clone https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam.git
 cd Collaborative-Coding-Exam
 conda env create -f environment.yml
 conda activate collaborative-coding-exam
