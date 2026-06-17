@@ -379,13 +379,16 @@ def _predict(
     checkpoint_path: str | Path | None = None,
     device: str | torch.device | None = None,
     batch_size: int = 32,
-) -> dict[Path, int]:
+) -> dict[Path, int] | int:
     input_path = _resolve_input(input_path)
     inference = InferenceFactory.create(
         model.lower(),
         checkpoint_path=checkpoint_path,
         device=device,
     )
+    path = Path(input_path)
+    if path.is_file() and is_ascii_image(path):
+        return inference.predict(path)
     image_paths = list(iter_image_paths(input_path))
     predictions = inference.predict_batch(image_paths, batch_size=batch_size)
 
