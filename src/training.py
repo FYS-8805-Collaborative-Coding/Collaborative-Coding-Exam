@@ -148,7 +148,6 @@ class Trainer(BaseTrainer):
         }
 
     def _evaluate_loader(self, dataloader):
-        was_training = self.model.training
         self.model.eval()
         running_loss = 0.0
         correct = 0
@@ -168,7 +167,7 @@ class Trainer(BaseTrainer):
                     correct += (logits.argmax(dim=1) == labels).sum().item()
                     total += batch_size
         finally:
-            self.model.train(was_training)
+            self.model.train()
 
         return (
             running_loss / total if total else 0.0,
