@@ -5,6 +5,9 @@ model and dataloader, reporting classification quality (precision, recall)
 and inference speed.
 """
  
+import warnings
+warnings.filterwarnings("ignore", message=".*Failed to load image Python extension.*", category=UserWarning)
+
 import time
 import argparse
 from typing import Callable, Any, Iterable
@@ -12,10 +15,10 @@ from typing import Callable, Any, Iterable
 import torch
 from sklearn.metrics import precision_score, recall_score
 
-from src.data import DATA_MODULES
-from src.training import DATASET_REGISTRY
-from src.utils import setup_logging, get_logger
-from src.inference import InferenceFactory, BaseInference
+from .data import DATA_MODULES
+from .training import DATASET_REGISTRY
+from .utils import setup_logging, get_logger
+from .inference import InferenceFactory, BaseInference
 
 logger = get_logger("evaluation")
 

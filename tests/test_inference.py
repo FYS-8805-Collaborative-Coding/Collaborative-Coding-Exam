@@ -237,7 +237,7 @@ def load_inference_module():
         name: sys.modules.get(name)
         for name in [
             "torch", "torch.nn", "src.models", "models",
-            "inference_under_test", "torchvision", "torchvision.transforms",
+            "src.inference_under_test", "torchvision", "torchvision.transforms",
             "PIL", "PIL.Image",
         ]
     }
@@ -247,10 +247,10 @@ def load_inference_module():
         sys.modules[name] = mod
 
     module_path = Path(__file__).resolve().parents[1] / "src" / "inference.py"
-    spec = importlib.util.spec_from_file_location("inference_under_test", module_path)
+    spec = importlib.util.spec_from_file_location("src.inference_under_test", module_path)
     module = importlib.util.module_from_spec(spec)
     # Register so @dataclass can resolve forward references in Python 3.13+.
-    sys.modules["inference_under_test"] = module
+    sys.modules["src.inference_under_test"] = module
 
     try:
         spec.loader.exec_module(module)
@@ -275,11 +275,16 @@ def infer():
 
 # --- Tests ---
 
+def _save_image(path, size=(32, 32), mode="RGB"):
+    """Write a real, decodable image to ``path`` (format inferred from suffix)."""
+    Image.new(mode, size).save(path)
+
+
 def test_iter_image_paths_directory(tmp_path, infer):
-    """Image iterator finds supported extensions and returns them sorted."""
-    (tmp_path / "img2.png").write_text("data")
-    (tmp_path / "img1.jpg").write_text("data")
-    (tmp_path / "notes.txt").write_text("data")  # Should be ignored
+    """Iterator finds real images (by content) and returns them sorted."""
+    _save_image(tmp_path / "img2.png")
+    _save_image(tmp_path / "img1.jpg")
+    (tmp_path / "notes.txt").write_text("data")  # not an image -> ignored
 
     paths = list(infer.iter_image_paths(tmp_path))
 
@@ -289,27 +294,46 @@ def test_iter_image_paths_directory(tmp_path, infer):
 
 
 def test_iter_image_paths_file(tmp_path, infer):
-    """Image iterator works for a single valid file."""
+    """Iterator works for a single valid image file."""
     img_path = tmp_path / "test.png"
-    img_path.write_text("data")
+    _save_image(img_path)
 
     paths = list(infer.iter_image_paths(img_path))
     assert paths == [img_path]
 
 
-def test_iter_image_paths_invalid_extension(tmp_path, infer):
-    """Iterator raises ValueError for unsupported file extensions."""
+def test_iter_image_paths_accepts_extensionless_image(tmp_path, infer):
+    """A real image with no file extension is accepted (detection is by content)."""
+    img_path = tmp_path / "digit"  # no extension
+    _save_image(img_path.with_suffix(".png"))
+    (img_path.with_suffix(".png")).rename(img_path)
+
+    paths = list(infer.iter_image_paths(img_path))
+    assert paths == [img_path]
+
+
+def test_iter_image_paths_rejects_non_image(tmp_path, infer):
+    """A non-image file (e.g. .txt) is rejected, regardless of name."""
     txt_path = tmp_path / "test.txt"
     txt_path.write_text("data")
 
-    with pytest.raises(ValueError, match="Unsupported image extension"):
+    with pytest.raises(ValueError, match="Not a valid image file"):
         list(infer.iter_image_paths(txt_path))
 
 
+def test_iter_image_paths_rejects_text_renamed_to_png(tmp_path, infer):
+    """A text file masquerading as a .png is rejected (content is checked)."""
+    fake = tmp_path / "fake.png"
+    fake.write_text("this is not an image")
+
+    with pytest.raises(ValueError, match="Not a valid image file"):
+        list(infer.iter_image_paths(fake))
+
+
 def test_iter_image_paths_empty_directory(tmp_path, infer):
-    """Iterator returns an empty list for a directory with no image files."""
-    paths = list(infer.iter_image_paths(tmp_path))
-    assert paths == []
+    """A directory with no valid images raises ValueError."""
+    with pytest.raises(ValueError, match="No valid image files found"):
+        list(infer.iter_image_paths(tmp_path))
 
 
 def test_resolve_checkpoint_path_relative(infer):
@@ -373,7 +397,7 @@ def test_inference_factory_known_alias(infer):
     """Factory returns an Inference instance for a known model alias."""
     with patch.object(infer, "load_model") as mock_load:
         mock_load.return_value = MagicMock(spec=infer.torch.nn.Module)
-        inf = infer.InferenceFactory.create("model-a")
+        inf = infer.InferenceFactory.create("mnist")
 
     assert isinstance(inf, infer.Inference)
 
@@ -422,7 +446,7 @@ def test_inference_predict_calls_model_once(mock_open, infer):
 
 def test_run_inference_integration(tmp_path, infer):
     """run_inference returns a prediction for each image found in the directory."""
-    (tmp_path / "test.png").write_text("data")
+    _save_image(tmp_path / "test.png")
 
     with patch.object(infer.InferenceFactory, "create") as mock_factory:
         mock_inf = MagicMock()
@@ -437,7 +461,7 @@ def test_run_inference_integration(tmp_path, infer):
 
 
 def test_run_inference_empty_directory(tmp_path, infer):
-    """run_inference returns an empty dict for a directory with no images."""
+    """run_inference raises ValueError for a directory with no valid images."""
     with patch.object(infer.InferenceFactory, "create") as mock_factory:
         mock_factory.return_value = MagicMock()
         output = infer.run_inference(model="mnist", input_path=tmp_path)

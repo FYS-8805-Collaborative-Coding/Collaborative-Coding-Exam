@@ -7,6 +7,10 @@ and a convenience `train(...)` entry point that selects the right classes
 based on a dataset name.
 """
 
+import warnings
+warnings.filterwarnings("ignore", message=".*libjpeg.*", category=UserWarning)
+warnings.filterwarnings("ignore", message=".*Failed to load image Python extension.*", category=UserWarning)
+
 from abc import ABC, abstractmethod
 import argparse
 import logging
@@ -17,9 +21,9 @@ from typing import Type, Optional, Callable
 import torch
 from torch import nn, optim
 
-from src.data import DATA_MODULES
-from src.models import MNISTNet, USPSNet, SVHNNet
-from src.constants import DATASET_STATS
+from .data import DATA_MODULES
+from .models import MNISTNet, USPSNet, SVHNNet
+from .constants import DATASET_STATS
 
 # Define the project root relative to this file.
 # This ensures paths are consistent regardless of the current working directory.
@@ -48,8 +52,8 @@ class Trainer(BaseTrainer):
         self,
         data_module,
         model,
-        epochs: int = 10,
-        lr: float = 1e-3,
+        epochs: int = 1,
+        lr: float = 3e-4,
         checkpoint_path: str = "weights/model.pth",
         device: str | None = None,
         loss_fn: Optional[Callable] = None,
@@ -67,6 +71,9 @@ class Trainer(BaseTrainer):
             else:
                 device = "cpu"
         self.device = torch.device(device)
+        # MPS multiprocessing + DataLoader workers causes the process to hang on exit
+        if self.device.type == "mps":
+            self.data_module.num_workers = 0
         # Allow customizing the loss function; default to CrossEntropyLoss
         self.loss_fn = loss_fn or nn.CrossEntropyLoss()
 
@@ -94,18 +101,18 @@ class Trainer(BaseTrainer):
                 images = images.to(self.device)
                 labels = labels.to(self.device)
 
+                optimizer.zero_grad()
                 logits = self.model(images)
                 loss = loss_fn(logits, labels)
                 loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
+                optimizer.step()         
 
                 batch_size = labels.size(0)
                 running_loss += loss.item() * batch_size
                 correct += (logits.argmax(dim=1) == labels).sum().item()
                 total += batch_size
 
-                # DEBUG: Log every 100 batches to avoid overwhelming the output. 
+                # DEBUG: Log every 100 batches to avoid overwhelming the output.
                 if batch_idx % 100 == 0:
                     logger.debug(
                         "epoch %d/%d  batch %d  loss=%.4f",
@@ -120,6 +127,8 @@ class Trainer(BaseTrainer):
                 "Epoch %d/%d  train_loss=%.4f  train_acc=%.4f  val_loss=%.4f  val_acc=%.4f",
                 epoch, self.epochs, final_loss, final_accuracy, final_val_loss, final_val_accuracy,
             )
+
+        del train_loader, val_loader
 
         self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(self.model.state_dict(), self.checkpoint_path)
@@ -260,8 +269,8 @@ def build_arg_parser():
         choices=sorted(DATASET_REGISTRY.keys()),
         help="Dataset to train on.",
     )
-    parser.add_argument("--epochs", type=int, default=10, help="Number of training epochs.")
-    parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate.")
+    parser.add_argument("--epochs", type=int, default=1, help="Number of training epochs.")
+    parser.add_argument("--lr", type=float, default=3e-4, help="Learning rate.")
     parser.add_argument("--batch-size", type=int, default=64, help="Batch size.")
     parser.add_argument("--checkpoint-path", default=None, help="Where to save the model checkpoint.")
     parser.add_argument("--data-dir", default="datasets", help="Directory containing the datasets.")
@@ -282,10 +291,7 @@ def main(argv=None):
     parser = build_arg_parser()
     args = parser.parse_args(argv)
 
-    try:
-        from .utils import setup_logging
-    except ImportError:
-        from utils import setup_logging
+    from .utils import setup_logging
     setup_logging(args.log_level)
 
     logger.info(

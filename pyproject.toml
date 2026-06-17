@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ccexam"
-version = "0.0.3"
+version = "0.0.5"
 description = "Digit classifiers (MNIST / USPS / SVHN) with a unified training, evaluation and inference CLI."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -34,7 +34,7 @@ ccexam-infer = "ccexam.inference:main"
 package-dir = { "ccexam" = "src" }
 packages = ["ccexam"]
 
-# Ship the trained weights inside the wheel so inference works after a plain
-# `pip install` (no repo checkout required).
+# Ship the trained weights and sample images inside the wheel so inference and
+# the `sample:` input scheme work after a plain `pip install` (no repo checkout).
 [tool.setuptools.package-data]
-ccexam = ["weights/*.pth"]
+ccexam = ["weights/*.pth", "samples/*.png"]

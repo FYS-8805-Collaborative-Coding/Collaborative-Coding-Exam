@@ -18,21 +18,27 @@
 #SBATCH --gpus=1
 #SBATCH --time=00:10:00
 
-# --- Experiment selection ----------------------------------------------------
+# --- Experiment selection and logs -------------------------------------------
 # Default dataset; override per run with `sbatch -J eval-<dataset> evaluation.sh`.
-#SBATCH --job-name=mnist
+#SBATCH --job-name=eval-mnist
+#SBATCH --output=lumi/logs/%x_%j.out
+#SBATCH --error=lumi/logs/%x_%j.err
 
 # Always run from repo root regardless of where sbatch was invoked.
-# Redirect logs to lumi/logs/ so the path is correct from any submission dir.
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
-mkdir -p lumi/logs
-exec > "lumi/logs/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.out" \
-     2> "lumi/logs/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.err"
+# BASH_SOURCE is unreliable under SLURM (script is copied to /var/spool/...);
+# use SLURM_SUBMIT_DIR instead. Support both submission forms:
+#   sbatch lumi/evaluation.sh        (SLURM_SUBMIT_DIR = repo root)
+#   cd lumi && sbatch evaluation.sh  (SLURM_SUBMIT_DIR = lumi/)
+if [[ -d "${SLURM_SUBMIT_DIR}/configs" ]]; then
+    cd "$SLURM_SUBMIT_DIR"
+else
+    cd "${SLURM_SUBMIT_DIR}/.."
+fi
 
 set -euo pipefail
 set -x
 
-DATASET="${SLURM_JOB_NAME}"
+DATASET="${SLURM_JOB_NAME#eval-}"
 CHECKPOINT="weights/${DATASET}.pth"
 
 if [[ ! -f "$CHECKPOINT" ]]; then
