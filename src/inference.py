@@ -187,12 +187,26 @@ class InferenceFactory:
         )
 
 
+def _is_image(path: Path) -> bool:
+    """Return True if ``path`` is a decodable image, judged by its content.
+
+    The file extension is ignored: an image with no extension (e.g. ``digit``)
+    is accepted. Non-image is rejected because PIL cannot decode it.
+    """
+    try:
+        with Image.open(path) as img:
+            img.verify()
+        return True
+    except Exception:
+        return False
+
+
 def iter_image_paths(input_path: str | Path) -> Iterable[Path]:
     """Yield image paths from a single image file or a directory."""
     path = Path(input_path)
     if path.is_file():
-        if path.suffix.lower() not in IMAGE_EXTENSIONS:
-            raise ValueError(f"Unsupported image extension: {path.suffix}")
+        if not _is_image(path):
+            raise ValueError(f"Not a valid image file: {path}")
         yield path
         return
 
@@ -200,8 +214,10 @@ def iter_image_paths(input_path: str | Path) -> Iterable[Path]:
         image_paths = sorted(
             candidate
             for candidate in path.iterdir()
-            if candidate.is_file() and candidate.suffix.lower() in IMAGE_EXTENSIONS
+            if candidate.is_file() and _is_image(candidate)
         )
+        if not image_paths:
+            raise ValueError(f"No valid image files found in {path}")
         yield from image_paths
         return
 
@@ -298,9 +314,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "--input",
         required=True,
         help=(
-            "Path to a single image file OR a directory of images. Supported "
-            f"formats: {', '.join(sorted(IMAGE_EXTENSIONS))}. Other files (e.g. "
-            "a PDF) or a missing path are reported as invalid input."
+            "Path to a single image file OR a directory of images. Images are "
+            "detected by content, not by file extension, so an image without an "
+            "extension is accepted while non-images (e.g. a .txt or .pdf) or a "
+            "missing path are reported as invalid input."
         ),
     )
     parser.add_argument(
