@@ -14,9 +14,12 @@ from pathlib import Path
 from typing import Callable, Iterable, TypeVar
 
 import torch
+import torch.nn.functional as F
 from torch import nn
 from PIL import Image
 from torchvision import transforms
+
+from .constants import DATASET_STATS
 
 from .models import MNISTNet, USPSNet, SVHNNet
 from .utils import (
@@ -47,6 +50,15 @@ class BaseInference(ABC):
         """Return a prediction for one input image."""
         raise NotImplementedError
 
+    @abstractmethod
+    def predict_batch(self, images: Iterable[str | Path | Image.Image], batch_size: int = 32) -> list[int]:
+        """Return a list of predictions for multiple input images."""
+        raise NotImplementedError
+    
+    @abstractmethod
+    def predict_batch_tensor(self, batch: torch.Tensor) -> list[int]:
+        """Optional method for running inference on an already-transformed batch tensor (B, C, H, W)."""
+        raise NotImplementedError("predict_batch_tensor is not implemented for this inference class")
 
 def _default_device(device: str | torch.device | None = None) -> torch.device:
     return torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
@@ -77,9 +89,10 @@ def load_model(
     model_cls: type[ModelT],
     checkpoint_path: str | Path,
     device: str | torch.device | None = None,
+    **model_kwargs,
 ) -> ModelT:
     device = _default_device(device)
-    model = model_cls()
+    model = model_cls(**model_kwargs)
     model.load_state_dict(torch.load(_resolve_checkpoint_path(checkpoint_path), map_location=device, weights_only=True))
     model.to(device)
     model.eval()
@@ -140,11 +153,51 @@ class Inference(BaseInference):
 
         raise TypeError("image must be a path or PIL image")
 
+    def _ensure_size(self, x: torch.Tensor) -> torch.Tensor:
+        """Internal safety check to resize input if it doesn't match the model's expected size."""
+        expected = getattr(self.model, "input_size", None)
+        if expected and x.shape[-2:] != (expected, expected):
+            return F.interpolate(
+                x, size=(expected, expected), mode="bilinear", align_corners=False
+            )
+        return x
+
+    def _process_batch(self, batch_tensors: list[torch.Tensor]) -> list[int]:
+        """Concatenate tensors and run a single forward pass."""
+        input_tensor = torch.cat(batch_tensors, dim=0).to(self.device)
+        input_tensor = self._ensure_size(input_tensor)
+        with torch.no_grad():
+            logits = self.model(input_tensor)
+        return logits.argmax(dim=1).tolist()
+
     def predict(self, image: str | Path | Image.Image) -> int:
         tensor = self._prepare_image(image).to(self.device)
+        tensor = self._ensure_size(tensor)
         with torch.no_grad():
             logits = self.model(tensor)
         return int(logits.argmax(dim=1).item())
+    
+    def predict_batch_tensor(self, batch: torch.Tensor) -> list[int]:
+        """Run inference on an already-transformed batch tensor (B, C, H, W)."""
+        batch = self._ensure_size(batch.to(self.device))
+        with torch.no_grad():
+            logits = self.model(batch)
+        return logits.argmax(dim=1).tolist()
+
+    def predict_batch(self, images: Iterable[str | Path | Image.Image], batch_size: int = 32) -> list[int]:
+        all_predictions = []
+        current_batch = []
+
+        for img in images:
+            current_batch.append(self._prepare_image(img))
+            if len(current_batch) >= batch_size:
+                all_predictions.extend(self._process_batch(current_batch))
+                current_batch = []
+
+        if current_batch:
+            all_predictions.extend(self._process_batch(current_batch))
+
+        return all_predictions
 
 
 @dataclass(frozen=True)
@@ -161,21 +214,52 @@ class InferenceSpec:
 _SVHN_SPEC = InferenceSpec(
     SVHNNet,
     "weights/svhn.pth",
-    (32, 32),
-    (0.4377, 0.4438, 0.4728),
-    (0.1980, 0.2010, 0.1970),
-    grayscale=False,
+    image_size=DATASET_STATS["svhn"]["image_size"], # Explicitly pass
+    mean=DATASET_STATS["svhn"]["mean"],             # Explicitly pass
+    std=DATASET_STATS["svhn"]["std"],               # Explicitly pass
+    grayscale=DATASET_STATS["svhn"]["grayscale"],   # Explicitly pass
 )
 
 INFERENCE_REGISTRY = {
-    "mnist": InferenceSpec(MNISTNet, "weights/mnist.pth", (28, 28), (0.1307,), (0.3081,)),
-    "usps": InferenceSpec(USPSNet, "weights/usps.pth", (16, 16), (0.2471,), (0.2994,)),
+    "mnist": InferenceSpec(
+        MNISTNet, "weights/mnist.pth",
+        image_size=DATASET_STATS["mnist"]["image_size"],
+        mean=DATASET_STATS["mnist"]["mean"],
+        std=DATASET_STATS["mnist"]["std"],
+        grayscale=DATASET_STATS["mnist"]["grayscale"]
+    ),
+    "usps": InferenceSpec(
+        USPSNet, "weights/usps.pth",
+        image_size=DATASET_STATS["usps"]["image_size"],
+        mean=DATASET_STATS["usps"]["mean"],
+        std=DATASET_STATS["usps"]["std"],
+        grayscale=DATASET_STATS["usps"]["grayscale"]
+    ),
     "svhn": _SVHN_SPEC,
+    "model-a": InferenceSpec(
+        MNISTNet, "weights/mnist.pth",
+        image_size=DATASET_STATS["mnist"]["image_size"],
+        mean=DATASET_STATS["mnist"]["mean"],
+        std=DATASET_STATS["mnist"]["std"],
+        grayscale=DATASET_STATS["mnist"]["grayscale"]
+    ),
+    "model-b": InferenceSpec(
+        USPSNet, "weights/usps.pth",
+        image_size=DATASET_STATS["usps"]["image_size"],
+        mean=DATASET_STATS["usps"]["mean"],
+        std=DATASET_STATS["usps"]["std"],
+        grayscale=DATASET_STATS["usps"]["grayscale"]
+    ),
+    "model-c": _SVHN_SPEC,
 }
 
 
 class InferenceFactory:
     """Create configured inference instances from a model name."""
+
+    # ... (no changes needed in create method, as it already uses spec attributes)
+    # The `create` method already correctly uses `spec.image_size`, `spec.mean`,
+    # `spec.std`, and `spec.grayscale` to build the transform and load the model.
 
     @classmethod
     def create(cls, model_name: str, **kwargs) -> BaseInference:
@@ -185,7 +269,12 @@ class InferenceFactory:
         spec = INFERENCE_REGISTRY[model_name]
         device = kwargs.get("device")
         checkpoint = kwargs.get("checkpoint_path") or spec.default_checkpoint
-        model = load_model(spec.model_cls, checkpoint, device)
+
+        # Extract input size to pass to model constructor, handling both int and tuple
+        img_size = kwargs.get("image_size", spec.image_size)
+        input_size = img_size[0] if isinstance(img_size, tuple) else img_size
+
+        model = load_model(spec.model_cls, checkpoint, device, input_size=input_size)
         transform = kwargs.get("transform") or build_transform(
             image_size=kwargs.get("image_size", spec.image_size),
             mean=kwargs.get("mean", spec.mean),
@@ -289,20 +378,23 @@ def _predict(
     input_path: str | Path,
     checkpoint_path: str | Path | None = None,
     device: str | torch.device | None = None,
-) -> dict[Path, int]:
+    batch_size: int = 32,
+) -> dict[Path, int] | int:
     input_path = _resolve_input(input_path)
     inference = InferenceFactory.create(
         model.lower(),
         checkpoint_path=checkpoint_path,
         device=device,
     )
-    predictions: dict[Path, int] = {}
-    for image_path in iter_image_paths(input_path):
-        try:
-            predictions[image_path] = inference.predict(image_path)
-        except (OSError, ValueError) as exc:
-            logger.error("Invalid input: failed to process '%s' (%s)", image_path, exc)
-    return predictions
+    path = Path(input_path)
+    if path.is_file() and is_ascii_image(path):
+        return inference.predict(path)
+    image_paths = list(iter_image_paths(input_path))
+    predictions = inference.predict_batch(image_paths, batch_size=batch_size)
+
+    return {
+        path: pred for path, pred in zip(image_paths, predictions)
+    }
 
 
 def run_inference(
@@ -310,27 +402,26 @@ def run_inference(
     input_path: str | Path,
     checkpoint_path: str | Path | None = None,
     device: str | torch.device | None = None,
-) -> int | list[int]:
-    """Run inference and return the predicted label(s).
+    batch_size: int = 32,
+) -> dict[Path, int]:
+    """Run inference and return a dictionary of predicted labels.
 
-    Returns a single ``int`` label when ``input_path`` is one image, or a
-    ``list[int]`` of labels (in sorted filename order) when it is a directory
-    of images.
+    Returns a dictionary mapping image paths to their predicted integer labels.
 
     Example
     -------
     >>> run_inference(model="svhn", input_path="digit.png")
-    5
+    {PosixPath('digit.png'): 5}
     >>> run_inference(model="svhn", input_path="folder_of_digits/")
-    [7, 2, 1, 0]
+    {PosixPath('folder_of_digits/img1.png'): 7, PosixPath('folder_of_digits/img2.png'): 2}
     """
-    input_path = _resolve_input(input_path)
-    labels = list(_predict(model, input_path, checkpoint_path, device).values())
-    if Path(input_path).is_file():
-        if not labels:
-            raise ValueError(f"Could not process image: {input_path}")
-        return labels[0]
-    return labels
+    return _predict(
+        model=model,
+        input_path=input_path,
+        checkpoint_path=checkpoint_path,
+        device=device,
+        batch_size=batch_size,
+    )
 
 
 def __output_path(filename: str | Path) -> Path:
@@ -392,6 +483,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Path to the model checkpoint.",
     )
     parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=32,
+        help="Batch size for inference.",
+    )
+    parser.add_argument(
         "--device",
         default=None,
         help="Torch device, for example 'cpu', 'cuda', or 'mps'.",
@@ -420,11 +517,12 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("Start  model=%s device=%s input=%s", args.model, args.device or "auto", args.input)
 
     try:
-        results = _predict(
+        results = run_inference(
             model=args.model,
             input_path=args.input,
             checkpoint_path=args.checkpoint_path,
             device=args.device,
+            batch_size=args.batch_size, # Pass batch_size
         )
     except FileNotFoundError as exc:
         logger.error("Invalid input: %s", exc)
@@ -437,8 +535,8 @@ def main(argv: list[str] | None = None) -> int:
         logger.error("Invalid input: no valid images could be processed from '%s'", args.input)
         return 1
 
-    for image_path, prediction in results.items():
-        logger.info("Predicted digit: %s  (image=%s)", prediction, image_path)
+    for path, prediction in results.items():
+        logger.info("Predicted digit: %s  (image=%s)", prediction, path)
 
     if args.output:
         output_path = write_results(results, __output_path(args.output))

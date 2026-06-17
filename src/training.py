@@ -23,6 +23,7 @@ from torch import nn, optim
 
 from .data import DATA_MODULES
 from .models import MNISTNet, USPSNet, SVHNNet
+from .constants import DATASET_STATS
 
 # Define the project root relative to this file.
 # This ensures paths are consistent regardless of the current working directory.
@@ -74,7 +75,7 @@ class Trainer(BaseTrainer):
         if self.device.type == "mps":
             self.data_module.num_workers = 0
         # Allow customizing the loss function; default to CrossEntropyLoss
-        self.loss_fn = loss_fn or getattr(torch.nn, "CrossEntropyLoss")()
+        self.loss_fn = loss_fn or nn.CrossEntropyLoss()
 
     def train(self):
         self.model.to(self.device)
@@ -152,20 +153,22 @@ class Trainer(BaseTrainer):
         correct = 0
         total = 0
 
-        with torch.no_grad():
-            for images, labels in dataloader:
-                images = images.to(self.device)
-                labels = labels.to(self.device)
+        try:
+            with torch.no_grad():
+                for images, labels in dataloader:
+                    images = images.to(self.device)
+                    labels = labels.to(self.device)
 
-                logits = self.model(images)
-                loss = self.loss_fn(logits, labels)
+                    logits = self.model(images)
+                    loss = self.loss_fn(logits, labels)
 
-                batch_size = labels.size(0)
-                running_loss += loss.item() * batch_size
-                correct += (logits.argmax(dim=1) == labels).sum().item()
-                total += batch_size
+                    batch_size = labels.size(0)
+                    running_loss += loss.item() * batch_size
+                    correct += (logits.argmax(dim=1) == labels).sum().item()
+                    total += batch_size
+        finally:
+            self.model.train()
 
-        self.model.train()
         return (
             running_loss / total if total else 0.0,
             correct / total if total else 0.0,
@@ -177,15 +180,19 @@ class DatasetSpec:
     data_module_name: str
     model_cls: Type
     default_checkpoint: str
+    image_size: int | tuple[int, int]
+    mean: tuple[float, ...]
+    std: tuple[float, ...]
+    grayscale: bool
     trainer_cls: Type = Trainer
 
 
 # Registry mapping dataset name -> DatasetSpec. Add SVHN/USPS entries as they
 # become available in `src.data` and `src.models`.
 DATASET_REGISTRY = {
-    "mnist": DatasetSpec("mnist", MNISTNet, "weights/mnist.pth"),
-    "usps":  DatasetSpec("usps", USPSNet, "weights/usps.pth"),
-    "svhn":  DatasetSpec("svhn", SVHNNet, "weights/svhn.pth"),
+    "mnist": DatasetSpec("mnist", MNISTNet, "weights/mnist.pth", **DATASET_STATS["mnist"]),
+    "usps":  DatasetSpec("usps", USPSNet, "weights/usps.pth", **DATASET_STATS["usps"]),
+    "svhn":  DatasetSpec("svhn", SVHNNet, "weights/svhn.pth", **DATASET_STATS["svhn"]),
 }
 
 # Mapping of CLI loss name -> loss class attribute name (resolved at runtime)
@@ -213,11 +220,22 @@ class TrainerFactory:
             "data_dir": kwargs.get("data_dir", "datasets"),
             "batch_size": kwargs.get("batch_size", 64),
             "num_workers": kwargs.get("num_workers", 2),
-            **{k: v for k, v in kwargs.items() if k not in ["epochs", "lr", "checkpoint_path", "device", "loss_fn"]}
+            "image_size": kwargs.get("image_size", spec.image_size),
+            "mean": kwargs.get("mean", spec.mean),
+            "std": kwargs.get("std", spec.std),
+            "grayscale": kwargs.get("grayscale", spec.grayscale),
+            **{k: v for k, v in kwargs.items() if k not in [
+                "epochs", "lr", "checkpoint_path", "device", "loss_fn",
+                "image_size", "mean", "std", "grayscale",
+                "data_dir", "batch_size", "num_workers"
+            ]}
         }
         data_module = data_module_cls(**data_args)
 
-        model = spec.model_cls()
+        # Resolve input_size for model (extract int from tuple if necessary)
+        img_size = kwargs.get("image_size", spec.image_size)
+        input_size = img_size[0] if isinstance(img_size, tuple) else img_size
+        model = spec.model_cls(input_size=input_size)
 
         trainer_cls = spec.trainer_cls or Trainer
         checkpoint = kwargs.get("checkpoint_path") or spec.default_checkpoint
