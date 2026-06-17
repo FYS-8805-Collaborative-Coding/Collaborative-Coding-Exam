@@ -9,7 +9,9 @@ _LOG_FORMAT = "%(asctime)s | %(levelname)-7s | %(name)-10s | %(message)s"
 _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 ASCII_BACKGROUND = "."
 ASCII_FOREGROUND = "#"
-ASCII_IMAGE_CHARS = frozenset({ASCII_BACKGROUND, ASCII_FOREGROUND})
+ASCII_BACKGROUND_CHARS = frozenset({ASCII_BACKGROUND, " ", "0", "-"})
+ASCII_FOREGROUND_CHARS = frozenset({ASCII_FOREGROUND, "X", "1", "@", "*"})
+ASCII_IMAGE_CHARS = ASCII_BACKGROUND_CHARS | ASCII_FOREGROUND_CHARS
 ASCII_IMAGE_EXTENSIONS = frozenset({".ascii", ".txt"})
 
 
@@ -40,7 +42,7 @@ def read_ascii_image(path: str | Path) -> list[str]:
     if invalid_chars:
         raise ValueError(f"ASCII image contains invalid characters: {invalid_chars}")
 
-    if not any(ASCII_FOREGROUND in line for line in lines):
+    if not any(char in ASCII_FOREGROUND_CHARS for line in lines for char in line):
         raise ValueError("ASCII image must contain at least one foreground pixel")
 
     return lines
@@ -61,7 +63,7 @@ def ascii_digit_to_image(path: str | Path) -> Image.Image:
     width = len(lines[0])
     height = len(lines)
     pixels = [
-        255 if char == ASCII_FOREGROUND else 0
+        255 if char in ASCII_FOREGROUND_CHARS else 0
         for line in lines
         for char in line
     ]

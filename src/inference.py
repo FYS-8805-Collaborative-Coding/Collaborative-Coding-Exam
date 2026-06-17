@@ -378,7 +378,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
             "Path to a single image file OR a directory of images, OR a packaged "
             "sample as 'samples:NAME' (e.g. 'samples:svhn_digit_5.png'). Images "
             "are detected by content, and ASCII digit files are accepted as .txt "
-            "or .ascii files using '#' for strokes and '.' for background. "
+            "or .ascii files using '#', 'X', '1', '@', or '*' for strokes and "
+            "'.', space, '0', or '-' for background. "
             "Missing paths and unsupported files are reported as invalid input."
         ),
     )

@@ -312,6 +312,33 @@ def test_iter_image_paths_accepts_ascii_image_file(infer):
     assert paths == [ascii_path]
 
 
+@pytest.mark.parametrize(
+    ("foreground", "background"),
+    [("X", " "), ("1", "0"), ("@", "."), ("*", "-")],
+)
+def test_ascii_image_accepts_supported_character_pairs(tmp_path, infer, foreground, background):
+    """ASCII images accept multiple foreground/background character pairs."""
+    ascii_path = tmp_path / "digit.txt"
+    ascii_path.write_text(
+        "\n".join(
+            [
+                f"{background}{foreground}{background}",
+                foreground * 3,
+            ]
+        ),
+        encoding="ascii",
+    )
+
+    image = infer.ascii_digit_to_image(ascii_path)
+
+    assert infer.is_ascii_image(ascii_path)
+    assert image.mode == "L"
+    assert image.size == (3, 2)
+    if hasattr(image, "getpixel"):
+        assert image.getpixel((0, 0)) == 0
+        assert image.getpixel((1, 0)) == 255
+
+
 def test_iter_image_paths_rejects_non_image(tmp_path, infer):
     """A non-image file (e.g. .txt) is rejected, regardless of name."""
     txt_path = tmp_path / "test.txt"
