@@ -69,4 +69,4 @@ srun singularity run "$CONTAINER" \
         --dataset "$dataset" \
         --epochs "$epochs" \
         --batch-size "$batch_size" \
-        --device "$device"
+        --device cuda
