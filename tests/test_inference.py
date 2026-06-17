@@ -224,7 +224,7 @@ def load_inference_module():
         name: sys.modules.get(name)
         for name in [
             "torch", "torch.nn", "src.models", "models",
-            "inference_under_test", "torchvision", "torchvision.transforms",
+            "src.inference_under_test", "torchvision", "torchvision.transforms",
             "PIL", "PIL.Image",
         ]
     }
@@ -234,10 +234,10 @@ def load_inference_module():
         sys.modules[name] = mod
 
     module_path = Path(__file__).resolve().parents[1] / "src" / "inference.py"
-    spec = importlib.util.spec_from_file_location("inference_under_test", module_path)
+    spec = importlib.util.spec_from_file_location("src.inference_under_test", module_path)
     module = importlib.util.module_from_spec(spec)
     # Register so @dataclass can resolve forward references in Python 3.13+.
-    sys.modules["inference_under_test"] = module
+    sys.modules["src.inference_under_test"] = module
 
     try:
         spec.loader.exec_module(module)
@@ -433,7 +433,7 @@ def test_inference_predict_calls_model_once(mock_open, infer):
 
 def test_run_inference_integration(tmp_path, infer):
     """run_inference returns a prediction for each image found in the directory."""
-    (tmp_path / "test.png").write_text("data")
+    _save_image(tmp_path / "test.png")
 
     with patch.object(infer.InferenceFactory, "create") as mock_factory:
         mock_inf = MagicMock()
