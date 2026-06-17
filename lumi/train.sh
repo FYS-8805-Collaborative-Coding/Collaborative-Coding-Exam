@@ -10,7 +10,7 @@
 # How it works:
 #   The job name (-J) selects the experiment. It is used to:
 #     * load hyperparameters from   configs/<job-name>.cfg
-#     * name the log files          lumi_logs/<job-name>_<job-id>.{out,err}
+#     * name the log files          lumi/logs/<job-name>_<job-id>.{out,err}
 #   To add a dataset, drop a new configs/<name>.cfg next to the others.
 # =============================================================================
 
@@ -26,13 +26,19 @@
 # --- Experiment selection and logs -------------------------------------------
 # Default dataset; override per run with `sbatch -J <dataset> train.sh`.
 #SBATCH --job-name=mnist
+#SBATCH --output=lumi/logs/%x_%j.out
+#SBATCH --error=lumi/logs/%x_%j.err
 
 # Always run from repo root regardless of where sbatch was invoked.
-# Redirect logs to lumi/logs/ so the path is correct from any submission dir.
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
-mkdir -p lumi/logs
-exec > "lumi/logs/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.out" \
-     2> "lumi/logs/${SLURM_JOB_NAME}_${SLURM_JOB_ID}.err"
+# BASH_SOURCE is unreliable under SLURM (script is copied to /var/spool/...);
+# use SLURM_SUBMIT_DIR instead. Support both submission forms:
+#   sbatch lumi/train.sh        (SLURM_SUBMIT_DIR = repo root)
+#   cd lumi && sbatch train.sh  (SLURM_SUBMIT_DIR = lumi/)
+if [[ -d "${SLURM_SUBMIT_DIR}/configs" ]]; then
+    cd "$SLURM_SUBMIT_DIR"
+else
+    cd "${SLURM_SUBMIT_DIR}/.."
+fi
 
 # --- Load the experiment config ----------------------------------------------
 # The config is chosen by the job name (or CONFIG, if explicitly set).
