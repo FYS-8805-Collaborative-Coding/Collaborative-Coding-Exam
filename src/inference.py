@@ -353,7 +353,7 @@ def iter_image_paths(input_path: str | Path) -> Iterable[Path]:
             if candidate.is_file() and _is_image(candidate)
         )
         if not image_paths:
-            raise ValueError(f"No valid image files found in {path}")
+            return [] # Return empty list if no images found
         yield from image_paths
         return
 
@@ -399,13 +399,13 @@ def run_inference(
     >>> run_inference(model="svhn", input_path="folder_of_digits/")
     {PosixPath('folder_of_digits/img1.png'): 7, PosixPath('folder_of_digits/img2.png'): 2}
     """
-    input_path = _resolve_input(input_path)
-    labels = list(_predict(model, input_path, checkpoint_path, device).values())
-    if Path(input_path).is_file():
-        if not labels:
-            raise ValueError(f"Could not process image: {input_path}")
-        return labels[0]
-    return labels
+    return _predict(
+        model=model,
+        input_path=input_path,
+        checkpoint_path=checkpoint_path,
+        device=device,
+        batch_size=batch_size,
+    )
 
 
 def __output_path(filename: str | Path) -> Path:

@@ -331,9 +331,9 @@ def test_iter_image_paths_rejects_text_renamed_to_png(tmp_path, infer):
 
 
 def test_iter_image_paths_empty_directory(tmp_path, infer):
-    """A directory with no valid images raises ValueError."""
-    with pytest.raises(ValueError, match="No valid image files found"):
-        list(infer.iter_image_paths(tmp_path))
+    """A directory with no valid images returns an empty list."""
+    paths = list(infer.iter_image_paths(tmp_path))
+    assert paths == []
 
 
 def test_resolve_checkpoint_path_relative(infer):
@@ -461,7 +461,7 @@ def test_run_inference_integration(tmp_path, infer):
 
 
 def test_run_inference_empty_directory(tmp_path, infer):
-    """run_inference raises ValueError for a directory with no valid images."""
+    """run_inference returns an empty dict for a directory with no valid images."""
     with patch.object(infer.InferenceFactory, "create") as mock_factory:
         mock_factory.return_value = MagicMock()
         output = infer.run_inference(model="mnist", input_path=tmp_path)
