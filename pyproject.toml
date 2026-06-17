@@ -37,4 +37,4 @@ packages = ["ccexam"]
 # Ship the trained weights and sample images inside the wheel so inference and
 # the `sample:` input scheme work after a plain `pip install` (no repo checkout).
 [tool.setuptools.package-data]
-ccexam = ["weights/*.pth", "samples/*.png"]
+ccexam = ["weights/*.pth", "samples/*.png", "samples/*.txt"]

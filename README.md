@@ -57,11 +57,35 @@ ccexam-infer --model svhn --input datasets/inference/svhn_digit_5.png
 # Classify every image in a directory
 ccexam-infer --model svhn --input datasets/inference
 
+# Try it instantly on a bundled sample (no file needed) — see "Quick test" below
+ccexam-infer --model svhn --input samples:svhn_digit_5.png
+
 # Force CPU (e.g. on a laptop with no GPU)
 ccexam-infer --model svhn --input mydigit.png --device cpu
 ```
 
 Available models: `mnist`, `usps`, `svhn`. The trained model weights are bundled with the package and loaded automatically — no extra setup needed.
+
+### Supported inputs
+
+`--input` accepts a single file or a directory, and is flexible about formats:
+
+- **Any image, detected by content — not by extension.** A real image is accepted even if it has the "wrong" extension or **no extension at all** (e.g. `--input mydigit`). A non-image is rejected with a error `Invalid input: …` message and a non-zero exit code.
+- **ASCII-art digits in `.txt` files.** A digit drawn with characters (foreground vs. spaces) is auto-detected and converted to an image before inference — no flag needed:
+  ```bash
+  ccexam-infer --model mnist --input datasets/inference/ascii_digit_5.txt
+  ```
+- **Directories** skip any unreadable files (with a logged note) instead of aborting the whole run.
+
+### Quick test with bundled samples
+
+To try the package without supplying your own files, use the `samples:` scheme. It resolves to an example image shipped inside the package, so it works straight after `pip install`:
+
+```bash
+ccexam-infer --model svhn  --input samples:svhn_digit_5.png
+ccexam-infer --model mnist --input samples:mnist_test_0_label_7.png
+ccexam-infer --model mnist --input samples:ascii_digit_5.txt     # bundled ASCII sample
+```
 
 ### Saving predictions to a file
 

@@ -225,12 +225,13 @@ def _samples_dir():
 
 
 def list_samples() -> list[str]:
-    """Return the available packaged sample image filenames, sorted."""
+    """Return the available packaged sample filenames (images + ASCII), sorted."""
+    allowed = IMAGE_EXTENSIONS | {".txt"}
     try:
         return sorted(
             entry.name
             for entry in _samples_dir().iterdir()
-            if Path(entry.name).suffix.lower() in IMAGE_EXTENSIONS
+            if Path(entry.name).suffix.lower() in allowed
         )
     except Exception:
         return []
