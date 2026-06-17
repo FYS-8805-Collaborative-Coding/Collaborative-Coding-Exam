@@ -267,6 +267,10 @@ def _save_image(path, size=(32, 32), mode="RGB"):
     Image.new(mode, size).save(path)
 
 
+def _ascii_sample_path(name: str = "ascii_digit_2.txt") -> Path:
+    return Path(__file__).resolve().parents[1] / "datasets" / "inference" / name
+
+
 def test_iter_image_paths_directory(tmp_path, infer):
     """Iterator finds real images (by content) and returns them sorted."""
     _save_image(tmp_path / "img2.png")
@@ -299,12 +303,48 @@ def test_iter_image_paths_accepts_extensionless_image(tmp_path, infer):
     assert paths == [img_path]
 
 
+def test_iter_image_paths_accepts_ascii_image_file(infer):
+    """Iterator accepts valid ASCII digit image files."""
+    ascii_path = _ascii_sample_path()
+
+    paths = list(infer.iter_image_paths(ascii_path))
+
+    assert paths == [ascii_path]
+
+
+@pytest.mark.parametrize(
+    ("foreground", "background"),
+    [("X", " "), ("1", "0"), ("@", "."), ("*", "-")],
+)
+def test_ascii_image_accepts_supported_character_pairs(tmp_path, infer, foreground, background):
+    """ASCII images accept multiple foreground/background character pairs."""
+    ascii_path = tmp_path / "digit.txt"
+    ascii_path.write_text(
+        "\n".join(
+            [
+                f"{background}{foreground}{background}",
+                foreground * 3,
+            ]
+        ),
+        encoding="ascii",
+    )
+
+    image = infer.ascii_digit_to_image(ascii_path)
+
+    assert infer.is_ascii_image(ascii_path)
+    assert image.mode == "L"
+    assert image.size == (3, 2)
+    if hasattr(image, "getpixel"):
+        assert image.getpixel((0, 0)) == 0
+        assert image.getpixel((1, 0)) == 255
+
+
 def test_iter_image_paths_rejects_non_image(tmp_path, infer):
     """A non-image file (e.g. .txt) is rejected, regardless of name."""
     txt_path = tmp_path / "test.txt"
     txt_path.write_text("data")
 
-    with pytest.raises(ValueError, match="Not a valid image file"):
+    with pytest.raises(ValueError, match="Not a valid image or ASCII image file"):
         list(infer.iter_image_paths(txt_path))
 
 
@@ -313,13 +353,13 @@ def test_iter_image_paths_rejects_text_renamed_to_png(tmp_path, infer):
     fake = tmp_path / "fake.png"
     fake.write_text("this is not an image")
 
-    with pytest.raises(ValueError, match="Not a valid image file"):
+    with pytest.raises(ValueError, match="Not a valid image or ASCII image file"):
         list(infer.iter_image_paths(fake))
 
 
 def test_iter_image_paths_empty_directory(tmp_path, infer):
     """A directory with no valid images raises ValueError."""
-    with pytest.raises(ValueError, match="No valid image files found"):
+    with pytest.raises(ValueError, match="No valid image or ASCII image files found"):
         list(infer.iter_image_paths(tmp_path))
 
 
@@ -446,9 +486,24 @@ def test_run_inference_integration(tmp_path, infer):
     assert output[0] == 3
 
 
+def test_run_inference_ascii_file_integration(infer):
+    """run_inference accepts a single valid ASCII digit image file."""
+    ascii_path = _ascii_sample_path()
+
+    with patch.object(infer.InferenceFactory, "create") as mock_factory:
+        mock_inf = MagicMock()
+        mock_inf.predict.return_value = 4
+        mock_factory.return_value = mock_inf
+
+        output = infer.run_inference(model="mnist", input_path=ascii_path)
+
+    assert output == 4
+    mock_inf.predict.assert_called_once_with(ascii_path)
+
+
 def test_run_inference_empty_directory(tmp_path, infer):
     """run_inference raises ValueError for a directory with no valid images."""
     with patch.object(infer.InferenceFactory, "create") as mock_factory:
         mock_factory.return_value = MagicMock()
-        with pytest.raises(ValueError, match="No valid image files found"):
+        with pytest.raises(ValueError, match="No valid image or ASCII image files found"):
             infer.run_inference(model="mnist", input_path=tmp_path)
