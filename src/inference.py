@@ -22,7 +22,13 @@ from torchvision import transforms
 from .constants import DATASET_STATS
 
 from .models import MNISTNet, USPSNet, SVHNNet
-from .utils import setup_logging, get_logger
+from .utils import (
+    ascii_digit_to_image,
+    get_logger,
+    is_ascii_image,
+    read_ascii_image,
+    setup_logging,
+)
 
 logger = get_logger("inference")
 
@@ -139,7 +145,8 @@ class Inference(BaseInference):
 
     def _prepare_image(self, image: str | Path | Image.Image) -> torch.Tensor:
         if isinstance(image, (str, Path)):
-            image = Image.open(image)
+            path = Path(image)
+            image = ascii_digit_to_image(path) if is_ascii_image(path) else Image.open(path)
 
         if isinstance(image, Image.Image):
             return self.transform(image).unsqueeze(0)
@@ -296,18 +303,24 @@ def _is_image(path: Path) -> bool:
         return False
 
 
+def _is_supported_input(path: Path) -> bool:
+    """Return True for decodable images or valid ASCII digit images."""
+    return _is_image(path) or is_ascii_image(path)
+
+
 def _samples_dir():
     """Return a path-like to the packaged sample-images directory."""
     return resources.files(__package__ or "ccexam").joinpath(*_SAMPLES_SUBDIR)
 
 
 def list_samples() -> list[str]:
-    """Return the available packaged sample image filenames, sorted."""
+    """Return the available packaged sample filenames (images + ASCII), sorted."""
+    allowed = IMAGE_EXTENSIONS | {".txt"}
     try:
         return sorted(
             entry.name
             for entry in _samples_dir().iterdir()
-            if Path(entry.name).suffix.lower() in IMAGE_EXTENSIONS
+            if Path(entry.name).suffix.lower() in allowed
         )
     except Exception:
         return []
@@ -338,11 +351,11 @@ def _resolve_input(input_path: str | Path) -> str | Path:
 
 
 def iter_image_paths(input_path: str | Path) -> Iterable[Path]:
-    """Yield image paths from a single image file or a directory."""
+    """Yield image or ASCII-image paths from a single file or a directory."""
     path = Path(input_path)
     if path.is_file():
-        if not _is_image(path):
-            raise ValueError(f"Not a valid image file: {path}")
+        if not _is_supported_input(path):
+            raise ValueError(f"Not a valid image or ASCII image file: {path}")
         yield path
         return
 
@@ -350,10 +363,10 @@ def iter_image_paths(input_path: str | Path) -> Iterable[Path]:
         image_paths = sorted(
             candidate
             for candidate in path.iterdir()
-            if candidate.is_file() and _is_image(candidate)
+            if candidate.is_file() and _is_supported_input(candidate)
         )
         if not image_paths:
-            return [] # Return empty list if no images found
+            raise ValueError(f"No valid image or ASCII image files found in {path}")
         yield from image_paths
         return
 
@@ -453,9 +466,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help=(
             "Path to a single image file OR a directory of images, OR a packaged "
             "sample as 'samples:NAME' (e.g. 'samples:svhn_digit_5.png'). Images "
-            "are detected by content, not by file extension, so an image without "
-            "an extension is accepted while non-images (e.g. a .txt or .pdf) or a "
-            "missing path are reported as invalid input."
+            "are detected by content, and ASCII digit files are accepted as .txt "
+            "or .ascii files using '#', 'X', '1', '@', or '*' for strokes and "
+            "'.', space, '0', or '-' for background. "
+            "Missing paths and unsupported files are reported as invalid input."
         ),
     )
     parser.add_argument(
@@ -538,11 +552,14 @@ __all__ = [
     "Inference",
     "InferenceFactory",
     "InferenceSpec",
+    "ascii_digit_to_image",
     "build_arg_parser",
     "build_transform",
     "iter_image_paths",
+    "is_ascii_image",
     "load_model",
     "main",
+    "read_ascii_image",
     "run_inference",
     "write_results",
 ]
