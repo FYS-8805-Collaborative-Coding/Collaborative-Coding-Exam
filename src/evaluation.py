@@ -23,8 +23,8 @@ from .inference import InferenceFactory, BaseInference
 logger = get_logger("evaluation")
 
 DEFAULT_METRICS = {
-    "precision": lambda y_true, y_pred: precision_score(y_true, y_pred, average="micro"),
-    "recall": lambda y_true, y_pred: recall_score(y_true, y_pred, average="micro"),
+    "precision": lambda y_true, y_pred: precision_score(y_true, y_pred, average="macro"),
+    "recall": lambda y_true, y_pred: recall_score(y_true, y_pred, average="macro"),
 }
 
 def evaluate(
