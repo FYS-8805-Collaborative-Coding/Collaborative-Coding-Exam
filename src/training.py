@@ -242,9 +242,28 @@ def train(dataset: str = "mnist", **kwargs):
     return trainer.train()
 
 
+def _load_cfg(path: str) -> dict:
+    """Parse a shell-style key=value config file into a dict of strings."""
+    cfg = {}
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            key, _, value = line.partition("=")
+            cfg[key.strip()] = value.strip()
+    return cfg
+
+
 def build_arg_parser():
     """Build the command-line argument parser for training."""
     parser = argparse.ArgumentParser(description="Train a dataset model.")
+    parser.add_argument(
+        "--config", "-c",
+        default=None,
+        metavar="FILE",
+        help="Path to a .cfg file (e.g. configs/mnist.cfg). Values act as defaults and are overridden by any explicit CLI flag.",
+    )
     parser.add_argument(
         "--dataset",
         default="mnist",
@@ -271,6 +290,20 @@ def build_arg_parser():
 def main(argv=None):
     """Command-line entry point for training."""
     parser = build_arg_parser()
+
+    # Pre-pass: find --config, load it, then set those values as defaults so
+    # any explicit CLI flag still wins (CLI > config file > argparse defaults).
+    pre_args, _ = parser.parse_known_args(argv)
+    if pre_args.config:
+        cfg = _load_cfg(pre_args.config)
+        action_map = {a.dest: a for a in parser._actions}
+        typed_cfg = {
+            key: (action_map[key].type(value) if action_map[key].type else value)
+            for key, value in cfg.items()
+            if key in action_map
+        }
+        parser.set_defaults(**typed_cfg)
+
     args = parser.parse_args(argv)
 
     from .utils import setup_logging
