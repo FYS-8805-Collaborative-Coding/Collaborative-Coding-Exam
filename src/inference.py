@@ -9,6 +9,7 @@ import argparse
 import csv
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from importlib import resources
 from pathlib import Path
 from typing import Callable, Iterable, TypeVar
 
@@ -17,14 +18,19 @@ from torch import nn
 from PIL import Image
 from torchvision import transforms
 
-from src.models import MNISTNet, USPSNet, SVHNNet
-from src.utils import setup_logging, get_logger
+from .models import MNISTNet, USPSNet, SVHNNet
+from .utils import setup_logging, get_logger
 
 logger = get_logger("inference")
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png"}
 ModelT = TypeVar("ModelT", bound=nn.Module)
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+# Inputs prefixed with this scheme resolve to a packaged sample image, e.g.
+# `samples:svhn_digit_5.png` -> ccexam/samples/svhn_digit_5.png
+SAMPLE_PREFIX = "samples:"
+_SAMPLES_SUBDIR = ("samples",)
 
 
 class BaseInference(ABC):
@@ -187,12 +193,67 @@ class InferenceFactory:
         )
 
 
+def _is_image(path: Path) -> bool:
+    """Return True if ``path`` is a decodable image, judged by its content.
+
+    The file extension is ignored: an image with no extension (e.g. ``digit``)
+    is accepted. Non-image is rejected because PIL cannot decode it.
+    """
+    try:
+        with Image.open(path) as img:
+            img.verify()
+        return True
+    except Exception:
+        return False
+
+
+def _samples_dir():
+    """Return a path-like to the packaged sample-images directory."""
+    return resources.files(__package__ or "ccexam").joinpath(*_SAMPLES_SUBDIR)
+
+
+def list_samples() -> list[str]:
+    """Return the available packaged sample image filenames, sorted."""
+    try:
+        return sorted(
+            entry.name
+            for entry in _samples_dir().iterdir()
+            if Path(entry.name).suffix.lower() in IMAGE_EXTENSIONS
+        )
+    except Exception:
+        return []
+
+
+def _resolve_sample(name: str) -> Path:
+    """Resolve a sample name (e.g. ``svhn_digit_5`` or ``svhn_digit_5.png``) to
+    a packaged image path, trying the name as given and then with ``.png``."""
+    samples = _samples_dir()
+    candidates = [name] if Path(name).suffix else [f"{name}.png", name]
+    for candidate in candidates:
+        try:
+            entry = samples.joinpath(candidate)
+            if entry.is_file():
+                return Path(str(entry))
+        except (FileNotFoundError, NotADirectoryError):
+            continue
+    available = ", ".join(list_samples()) or "none"
+    raise FileNotFoundError(f"Unknown sample: '{name}'. Available samples: {available}")
+
+
+def _resolve_input(input_path: str | Path) -> str | Path:
+    """Map a ``samples:NAME`` input to a packaged image; pass everything else
+    through unchanged so normal file/directory paths still work."""
+    if isinstance(input_path, str) and input_path.startswith(SAMPLE_PREFIX):
+        return _resolve_sample(input_path[len(SAMPLE_PREFIX):])
+    return input_path
+
+
 def iter_image_paths(input_path: str | Path) -> Iterable[Path]:
     """Yield image paths from a single image file or a directory."""
     path = Path(input_path)
     if path.is_file():
-        if path.suffix.lower() not in IMAGE_EXTENSIONS:
-            raise ValueError(f"Unsupported image extension: {path.suffix}")
+        if not _is_image(path):
+            raise ValueError(f"Not a valid image file: {path}")
         yield path
         return
 
@@ -200,8 +261,10 @@ def iter_image_paths(input_path: str | Path) -> Iterable[Path]:
         image_paths = sorted(
             candidate
             for candidate in path.iterdir()
-            if candidate.is_file() and candidate.suffix.lower() in IMAGE_EXTENSIONS
+            if candidate.is_file() and _is_image(candidate)
         )
+        if not image_paths:
+            raise ValueError(f"No valid image files found in {path}")
         yield from image_paths
         return
 
@@ -214,6 +277,7 @@ def _predict(
     checkpoint_path: str | Path | None = None,
     device: str | torch.device | None = None,
 ) -> dict[Path, int]:
+    input_path = _resolve_input(input_path)
     inference = InferenceFactory.create(
         model.lower(),
         checkpoint_path=checkpoint_path,
@@ -247,6 +311,7 @@ def run_inference(
     >>> run_inference(model="svhn", input_path="folder_of_digits/")
     [7, 2, 1, 0]
     """
+    input_path = _resolve_input(input_path)
     labels = list(_predict(model, input_path, checkpoint_path, device).values())
     if Path(input_path).is_file():
         if not labels:
@@ -298,9 +363,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "--input",
         required=True,
         help=(
-            "Path to a single image file OR a directory of images. Supported "
-            f"formats: {', '.join(sorted(IMAGE_EXTENSIONS))}. Other files (e.g. "
-            "a PDF) or a missing path are reported as invalid input."
+            "Path to a single image file OR a directory of images, OR a packaged "
+            "sample as 'samples:NAME' (e.g. 'samples:svhn_digit_5.png'). Images "
+            "are detected by content, not by file extension, so an image without "
+            "an extension is accepted while non-images (e.g. a .txt or .pdf) or a "
+            "missing path are reported as invalid input."
         ),
     )
     parser.add_argument(

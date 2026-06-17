@@ -138,7 +138,7 @@ def load_training_module():
     sys.modules["src.models"] = fake_models
 
     module_path = Path(__file__).resolve().parents[1] / "src" / "training.py"
-    spec = importlib.util.spec_from_file_location("training_under_test", module_path)
+    spec = importlib.util.spec_from_file_location("src.training_under_test", module_path)
     module = importlib.util.module_from_spec(spec)
 
     try:

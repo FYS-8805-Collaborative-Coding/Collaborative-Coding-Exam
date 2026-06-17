@@ -21,8 +21,8 @@ from typing import Type, Optional, Callable
 import torch
 from torch import nn, optim
 
-from src.data import DATA_MODULES
-from src.models import MNISTNet, USPSNet, SVHNNet
+from .data import DATA_MODULES
+from .models import MNISTNet, USPSNet, SVHNNet
 
 # Define the project root relative to this file.
 # This ensures paths are consistent regardless of the current working directory.
@@ -273,10 +273,7 @@ def main(argv=None):
     parser = build_arg_parser()
     args = parser.parse_args(argv)
 
-    try:
-        from .utils import setup_logging
-    except ImportError:
-        from utils import setup_logging
+    from .utils import setup_logging
     setup_logging(args.log_level)
 
     logger.info(
