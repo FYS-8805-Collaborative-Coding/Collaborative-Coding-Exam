@@ -262,11 +262,16 @@ def infer():
 
 # --- Tests ---
 
+def _save_image(path, size=(32, 32), mode="RGB"):
+    """Write a real, decodable image to ``path`` (format inferred from suffix)."""
+    Image.new(mode, size).save(path)
+
+
 def test_iter_image_paths_directory(tmp_path, infer):
-    """Image iterator finds supported extensions and returns them sorted."""
-    (tmp_path / "img2.png").write_text("data")
-    (tmp_path / "img1.jpg").write_text("data")
-    (tmp_path / "notes.txt").write_text("data")  # Should be ignored
+    """Iterator finds real images (by content) and returns them sorted."""
+    _save_image(tmp_path / "img2.png")
+    _save_image(tmp_path / "img1.jpg")
+    (tmp_path / "notes.txt").write_text("data")  # not an image -> ignored
 
     paths = list(infer.iter_image_paths(tmp_path))
 
@@ -276,27 +281,46 @@ def test_iter_image_paths_directory(tmp_path, infer):
 
 
 def test_iter_image_paths_file(tmp_path, infer):
-    """Image iterator works for a single valid file."""
+    """Iterator works for a single valid image file."""
     img_path = tmp_path / "test.png"
-    img_path.write_text("data")
+    _save_image(img_path)
 
     paths = list(infer.iter_image_paths(img_path))
     assert paths == [img_path]
 
 
-def test_iter_image_paths_invalid_extension(tmp_path, infer):
-    """Iterator raises ValueError for unsupported file extensions."""
+def test_iter_image_paths_accepts_extensionless_image(tmp_path, infer):
+    """A real image with no file extension is accepted (detection is by content)."""
+    img_path = tmp_path / "digit"  # no extension
+    _save_image(img_path.with_suffix(".png"))
+    (img_path.with_suffix(".png")).rename(img_path)
+
+    paths = list(infer.iter_image_paths(img_path))
+    assert paths == [img_path]
+
+
+def test_iter_image_paths_rejects_non_image(tmp_path, infer):
+    """A non-image file (e.g. .txt) is rejected, regardless of name."""
     txt_path = tmp_path / "test.txt"
     txt_path.write_text("data")
 
-    with pytest.raises(ValueError, match="Unsupported image extension"):
+    with pytest.raises(ValueError, match="Not a valid image file"):
         list(infer.iter_image_paths(txt_path))
 
 
+def test_iter_image_paths_rejects_text_renamed_to_png(tmp_path, infer):
+    """A text file masquerading as a .png is rejected (content is checked)."""
+    fake = tmp_path / "fake.png"
+    fake.write_text("this is not an image")
+
+    with pytest.raises(ValueError, match="Not a valid image file"):
+        list(infer.iter_image_paths(fake))
+
+
 def test_iter_image_paths_empty_directory(tmp_path, infer):
-    """Iterator returns an empty list for a directory with no image files."""
-    paths = list(infer.iter_image_paths(tmp_path))
-    assert paths == []
+    """A directory with no valid images raises ValueError."""
+    with pytest.raises(ValueError, match="No valid image files found"):
+        list(infer.iter_image_paths(tmp_path))
 
 
 def test_resolve_checkpoint_path_relative(infer):
@@ -423,9 +447,8 @@ def test_run_inference_integration(tmp_path, infer):
 
 
 def test_run_inference_empty_directory(tmp_path, infer):
-    """run_inference returns an empty dict for a directory with no images."""
+    """run_inference raises ValueError for a directory with no valid images."""
     with patch.object(infer.InferenceFactory, "create") as mock_factory:
         mock_factory.return_value = MagicMock()
-        output = infer.run_inference(model="mnist", input_path=tmp_path)
-
-    assert output == []
+        with pytest.raises(ValueError, match="No valid image files found"):
+            infer.run_inference(model="mnist", input_path=tmp_path)
