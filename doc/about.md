@@ -12,8 +12,6 @@ Open a terminal and run:
 pip install ccexam
 ```
 
-You only need to do this once.
-
 ---
 
 **Step 2 — Get a sample image to try**
@@ -31,10 +29,10 @@ Download this example digit image and save it somewhere easy to find (e.g. your 
 
 **Step 3 — Run the tool on your image**
 
-In your terminal, navigate to the folder where you saved the image, then run:
+Open a terminal and run the command below, replacing the path with wherever you saved the image:
 
 ```bash
-ccexam-infer --model usps --input sample_digit.png
+ccexam-infer --model svhn --input /path/to/sample_digit.png
 ```
 
 The tool will print the digit (0–9) it thinks is in the image.
@@ -42,19 +40,21 @@ The tool will print the digit (0–9) it thinks is in the image.
 Want to classify all images in a folder at once?
 
 ```bash
-ccexam-infer --model usps --input path/to/your/folder
+ccexam-infer --model svhn --input path/to/your/folder
 ```
 
 The predictions can be piped to an output file using the `--output` argument:
 
 ```bash
-ccexam-infer --model usps --input path/to/your/folder --output path/to/your/output_file.csv
+ccexam-infer --model svhn --input path/to/your/folder --output path/to/your/output_file.csv
 ```
 
-On a laptop with no dedicated graphics card, add `--device cpu`:
+By default the tool picks the best available device. You can override it with `--device`:
 
 ```bash
-ccexam-infer --model usps --input sample_digit.png --device cpu
+ccexam-infer --model svhn --input /path/to/sample_digit.png --device cpu   # any machine
+ccexam-infer --model svhn --input /path/to/sample_digit.png --device mps   # Apple Silicon Mac
+ccexam-infer --model svhn --input /path/to/sample_digit.png --device cuda  # NVIDIA GPU
 ```
 
 Available models: `mnist`, `usps`, `svhn` — pick whichever matches your images.
@@ -70,19 +70,17 @@ ccexam-infer --model svhn  --input samples:svhn_digit_5.png
 ccexam-infer --model mnist --input samples:ascii_digit_5.txt
 ```
 
-An unknown name will list the available samples.
+If the name is not found, the error message will print the full list of available sample names.
 
 ---
 
 **What inputs are accepted?**
 
-- **Any image, recognised by its content — not its file name.** A real image works even with an unusual extension or **no extension at all**; a non-image (a PDF, a text file renamed `.png`, etc.) is rejected with a clear `Invalid input` message.
-- **ASCII-art digits** stored in a `.txt` file (a digit drawn with characters) are detected automatically and converted before inference — no special flag:
-  ```bash
-  ccexam-infer --model mnist --input ascii_digit.txt
-  ```
-  Note that ASCII art is coarse and out of distribution for these models, so results are best-effort.
-- A **folder** classifies every readable image inside and simply skips files it can't read.
+| Input type | How to pass it | Notes |
+|---|---|---|
+| **Image file** | `--input /path/to/image.png` | Detected by content, not extension. Works with any extension or no extension at all. Non-images are rejected with an `Invalid input` message. |
+| **ASCII-art digit** | `--input digit.txt` or `--input digit.ascii` | Auto-detected and converted before inference. Foreground chars: `#` `X` `1` `@` `*`; background: `.` space `0` `-`. All rows must be the same width. Results are best-effort. |
+| **Folder** | `--input /path/to/folder/` | Classifies every readable image inside. Unreadable files are skipped silently. |
 
 ---
 
@@ -90,6 +88,8 @@ An unknown name will list the available samples.
 
 - Run `ccexam-infer --help` to see all available arguments and their descriptions.
 - Make sure Python 3.10 or newer is installed — check with `python --version`.
-- If `ccexam-infer` is not found after installing, close and reopen your terminal, then try again.
-- Do **not** add extra text after the command (e.g. avoid `./` at the end).
+- If `ccexam-infer` is not found after installing, close and reopen your terminal. If it still fails, use the module form as a fallback — it works regardless of `PATH`:
+  ```bash
+  python -m ccexam.inference --model svhn --input /path/to/image.png
+  ```
 - For further questions, reach out to the team listed on the [Individual contributions](individual.md) page.
