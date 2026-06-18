@@ -1,11 +1,29 @@
-# ACME Digit Classification
+<p align="center">
+    <img src="uit.png" alt="UiT The Arctic University of Norway" width="130">
+</p>
 
-[![CI](https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/actions/workflows/test.yml/badge.svg)](https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/actions/workflows/test.yml)
-[![PyPI](https://img.shields.io/pypi/v/ccexam)](https://pypi.org/project/ccexam/)
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![License](https://img.shields.io/github/license/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam)
+<div align="center">
+<h1 align="center">ACME Digit Classification</h1>
+<h4 align="center"><em>A unified framework for handwritten-digit recognition — MNIST · SVHN · USPS</em></h4>
+<h4 align="center"><em>FYS-8805 Collaborative Coding Exam · UiT The Arctic University of Norway</em></h4>
+<h5 align="center"><em>Siyan Chen · Andrea Løkke · Riccardo Gelato · Rahul Baburajan · Keyne Oei · Myrthe Catteau</em></h5>
+</div>
 
-ACME Digit Classification is a machine learning framework for handwritten digit recognition developed as part of the FYS-8805 Collaborative Coding Exam at UiT.
+<p align="center">
+    <a href="https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/actions/workflows/test.yml"><img src="https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/actions/workflows/test.yml/badge.svg" alt="CI"></a>
+    <a href="https://pypi.org/project/ccexam/"><img src="https://img.shields.io/pypi/v/ccexam" alt="PyPI"></a>
+    <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python">
+    <a href="https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/blob/main/LICENSE"><img src="https://img.shields.io/github/license/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam" alt="License"></a>
+</p>
+
+<p align="center">
+  <a href="#installation">Installation</a> |
+  <a href="#quick-start-run-inference">Quick start</a> |
+  <a href="#model-cards">Model Cards</a> |
+  <a href="#documentation">Documentation</a> |
+  <a href="#model-development">Development</a>
+</p>
+
 
 The repository provides a unified interface for training, evaluating, and deploying digit classification models for three customer datasets:
 
