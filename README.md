@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="uit.png" alt="UiT The Arctic University of Norway" width="130">
+    <img src="doc/_static/uit.png" alt="UiT The Arctic University of Norway" width="130">
 </p>
 
 <div align="center">
@@ -8,6 +8,10 @@
 <h4 align="center"><em>FYS-8805 Collaborative Coding Exam · UiT The Arctic University of Norway</em></h4>
 <h5 align="center"><em>Siyan Chen · Andrea Løkke · Riccardo Gelato · Rahul Baburajan · Keyne Oei · Myrthe Catteau</em></h5>
 </div>
+
+<p align="center">
+  <img src="doc/_static/collab.png" alt="Collaborating on digit classification under the northern lights in Tromsø" width="820">
+</p>
 
 <p align="center">
     <a href="https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/actions/workflows/test.yml"><img src="https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/actions/workflows/test.yml/badge.svg" alt="CI"></a>
@@ -24,7 +28,7 @@
   <a href="#model-development">Development</a>
 </p>
 
-
+---
 The repository provides a unified interface for training, evaluating, and deploying digit classification models for three customer datasets:
 
 - **Customer A:** MNIST
