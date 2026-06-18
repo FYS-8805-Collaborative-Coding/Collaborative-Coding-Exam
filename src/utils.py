@@ -1,3 +1,5 @@
+"""Shared helpers: ASCII-image parsing and logging configuration."""
+
 import logging
 from pathlib import Path
 
