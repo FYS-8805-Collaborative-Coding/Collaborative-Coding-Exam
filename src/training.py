@@ -58,6 +58,7 @@ class Trainer(BaseTrainer):
         device: str | None = None,
         loss_fn: Optional[Callable] = None,
     ):
+        """Wire the data module, model, optimization hyperparameters, and device."""
         self.data_module = data_module
         self.model = model
         self.epochs = epochs
@@ -78,6 +79,7 @@ class Trainer(BaseTrainer):
         self.loss_fn = loss_fn or nn.CrossEntropyLoss()
 
     def train(self):
+        """Run the training loop for ``epochs`` epochs, save the checkpoint, and return final metrics."""
         self.model.to(self.device)
         self.model.train()
         optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
@@ -148,6 +150,7 @@ class Trainer(BaseTrainer):
         }
 
     def _evaluate_loader(self, dataloader):
+        """Compute average loss and accuracy on ``dataloader`` under ``torch.no_grad``."""
         self.model.eval()
         running_loss = 0.0
         correct = 0
@@ -177,6 +180,8 @@ class Trainer(BaseTrainer):
 
 @dataclass
 class DatasetSpec:
+    """Registry entry binding a dataset name to its data module, model, checkpoint path, and image stats."""
+
     data_module_name: str
     model_cls: Type
     default_checkpoint: str
@@ -207,6 +212,7 @@ class TrainerFactory:
 
     @classmethod
     def create(cls, dataset_name: str, **kwargs):
+        """Build a configured trainer for the registered dataset, merging ``kwargs`` with the dataset's defaults."""
         if dataset_name not in DATASET_REGISTRY:
             raise ValueError(f"Unknown dataset: {dataset_name}")
 
