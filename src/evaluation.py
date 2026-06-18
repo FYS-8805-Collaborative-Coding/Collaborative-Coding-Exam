@@ -47,7 +47,7 @@ def evaluate(
         tensor and ``labels`` is an integer tensor of true classes.
     metrics : dict, optional
         Dictionary mapping metric names to callables that accept ``(y_true, y_pred)``.
-        Defaults to precision and recall (micro-averaged).
+        Defaults to precision and recall (macro-averaged).
  
     Returns
     -------

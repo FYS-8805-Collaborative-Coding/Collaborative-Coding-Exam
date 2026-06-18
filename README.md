@@ -139,8 +139,8 @@ Model A is an MNIST digit classifier for recognizing handwritten digits from
 | Metric | Value |
 |---|---|
 | Precision | 0.9905 |
-| Recall | 0.9905 |
-| Speed (inference) | 0.060 ms / sample |
+| Recall | 0.9904 |
+| Inference time | 0.046 ms / sample |
 
 ---
 
@@ -159,9 +159,9 @@ CNN classifier for Street View House Numbers. It predicts a single cropped house
 
 | Metric | Value |
 |---|---|
-| Precision | 0.9465 |
-| Recall | 0.9465 |
-| Speed (inference) | 0.470 ms / sample |
+| Precision | 0.9436 |
+| Recall | 0.9473 |
+| Inference time | 0.392 ms / sample |
 
 ---
 ### Model C — USPS
@@ -179,9 +179,9 @@ CNN classifier trained on the USPS (United States Postal Service) dataset consis
 
 | Metric | Value |
 |---|---|
-| Precision | 0.9631 |
-| Recall | 0.9631|
-| Speed (inference) | 0.033 ms / sample |
+| Precision | 0.9709 |
+| Recall | 0.9697|
+| Inference time | 0.035 ms / sample |
 
 
 ## Documentation
