@@ -189,7 +189,7 @@ class SVHNDataModule(TorchvisionDataModule):
             grayscale=grayscale if grayscale is not None else stats["grayscale"],
             val_split=kwargs.pop("val_split", 0.1), # Default to 0.1 if not provided
             val_seed=kwargs.pop("val_seed", 42), # Default to 42 if not provided
-            data_dir=data_dir,
+            data_dir=str(Path(data_dir) / "SVHN"),
             batch_size=batch_size,
             num_workers=num_workers,
             download=download,
