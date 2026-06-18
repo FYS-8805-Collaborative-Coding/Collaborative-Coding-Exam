@@ -21,7 +21,7 @@ Use `MNISTDataModule` in `src/data.py` as the reference pattern.
    Add an entry to the `DATASET_REGISTRY` in `src/training.py`, referencing your new data module by its string name and the appropriate model class.
 
 6. Add inference support in `src/inference.py`.
-   Add an entry to the `PredictorFactory` registry in `src/inference.py`, mapping your dataset name to its model, image size, and normalization constants.
+   Add an entry to `INFERENCE_REGISTRY` in `src/inference.py`, mapping your dataset name to its model, image size, and normalization constants.
    NB: Make sure inference transforms match the training transforms.
 
 ## Training Factory
@@ -120,8 +120,16 @@ For each new dataset:
 
    ```python
    INFERENCE_REGISTRY = {
-       "mnist": InferenceSpec(MNISTNet, "weights/mnist.pth", inference_cls=MNISTInference),
-       "usps": InferenceSpec(USPSNet, "weights/usps.pth", inference_cls=USPSInference),
+       "mnist": InferenceSpec(
+           MNISTNet, "weights/mnist.pth",
+           image_size=28, mean=(0.1307,), std=(0.3081,),
+           grayscale=True
+       ),
+       "usps": InferenceSpec(
+           USPSNet, "weights/usps.pth",
+           image_size=16, mean=(0.2471,), std=(0.2994,),
+           grayscale=True
+       ),
    }
    ```
 
