@@ -187,11 +187,11 @@ CNN classifier trained on the USPS (United States Postal Service) dataset consis
 ## Documentation
 
 More detailed documentation and examples are available at [https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/](https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/). Including instructions for:
-- testing
-- training
-- evaluating
+- [testing](https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/development.html#training)
+- [training](https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/development.html#training)
+- [evaluation](https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/api.html#evaluation-src-evaluation)
 - usage of HPC (Lumi)
-- contributing to the code
+- [contributing to the code](https://fys-8805-collaborative-coding.github.io/Collaborative-Coding-Exam/development.html#contributing-to-the-code)
 
 ---
 
