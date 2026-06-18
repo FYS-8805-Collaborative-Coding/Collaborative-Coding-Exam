@@ -224,3 +224,8 @@ __marimo__/
 datasets/MNIST
 datasets/USPS
 *.mat
+usps_images/
+exports_usps_images.py
+*.bz2
+*.h5
+.DS_Store

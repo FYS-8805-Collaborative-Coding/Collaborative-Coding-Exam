@@ -11,5 +11,6 @@ This document includes a User Guide for installation and CLI usage, an API Refer
 about.md
 api.md
 development.md
+lumi.md
 individual.md
 :::

@@ -15,6 +15,63 @@ The checkpoint is written to `weights/mnist.pth` by default. The current
 training entry point supports `mnist` and can be extended with more datasets
 through the registry in `src/training.py`.
 
+### Using a config file
+
+Instead of passing all flags on the command line, you can use a config file with `--config` (`-c`). The `configs/` directory contains ready-made configs for each dataset:
+
+```bash
+python -m src.training --config configs/mnist.cfg
+python -m src.training --config configs/svhn.cfg
+python -m src.training --config configs/usps.cfg
+```
+
+A config file is a plain `key=value` text file (lines starting with `#` are comments):
+
+```
+# configs/mnist.cfg
+dataset=mnist
+epochs=50
+batch_size=32
+```
+
+Any CLI flag you pass explicitly will override the corresponding value in the config file — the priority order is **CLI flag > config file > built-in default**:
+
+```bash
+# Use the config but run only 5 epochs instead of 50
+python -m src.training --config configs/mnist.cfg --epochs 5
+```
+
+## Evaluation
+
+After training, evaluate a model on its test set from the repository root:
+
+```bash
+# Evaluate the default MNIST model on CPU
+python -m src.evaluation --dataset mnist
+
+# Evaluate with a custom checkpoint on NVIDIA GPU
+python -m src.evaluation --dataset svhn --checkpoint-path weights/svhn.pth --device cuda
+
+# Evaluate on Apple Silicon
+python -m src.evaluation --dataset svhn --checkpoint-path weights/svhn.pth --device mps
+```
+
+The command prints macro-averaged precision, macro-averaged recall, and average
+inference time per sample. The test data is downloaded automatically on the first
+run to the directory given by `--data-dir` (default: `datasets/`).
+
+| Argument | Default | Description |
+|---|---|---|
+| `--dataset` | `mnist` | Dataset to evaluate on: `mnist`, `usps`, or `svhn`. |
+| `--checkpoint-path` | *(registered default)* | Path to a `.pth` checkpoint file. |
+| `--batch-size` | `256` | Number of samples per batch. |
+| `--data-dir` | `datasets` | Root directory for dataset downloads. |
+| `--num-workers` | `0` | Number of DataLoader worker processes. |
+| `--device` | `cpu` | PyTorch device: `cpu`, `cuda` (NVIDIA GPU), or `mps` (Apple Silicon). |
+| `--log-level` | `INFO` | Logging verbosity: `DEBUG`, `INFO`, `WARNING`. |
+
+---
+
 ## Testing
 
 Run the basic tests with:
