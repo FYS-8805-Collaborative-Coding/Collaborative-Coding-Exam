@@ -4,80 +4,47 @@ This page documents the public Python API exposed by the `ccexam` package.
 
 ---
 
-## Inference (`src.inference`)
+## Data (`src.data`)
 
-### `run_inference`
+### `get_loaders`
 
 ```python
-from src.inference import run_inference
+from src.data import get_loaders
 
-run_inference(
-    model: str,
-    input_path: str | Path,
-    checkpoint_path: str | Path | None = None,
-    device: str | None = None,
-) -> int | list[int]
+train_loader, test_loader = get_loaders(
+    dataset: str = "mnist",
+    batch_size: int = 64,
+    data_dir: str = "datasets",
+    num_workers: int = 2,
+    download: bool = True,
+)
 ```
 
-Run inference on one image or a folder of images.
-
-| Parameter | Type | Description |
-|---|---|---|
-| `model` | `str` | Dataset alias: `"mnist"`, `"usps"`, `"svhn"` |
-| `input_path` | `str \| Path` | Path to a single image file or a directory of images |
-| `checkpoint_path` | `str \| Path \| None` | Override the default checkpoint file (optional) |
-| `device` | `str \| None` | Torch device, e.g. `"cpu"`, `"cuda"`, `"mps"`. Auto-detected if `None` |
-
-**Returns** a single `int` label when `input_path` is a file, or a `list[int]` (sorted by filename) when it is a directory.
+Returns `(train_loader, test_loader)` as `torch.utils.data.DataLoader` objects for a registered dataset. Dataset files are downloaded automatically on first use.
 
 **Example**
 
 ```python
-from src.inference import run_inference
+from src.data import get_loaders
 
-label = run_inference(model="usps", input_path="digit.png")
-print(label)  # e.g. 7
-
-labels = run_inference(model="mnist", input_path="folder/")
-print(labels)  # e.g. [3, 1, 4, 1, 5]
+train_loader, test_loader = get_loaders(dataset="svhn", batch_size=128)
+for images, labels in train_loader:
+    ...
 ```
 
 ---
 
-### `InferenceFactory`
+### Data modules
 
-```python
-from src.inference import InferenceFactory
+Each dataset has a dedicated data module that can also be used directly:
 
-predictor = InferenceFactory.create(model_name: str, **kwargs)
-predictor.predict(image)  # -> int
-```
+| Class | Dataset | Default normalization |
+|---|---|---|
+| `MNISTDataModule` | MNIST | mean=0.1307, std=0.3081 |
+| `USPSDataModule` | USPS | mean=0.2471, std=0.2994 |
+| `SVHNDataModule` | SVHN | mean=(0.4377, 0.4438, 0.4728), std=(0.1980, 0.2010, 0.1970) |
 
-Creates a configured `Inference` instance for the given model name. Accepts the same keyword arguments as `run_inference` (`device`, `checkpoint_path`, etc.).
-
----
-
-### `INFERENCE_REGISTRY`
-
-Dictionary mapping model/dataset names to `InferenceSpec` objects that define the model class, default checkpoint path, image size, and normalization constants.
-
-| Key | Model class | Image size | Channels |
-|---|---|---|---|
-| `"mnist"` / `"model-a"` | `MNISTNet` | 28×28 | Grayscale |
-| `"usps"` / `"model-b"` | `USPSNet` | 16×16 | Grayscale |
-| `"svhn"` / `"model-c"` | `SVHNNet` | 32×32 | RGB |
-
----
-
-### `write_results`
-
-```python
-from src.inference import write_results
-
-write_results(results: dict[Path, int], output_path: str | Path) -> Path
-```
-
-Write a `{image_path: label}` dictionary to a `.csv` or `.txt` file. The output file is never overwritten — a numbered copy is created instead (`predictions_1.csv`, …).
+All modules expose `.train_loader()`, `.val_loader()`, and `.test_loader()` methods.
 
 ---
 
@@ -172,44 +139,155 @@ Maps dataset names to `DatasetSpec` objects (data module class, model class, def
 
 ---
 
-## Data (`src.data`)
+## Evaluation (`src.evaluation`)
 
-### `get_loaders`
+### `evaluate`
 
 ```python
-from src.data import get_loaders
+from src.evaluation import evaluate
 
-train_loader, test_loader = get_loaders(
-    dataset: str = "mnist",
-    batch_size: int = 64,
-    data_dir: str = "datasets",
-    num_workers: int = 2,
-    download: bool = True,
-)
+evaluate(
+    inference: BaseInference,
+    dataloader: Iterable,
+    metrics: dict[str, Callable[[Any, Any], float]] | None = None,
+) -> dict
 ```
 
-Returns `(train_loader, test_loader)` as `torch.utils.data.DataLoader` objects for a registered dataset. Dataset files are downloaded automatically on first use.
+Run a trained model over every batch in `dataloader` and report classification metrics together with the average inference speed. Runs under `torch.no_grad`.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `inference` | `BaseInference` | Inference instance from `InferenceFactory.create(...)`. Its underlying model is used for batch prediction. |
+| `dataloader` | `Iterable` | Yields `(images, labels)` batches — typically a `DataModule.test_loader()`. |
+| `metrics` | `dict \| None` | Mapping of metric name to `(y_true, y_pred) -> float`. Defaults to `DEFAULT_METRICS` (precision and recall, macro-averaged). |
+
+**Returns** a dict with:
+
+- `"precision"` — macro-averaged precision
+- `"recall"` — macro-averaged recall
+- `"speed_ms"` — average forward-pass time in milliseconds per sample (data-loading time excluded)
 
 **Example**
 
 ```python
-from src.data import get_loaders
+from src.data import DATA_MODULES
+from src.evaluation import evaluate
+from src.inference import InferenceFactory
 
-train_loader, test_loader = get_loaders(dataset="svhn", batch_size=128)
-for images, labels in train_loader:
-    ...
+inference = InferenceFactory.create("svhn", checkpoint_path="weights/svhn.pth", device="cpu")
+test_loader = DATA_MODULES["svhn"](data_dir="datasets", batch_size=256).test_loader()
+
+results = evaluate(inference, test_loader)
+print(results)  # {"precision": 0.91, "recall": 0.90, "speed_ms": 1.42}
 ```
 
 ---
 
-### Data modules
+### CLI usage
 
-Each dataset has a dedicated data module that can also be used directly:
+`src.evaluation` is also runnable as a module to evaluate a registered dataset on its test set:
 
-| Class | Dataset | Default normalization |
+```bash
+python -m src.evaluation --dataset svhn --checkpoint-path weights/svhn.pth --device cpu
+```
+
+| Argument | Default | Description |
 |---|---|---|
-| `MNISTDataModule` | MNIST | mean=0.1307, std=0.3081 |
-| `USPSDataModule` | USPS | mean=0.2471, std=0.2994 |
-| `SVHNDataModule` | SVHN | mean=(0.4377, 0.4438, 0.4728), std=(0.1980, 0.2010, 0.1970) |
+| `--dataset` | `mnist` | One of `mnist`, `usps`, `svhn` |
+| `--checkpoint-path` | registry default | Checkpoint to load |
+| `--batch-size` | `256` | Evaluation batch size |
+| `--data-dir` | `datasets` | Root directory containing the datasets |
+| `--num-workers` | `0` | DataLoader worker count |
+| `--device` | `cpu` | `cpu`, `cuda`, or `mps` |
+| `--log-level` | `INFO` | Logging level |
 
-All modules expose `.train_loader()`, `.val_loader()`, and `.test_loader()` methods.
+---
+
+### `DEFAULT_METRICS`
+
+Module-level dict of the default metric callables used when `metrics=None` is passed to `evaluate`. Override or extend to add metrics like F1 or accuracy:
+
+```python
+from src.evaluation import DEFAULT_METRICS, evaluate
+from sklearn.metrics import f1_score
+
+custom = {**DEFAULT_METRICS, "f1": lambda y, p: f1_score(y, p, average="macro")}
+results = evaluate(inference, test_loader, metrics=custom)
+```
+
+---
+
+## Inference (`src.inference`)
+
+### `run_inference`
+
+```python
+from src.inference import run_inference
+
+run_inference(
+    model: str,
+    input_path: str | Path,
+    checkpoint_path: str | Path | None = None,
+    device: str | None = None,
+) -> int | list[int]
+```
+
+Run inference on one image or a folder of images.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `model` | `str` | Dataset alias: `"mnist"`, `"usps"`, `"svhn"` |
+| `input_path` | `str \| Path` | Path to a single image file or a directory of images |
+| `checkpoint_path` | `str \| Path \| None` | Override the default checkpoint file (optional) |
+| `device` | `str \| None` | Torch device, e.g. `"cpu"`, `"cuda"`, `"mps"`. Auto-detected if `None` |
+
+**Returns** a single `int` label when `input_path` is a file, or a `list[int]` (sorted by filename) when it is a directory.
+
+**Example**
+
+```python
+from src.inference import run_inference
+
+label = run_inference(model="usps", input_path="digit.png")
+print(label)  # e.g. 7
+
+labels = run_inference(model="mnist", input_path="folder/")
+print(labels)  # e.g. [3, 1, 4, 1, 5]
+```
+
+---
+
+### `InferenceFactory`
+
+```python
+from src.inference import InferenceFactory
+
+predictor = InferenceFactory.create(model_name: str, **kwargs)
+predictor.predict(image)  # -> int
+```
+
+Creates a configured `Inference` instance for the given model name. Accepts the same keyword arguments as `run_inference` (`device`, `checkpoint_path`, etc.).
+
+---
+
+### `INFERENCE_REGISTRY`
+
+Dictionary mapping model/dataset names to `InferenceSpec` objects that define the model class, default checkpoint path, image size, and normalization constants.
+
+| Key | Model class | Image size | Channels |
+|---|---|---|---|
+| `"mnist"` / `"model-a"` | `MNISTNet` | 28×28 | Grayscale |
+| `"usps"` / `"model-b"` | `USPSNet` | 16×16 | Grayscale |
+| `"svhn"` / `"model-c"` | `SVHNNet` | 32×32 | RGB |
+
+---
+
+### `write_results`
+
+```python
+from src.inference import write_results
+
+write_results(results: dict[Path, int], output_path: str | Path) -> Path
+```
+
+Write a `{image_path: label}` dictionary to a `.csv` or `.txt` file. The output file is never overwritten — a numbered copy is created instead (`predictions_1.csv`, …).
