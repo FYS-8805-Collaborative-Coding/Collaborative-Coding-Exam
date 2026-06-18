@@ -99,7 +99,7 @@ def build_arg_parser():
     parser.add_argument("--checkpoint-path", default=None, help="Checkpoint to load (defaults to the dataset's registered path).")
     parser.add_argument("--batch-size", type=int, default=256, help="Evaluation batch size.")
     parser.add_argument("--data-dir", default="datasets", help="Directory containing the datasets.")
-    parser.add_argument("--num-workers", type=int, default=2, help="DataLoader worker count.")
+    parser.add_argument("--num-workers", type=int, default=0, help="DataLoader worker count.")
     parser.add_argument("--device", default="cpu", help="Device to use, e.g. cpu, cuda, or mps.")
     parser.add_argument("--log-level", default="INFO", help="Logging level, e.g. INFO or DEBUG.")
     return parser
