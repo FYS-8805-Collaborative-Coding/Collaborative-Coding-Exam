@@ -11,6 +11,15 @@ from src.constants import DATASET_STATS
 random_split = getattr(torch.utils.data, "random_split", None)
 
 
+def _to_rgb(img):
+    """Convert a PIL image to RGB.
+
+    Defined at module level (not as a lambda) so it is picklable — DataLoader
+    workers on Python 3.14 pickle the dataset's transform when spawning.
+    """
+    return img.convert("RGB")
+
+
 class BaseDataModule(ABC):
     """Base class for dataset-specific data loaders."""
 
@@ -58,7 +67,7 @@ class TorchvisionDataModule(BaseDataModule):
         self.transform = transforms.Compose(
             [
                 transforms.Resize(image_size if isinstance(image_size, tuple) else (image_size, image_size)),
-                transforms.Grayscale(num_output_channels=1) if grayscale else transforms.Lambda(lambda x: x.convert("RGB")),
+                transforms.Grayscale(num_output_channels=1) if grayscale else transforms.Lambda(_to_rgb),
                 transforms.ToTensor(),
                 transforms.Normalize(norm_mean, norm_std),
             ]
