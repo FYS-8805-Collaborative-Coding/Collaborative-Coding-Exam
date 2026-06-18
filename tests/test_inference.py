@@ -281,7 +281,7 @@ def _save_image(path, size=(32, 32), mode="RGB"):
 
 
 def _ascii_sample_path(name: str = "ascii_digit_2.txt") -> Path:
-    return Path(__file__).resolve().parents[1] / "datasets" / "inference" / name
+    return Path(__file__).resolve().parents[1] / "src" / "samples" / name
 
 
 def test_iter_image_paths_directory(tmp_path, infer):
