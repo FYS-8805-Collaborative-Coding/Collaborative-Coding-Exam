@@ -48,10 +48,11 @@ class TorchvisionDataModule(BaseDataModule):
         batch_size=64, 
         num_workers=2, 
         download=True,
-        val_split=0.1, 
+        val_split=0.1,
         val_seed=42,
         **kwargs
     ):
+        """Wire up the torchvision dataset class with its normalization, transforms, and DataLoader config."""
         self.dataset_cls = dataset_cls
         self.data_dir = Path(data_dir)
         self.batch_size = batch_size
@@ -75,6 +76,7 @@ class TorchvisionDataModule(BaseDataModule):
         self.dataset_kwargs = kwargs
 
     def _dataset(self, train):
+        """Instantiate the underlying torchvision dataset for the requested split."""
         ds_kwargs = self.dataset_kwargs.copy()
         if self.dataset_cls == datasets.SVHN:
             ds_kwargs["split"] = "train" if train else "test"
@@ -89,6 +91,7 @@ class TorchvisionDataModule(BaseDataModule):
         )
 
     def _train_val_datasets(self):
+        """Return cached ``(train, val)`` subsets of the training set, split once with ``val_seed``."""
         if self._train_val_split is None:
             full_train = self._dataset(train=True)
             if random_split is None:
@@ -105,6 +108,7 @@ class TorchvisionDataModule(BaseDataModule):
         return self._train_val_split
 
     def train_loader(self):
+        """Return a shuffling DataLoader over the training split (val subset excluded)."""
         train_dataset, _ = self._train_val_datasets()
         return DataLoader(
             train_dataset,
@@ -115,6 +119,7 @@ class TorchvisionDataModule(BaseDataModule):
         )
 
     def val_loader(self):
+        """Return a non-shuffling DataLoader over the held-out validation subset."""
         _, val_dataset = self._train_val_datasets()
         return DataLoader(
             val_dataset,
@@ -124,6 +129,7 @@ class TorchvisionDataModule(BaseDataModule):
         )
 
     def test_loader(self):
+        """Return a non-shuffling DataLoader over the test split."""
         return DataLoader(
             self._dataset(train=False),
             batch_size=self.batch_size,
@@ -133,7 +139,10 @@ class TorchvisionDataModule(BaseDataModule):
 
 
 class MNISTDataModule(TorchvisionDataModule):
+    """Data module for the MNIST handwritten-digit dataset."""
+
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
+        """Configure the shared :class:`TorchvisionDataModule` with MNIST defaults."""
         stats = DATASET_STATS["mnist"]
         super().__init__(
             dataset_cls=datasets.MNIST,
@@ -155,6 +164,7 @@ class USPSDataModule(TorchvisionDataModule):
     standard normalization (``mean=0.2471``, ``std=0.2994``).
     """
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
+        """Configure the shared :class:`TorchvisionDataModule` with USPS defaults."""
         stats = DATASET_STATS["usps"]
         super().__init__(
             dataset_cls=datasets.USPS,
@@ -180,6 +190,7 @@ class SVHNDataModule(TorchvisionDataModule):
     deviation values.
     """
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
+        """Configure the shared :class:`TorchvisionDataModule` with SVHN defaults."""
         stats = DATASET_STATS["svhn"]
         super().__init__(
             dataset_cls=datasets.SVHN,
