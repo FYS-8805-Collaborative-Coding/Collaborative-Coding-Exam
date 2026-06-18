@@ -52,10 +52,10 @@ After installing the package (`pip install ccexam`), run inference from the comm
 
 ```bash
 # Classify a single image
-ccexam-infer --model svhn --input datasets/inference/svhn_digit_5.png
+ccexam-infer --model svhn --input src/samples/svhn_digit_5.png
 
 # Classify every image in a directory
-ccexam-infer --model svhn --input datasets/inference
+ccexam-infer --model svhn --input src/samples
 
 # Try it instantly on a bundled sample (no file needed) — see "Quick test" below
 ccexam-infer --model svhn --input samples:svhn_digit_5.png
@@ -94,7 +94,7 @@ to also write them to a file:
 
 ```bash
 # Write predictions to results/predictions.csv (the results/ folder is created automatically)
-ccexam-infer --model svhn --input datasets/inference --output results/predictions.csv
+ccexam-infer --model svhn --input src/samples --output results/predictions.csv
 ```
 
 Notes:
