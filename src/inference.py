@@ -61,10 +61,12 @@ class BaseInference(ABC):
         raise NotImplementedError("predict_batch_tensor is not implemented for this inference class")
 
 def _default_device(device: str | torch.device | None = None) -> torch.device:
+    """Resolve ``device`` to a ``torch.device``, falling back to CUDA if available, else CPU."""
     return torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
 
 
 def _resolve_checkpoint_path(checkpoint_path: str | Path) -> Path:
+    """Resolve a checkpoint path against the repo root or the packaged ``ccexam`` resources."""
     path = Path(checkpoint_path)
     if path.is_absolute():
         return path
@@ -91,6 +93,7 @@ def load_model(
     device: str | torch.device | None = None,
     **model_kwargs,
 ) -> ModelT:
+    """Instantiate ``model_cls``, load its weights from ``checkpoint_path``, and put it in eval mode on ``device``."""
     device = _default_device(device)
     model = model_cls(**model_kwargs)
     model.load_state_dict(torch.load(_resolve_checkpoint_path(checkpoint_path), map_location=device, weights_only=True))
@@ -137,6 +140,7 @@ class Inference(BaseInference):
         transform: Callable[[Image.Image], torch.Tensor],
         device: str | torch.device | None = None,
     ) -> None:
+        """Wire the model, image transform, and device for repeated prediction."""
         self.device = _default_device(device)
         self.model = model
         self.model.to(self.device)
@@ -144,6 +148,7 @@ class Inference(BaseInference):
         self.transform = transform
 
     def _prepare_image(self, image: str | Path | Image.Image) -> torch.Tensor:
+        """Open ``image`` (path or PIL image), apply the transform, and add a leading batch dimension."""
         if isinstance(image, (str, Path)):
             path = Path(image)
             image = ascii_digit_to_image(path) if is_ascii_image(path) else Image.open(path)
@@ -171,6 +176,7 @@ class Inference(BaseInference):
         return logits.argmax(dim=1).tolist()
 
     def predict(self, image: str | Path | Image.Image) -> int:
+        """Return the predicted integer label for a single image."""
         tensor = self._prepare_image(image).to(self.device)
         tensor = self._ensure_size(tensor)
         with torch.no_grad():
@@ -185,6 +191,7 @@ class Inference(BaseInference):
         return logits.argmax(dim=1).tolist()
 
     def predict_batch(self, images: Iterable[str | Path | Image.Image], batch_size: int = 32) -> list[int]:
+        """Return integer labels for an iterable of images, batched in chunks of ``batch_size``."""
         all_predictions = []
         current_batch = []
 
@@ -202,6 +209,8 @@ class Inference(BaseInference):
 
 @dataclass(frozen=True)
 class InferenceSpec:
+    """Registry entry binding a model name to its model class, checkpoint, transform settings, and inference class."""
+
     model_cls: type[nn.Module]
     default_checkpoint: str
     image_size: int | tuple[int, int]
@@ -263,6 +272,7 @@ class InferenceFactory:
 
     @classmethod
     def create(cls, model_name: str, **kwargs) -> BaseInference:
+        """Build a configured :class:`Inference` for the named model, merging ``kwargs`` with the registered defaults."""
         if model_name not in INFERENCE_REGISTRY:
             raise ValueError(f"Unknown model: {model_name}")
 
@@ -380,6 +390,7 @@ def _predict(
     device: str | torch.device | None = None,
     batch_size: int = 32,
 ) -> dict[Path, int] | int:
+    """Resolve the input and dispatch to single-image or batched prediction depending on what it points at."""
     input_path = _resolve_input(input_path)
     inference = InferenceFactory.create(
         model.lower(),
@@ -425,6 +436,7 @@ def run_inference(
 
 
 def __output_path(filename: str | Path) -> Path:
+    """Return ``filename``, or a numbered variant (``name_1.csv``, ``name_2.csv``, …) if it already exists."""
     path = Path(filename)
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -440,6 +452,7 @@ def __output_path(filename: str | Path) -> Path:
 
 
 def write_results(results: dict[Path, int], output_path: str | Path) -> Path:
+    """Write a ``{image_path: label}`` mapping to a ``.csv`` or tab-delimited ``.txt`` file."""
     path = Path(output_path)
     if path.suffix.lower() == ".csv":
         with path.open("w", newline="") as handle:
