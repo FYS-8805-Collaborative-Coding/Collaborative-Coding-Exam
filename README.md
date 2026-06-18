@@ -140,7 +140,7 @@ Model A is an MNIST digit classifier for recognizing handwritten digits from
 |---|---|
 | Precision | 0.9905 |
 | Recall | 0.9904 |
-| Inference time | 0.046 ms / sample |
+| Inference time | 0.057 ms/sample (CPU), 0.051 ms/sample (MPS) |
 
 ---
 
@@ -155,13 +155,13 @@ CNN classifier for Street View House Numbers. It predicts a single cropped house
 | **Intended use** | Classifying house-number digits |
 | **Limitations** | Single digits only (not multi-digit house numbers). Fixed 32×32 RGB input. Trained only 5 epochs with no data augmentation |
 
-**Performance:** *(measured on the SVHN test set, `weights/svhn.pth`, LUMI-G / MI250x)*
+**Performance:**
 
 | Metric | Value |
 |---|---|
 | Precision | 0.9436 |
 | Recall | 0.9473 |
-| Inference time | 0.392 ms / sample |
+| Inference time | 0.292 ms/sample (CPU), 0.046 ms/sample (MPS) |
 
 ---
 ### Model C — USPS
@@ -181,7 +181,7 @@ CNN classifier trained on the USPS (United States Postal Service) dataset consis
 |---|---|
 | Precision | 0.9709 |
 | Recall | 0.9697|
-| Inference time | 0.035 ms / sample |
+| Inference time | 0.024 ms/sample (CPU), 0.058 ms/sample (MPS) |
 
 
 ## Documentation
