@@ -32,7 +32,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 logger = logging.getLogger("training")
 
 class BaseTrainer(ABC):
-    """Base class for dataset-specific trainers."""
+    """Abstract base: subclasses implement :meth:`train` and return final metrics."""
 
     @abstractmethod
     def train(self):
@@ -41,11 +41,10 @@ class BaseTrainer(ABC):
 
 
 class Trainer(BaseTrainer):
-    """Generic trainer implementing the common training loop.
+    """Generic training loop wrapping a constructed model + data module.
 
-    Parameters are intentionally simple: the trainer expects an already
-    constructed `data_module` and `model` so it can be reused by different
-    dataset/model combinations.
+    Auto-detects device (CUDA → MPS → CPU) when not specified. :meth:`train`
+    runs the loop, saves a checkpoint, and returns final metrics.
     """
 
     def __init__(
@@ -58,7 +57,27 @@ class Trainer(BaseTrainer):
         device: str | None = None,
         loss_fn: Optional[Callable] = None,
     ):
-        """Wire the data module, model, optimization hyperparameters, and device."""
+        """Configure the training run.
+
+        Parameters
+        ----------
+        data_module
+            Source of train/val/test DataLoaders.
+        model : torch.nn.Module
+            Model to train (already constructed).
+        epochs : int, default 1
+            Number of epochs to run.
+        lr : float, default 3e-4
+            Adam learning rate.
+        checkpoint_path : str, default "weights/model.pth"
+            Where to save the trained weights, relative to repo root.
+        device : str, optional
+            ``"cpu"``, ``"cuda"``, or ``"mps"``. Auto-detected if ``None``
+            (CUDA → MPS → CPU). On MPS, DataLoader workers are clamped to 0
+            to avoid a process-exit hang.
+        loss_fn : Callable, optional
+            Defaults to :class:`torch.nn.CrossEntropyLoss`.
+        """
         self.data_module = data_module
         self.model = model
         self.epochs = epochs
@@ -79,7 +98,14 @@ class Trainer(BaseTrainer):
         self.loss_fn = loss_fn or nn.CrossEntropyLoss()
 
     def train(self):
-        """Run the training loop for ``epochs`` epochs, save the checkpoint, and return final metrics."""
+        """Run the training loop and save a checkpoint.
+
+        Returns
+        -------
+        dict
+            Keys ``"loss"``, ``"accuracy"``, ``"val_loss"``, ``"val_accuracy"``
+            (final epoch), ``"epochs"`` (count run), and ``"checkpoint_path"``.
+        """
         self.model.to(self.device)
         self.model.train()
         optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
@@ -212,7 +238,26 @@ class TrainerFactory:
 
     @classmethod
     def create(cls, dataset_name: str, **kwargs):
-        """Build a configured trainer for the registered dataset, merging ``kwargs`` with the dataset's defaults."""
+        """Build a :class:`Trainer` for ``dataset_name`` using :data:`DATASET_REGISTRY` defaults.
+
+        Parameters
+        ----------
+        dataset_name : str
+            Key in :data:`DATASET_REGISTRY` (e.g. ``"mnist"``, ``"usps"``, ``"svhn"``).
+        **kwargs
+            Trainer overrides: ``epochs``, ``lr``, ``checkpoint_path``,
+            ``device``, ``loss_fn``.
+
+            Data-module overrides: ``data_dir``, ``batch_size``, ``num_workers``,
+            ``image_size``, ``mean``, ``std``, ``grayscale``.
+
+            Any unrecognized kwarg is forwarded to the data module.
+
+        Returns
+        -------
+        Trainer
+            Trainer instance with model, data module, and hyperparameters wired up.
+        """
         if dataset_name not in DATASET_REGISTRY:
             raise ValueError(f"Unknown dataset: {dataset_name}")
 
@@ -258,9 +303,21 @@ class TrainerFactory:
 
 
 def train(dataset: str = "mnist", **kwargs):
-    """Convenience entry point: pick dataset and run training.
+    """Convenience entry point: select dataset, build trainer, and run.
 
-    Example: `train(dataset="mnist", epochs=2, batch_size=64)`
+    Parameters
+    ----------
+    dataset : str, default "mnist"
+        Key in :data:`DATASET_REGISTRY` (e.g. ``"mnist"``, ``"usps"``, ``"svhn"``).
+    **kwargs
+        Forwarded to :meth:`TrainerFactory.create` — see that method for the
+        full set of trainer and data-module overrides.
+
+    Returns
+    -------
+    dict
+        Same shape as :meth:`Trainer.train` — final loss/accuracy plus
+        ``"epochs"`` and ``"checkpoint_path"``.
     """
     trainer = TrainerFactory.create(dataset, **kwargs)
     return trainer.train()
