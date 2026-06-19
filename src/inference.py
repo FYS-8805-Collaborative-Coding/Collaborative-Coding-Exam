@@ -34,7 +34,7 @@ logger = get_logger("inference")
 
 IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png"}
 ModelT = TypeVar("ModelT", bound=nn.Module)
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = Path(__file__).resolve().parent
 
 # Inputs prefixed with this scheme resolve to a packaged sample image, e.g.
 # `samples:svhn_digit_5.png` -> ccexam/samples/svhn_digit_5.png
@@ -71,7 +71,7 @@ def _resolve_checkpoint_path(checkpoint_path: str | Path) -> Path:
     if path.is_absolute():
         return path
 
-    repo_path = PROJECT_ROOT / path
+    repo_path = SRC_ROOT / path
     if repo_path.exists():
         return repo_path
 

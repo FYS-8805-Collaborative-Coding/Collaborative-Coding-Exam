@@ -25,7 +25,7 @@ from .constants import DATASET_STATS
 
 # Define the project root relative to this file.
 # This ensures paths are consistent regardless of the current working directory.
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = Path(__file__).resolve().parent
 
 logger = logging.getLogger("training")
 
@@ -80,7 +80,7 @@ class Trainer(BaseTrainer):
         self.model = model
         self.epochs = epochs
         self.lr = lr
-        self.checkpoint_path = PROJECT_ROOT / checkpoint_path
+        self.checkpoint_path = SRC_ROOT / checkpoint_path
         if not device:
             if torch.cuda.is_available():
                 device = "cuda"

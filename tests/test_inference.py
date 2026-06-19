@@ -394,11 +394,11 @@ def test_resolve_checkpoint_path_absolute(tmp_path, infer):
 
 
 def test_resolve_checkpoint_path_relative_anchor(infer):
-    """Relative paths resolve relative to the project root, not the cwd."""
-    project_root = Path(__file__).resolve().parents[1]
+    """Relative paths resolve relative to src/, not the repo root or cwd."""
+    src_root = Path(__file__).resolve().parents[1] / "src"
     resolved = infer._resolve_checkpoint_path("weights/test.pth")
 
-    assert resolved == project_root / "weights" / "test.pth"
+    assert resolved == src_root / "weights" / "test.pth"
 
 
 def test_build_transform_grayscale_shape(infer):

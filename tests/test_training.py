@@ -42,7 +42,7 @@ class DummyTrainer:
         self.model = model
         self.epochs = epochs
         self.lr = lr
-        self.checkpoint_path = Path(__file__).resolve().parents[1] / checkpoint_path
+        self.checkpoint_path = Path(__file__).resolve().parents[1] / "src" / checkpoint_path
         self.device = device
         self.loss_fn = None
 
@@ -210,7 +210,7 @@ def test_trainer_factory_uses_registry(training, monkeypatch):
     assert isinstance(trainer, DummyTrainer)
     assert trainer.epochs == 3
     assert trainer.lr == pytest.approx(0.01) #
-    assert Path(trainer.checkpoint_path) == training.PROJECT_ROOT / "weights/custom.pth" #
+    assert Path(trainer.checkpoint_path) == training.SRC_ROOT / "weights/custom.pth" #
     assert trainer.device == "cpu"
     assert trainer.data_module.data_dir == "sample-data"
     assert trainer.data_module.batch_size == 8
