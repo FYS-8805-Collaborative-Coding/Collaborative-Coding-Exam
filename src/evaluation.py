@@ -69,6 +69,7 @@ def evaluate(
     return results
 
 def build_arg_parser():
+    """Construct the CLI argument parser for ``python -m src.evaluation``."""
     parser = argparse.ArgumentParser(description="Evaluate a trained dataset model on its test set.")
     parser.add_argument(
         "--dataset",
@@ -85,6 +86,7 @@ def build_arg_parser():
     return parser
 
 def main(argv=None):
+    """CLI entry point: parse arguments, build the inference and test loader, and log the metrics."""
     args = build_arg_parser().parse_args(argv)
 
     setup_logging(args.log_level)
