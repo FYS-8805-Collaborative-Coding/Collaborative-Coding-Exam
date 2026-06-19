@@ -54,7 +54,7 @@ class DigitCNN(BaseClassifier, ABC):
         )
 
     def forward(self, x):
-        """Run ``features → flatten → classifier``; raises ``ValueError`` if the spatial size mismatches ``input_size``."""
+        """Run features → flatten → classifier on a ``(N, 1, input_size, input_size)`` batch; raises ``ValueError`` on shape mismatch."""
         if x.shape[-2:] != (self.input_size, self.input_size):
             raise ValueError(
                 f"Input size mismatch. Expected ({self.input_size}, {self.input_size}), "
