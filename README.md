@@ -158,11 +158,12 @@ Model A is an MNIST digit classifier for recognizing handwritten digits from
 
 **Performance:**
 
-| Metric | Value |
-|---|---|
-| Precision | 0.9905 |
-| Recall | 0.9904 |
-| Inference time | 0.057 ms/sample (CPU), 0.051 ms/sample (MPS) |
+| Metric | macOS | Windows |
+|---|---|---|
+| Precision | 0.9905 | 0.9905 |
+| Recall | 0.9904 | 0.9904 |
+| Inference time (CPU) | 0.057 ms/sample | 0.083 ms/sample |
+| Inference time (GPU) | 0.051 ms/sample (MPS) | 0.060 ms/sample (CUDA) |
 
 ---
 
@@ -179,11 +180,12 @@ CNN classifier for Street View House Numbers. It predicts a single cropped house
 
 **Performance:**
 
-| Metric | Value |
-|---|---|
-| Precision | 0.9436 |
-| Recall | 0.9473 |
-| Inference time | 0.292 ms/sample (CPU), 0.046 ms/sample (MPS) |
+| Metric | macOS | Windows |
+|---|---|---|
+| Precision | 0.9436 | 0.9436 |
+| Recall | 0.9473 | 0.9473 |
+| Inference time (CPU) | 0.292 ms/sample | 0.407 ms/sample |
+| Inference time (GPU) | 0.046 ms/sample (MPS) | 0.050 ms/sample (CUDA) |
 
 ---
 ### Model C — USPS
@@ -199,11 +201,12 @@ CNN classifier trained on the USPS (United States Postal Service) dataset consis
 
 **Performance:**
 
-| Metric | Value |
-|---|---|
-| Precision | 0.9709 |
-| Recall | 0.9697|
-| Inference time | 0.024 ms/sample (CPU), 0.058 ms/sample (MPS) |
+| Metric | macOS | Windows |
+|---|---|---|
+| Precision | 0.9709 | 0.9709 |
+| Recall | 0.9697 | 0.9697 |
+| Inference time (CPU) | 0.024 ms/sample | 0.052 ms/sample |
+| Inference time (GPU) | 0.058 ms/sample (MPS) | 0.119 ms/sample (CUDA) |
 
 
 ## Documentation

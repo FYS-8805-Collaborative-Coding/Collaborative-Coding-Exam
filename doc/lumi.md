@@ -1,6 +1,6 @@
 # Running on LUMI
 
-[LUMI](https://lumi-supercomputer.eu/) is a EuroHPC supercomputer hosted at CSC in Finland. All models (MNIST, USPS, SVHN) were trained on LUMI-G using AMD MI250x GPUs.
+[LUMI](https://csc.fi/en/our-expertise/high-performance-computing/lumi-supercomputer/) is a EuroHPC supercomputer hosted at CSC's data center in Kajaani, Finland. It is owned by the European Commission's EuroHPC Joint Undertaking and operated by a consortium of 11 European nations. With a sustained computing power of 380 petaflops, LUMI ranks among the fastest supercomputers in the world (9th on the Top500 list, November 2025). The system runs on 100% renewable energy, and its waste heat is used to warm the city of Kajaani. All models in this repository (MNIST, USPS, SVHN) were trained on LUMI-G using AMD MI250x GPUs.
 
 This page explains how to run training and evaluation on LUMI using the scripts provided in the `lumi/` directory. For a broader introduction to running AI workloads on LUMI, see the [Getting Started with AI on LUMI](https://github.com/Lumi-supercomputer/Getting_Started_with_AI_workshop) workshop repository.
 
@@ -46,7 +46,9 @@ sbatch -J eval-svhn lumi/evaluation.sh
 sbatch -J eval-usps lumi/evaluation.sh
 ```
 
-The script derives the dataset name and checkpoint path from the job name (`eval-<dataset>` → `weights/<dataset>.pth`). If the checkpoint is not found, it exits with an error listing the available checkpoints.
+The script derives the dataset name and checkpoint path from the job name (`eval-<dataset>` → `src/weights/<dataset>.pth`). If the checkpoint is not found, it exits with an error listing the available checkpoints.
+
+> **Note:** Inference speed reported on LUMI may appear slower than on a local machine. This is expected — HPC environments introduce overhead from container startup, Slurm job scheduling, and parallel filesystem I/O that is not present in local runs.
 
 ---
 
@@ -56,8 +58,11 @@ The script derives the dataset name and checkpoint path from the job name (`eval
 # Check the status of your running jobs
 squeue --me
 
-# View the log output of a job
+# View the full log output of a job
 cat lumi/logs/<job-name>_<job-id>.out
+
+# Follow the log output in real time (while the job is running)
+tail -f lumi/logs/<job-name>_<job-id>.out
 ```
 
 ---

@@ -56,10 +56,12 @@ For each new dataset:
 
    ```python
    DATASET_REGISTRY = {
-       "mnist": DatasetSpec(MNISTDataModule, MNISTNet, "weights/mnist.pth", trainer_cls=MNISTTrainer),
-       "usps": DatasetSpec(USPSDataModule, USPSNet, "weights/usps.pth"),
+       "mnist": DatasetSpec("mnist", MNISTNet, "weights/mnist.pth", **DATASET_STATS["mnist"]),
+       "usps":  DatasetSpec("usps",  USPSNet,  "weights/usps.pth",  **DATASET_STATS["usps"]),
    }
    ```
+
+   The first argument is the data module string key (must match the key in `DATA_MODULES`). Stats are pulled from `DATASET_STATS` in `src/constants.py` — add your dataset there first.
 
 4. Make sure the checkpoint path matches the dataset.
 
@@ -101,20 +103,7 @@ For each new dataset:
    from .models import MNISTNet, USPSNet
    ```
 
-2. Add a dataset-specific inference class.
-
-   Example:
-
-   ```python
-   class USPSInference(BaseInference):
-       ...
-   ```
-
-   Put the correct image transforms inside this class. The transforms should
-   match the dataset and model. For example, USPS uses 16x16 images, while
-   MNIST uses 28x28 images.
-
-3. Add the dataset to `INFERENCE_REGISTRY`.
+2. Add the dataset to `INFERENCE_REGISTRY`.
 
    Example:
 
@@ -122,18 +111,24 @@ For each new dataset:
    INFERENCE_REGISTRY = {
        "mnist": InferenceSpec(
            MNISTNet, "weights/mnist.pth",
-           image_size=28, mean=(0.1307,), std=(0.3081,),
-           grayscale=True
+           image_size=DATASET_STATS["mnist"]["image_size"],
+           mean=DATASET_STATS["mnist"]["mean"],
+           std=DATASET_STATS["mnist"]["std"],
+           grayscale=DATASET_STATS["mnist"]["grayscale"],
        ),
        "usps": InferenceSpec(
            USPSNet, "weights/usps.pth",
-           image_size=16, mean=(0.2471,), std=(0.2994,),
-           grayscale=True
+           image_size=DATASET_STATS["usps"]["image_size"],
+           mean=DATASET_STATS["usps"]["mean"],
+           std=DATASET_STATS["usps"]["std"],
+           grayscale=DATASET_STATS["usps"]["grayscale"],
        ),
    }
    ```
 
-4. Make sure the checkpoint file exists.
+   Use `DATASET_STATS` from `src/constants.py` to keep normalization consistent with training.
+
+3. Make sure the checkpoint file exists.
 
    Example:
 
@@ -158,6 +153,24 @@ For each new dataset:
 After a dataset is added to `INFERENCE_REGISTRY`, it is automatically available
 as a command-line choice.
 
+## Evaluation
+
+Evaluation does not require a separate registry. It reuses `DATASET_REGISTRY` (from `src/training.py`) for data loading and `INFERENCE_REGISTRY` (from `src/inference.py`) for the model. Once both registries are updated, the dataset is automatically available in the evaluation CLI.
+
+Run evaluation with:
+
+```bash
+python -m src.evaluation --dataset <dataset_name>
+```
+
+To use a specific checkpoint:
+
+```bash
+python -m src.evaluation --dataset <dataset_name> --checkpoint-path weights/<dataset_name>.pth
+```
+
+The command reports macro-averaged precision, macro-averaged recall, and average inference speed per sample.
+
 ## Naming
 
 Use consistent names based on the dataset name:
@@ -171,3 +184,5 @@ Use consistent names based on the dataset name:
 - Model loader: `load_<dataset_name>_model`
 - Prediction helper: `predict_<dataset_name>`
 - Checkpoint path: `weights/<dataset_name>.pth`
+
+
