@@ -75,7 +75,13 @@ class MNISTNet(DigitCNN):
     """CNN specialized for 28x28 MNIST digits."""
 
     def __init__(self, input_size: int):
-        """Configure the shared :class:`DigitCNN` backbone for ``input_size`` (typically 28)."""
+        """Configure the shared :class:`DigitCNN` backbone.
+
+        Parameters
+        ----------
+        input_size : int
+            Square spatial size of incoming batches (typically 28 for MNIST).
+        """
         # Inherit both the backbone and the head logic
         super().__init__(input_size=input_size)
 
@@ -84,7 +90,13 @@ class USPSNet(DigitCNN):
     """CNN specialized for 16x16 USPS digits."""
 
     def __init__(self, input_size: int):
-        """Configure the shared :class:`DigitCNN` backbone for ``input_size`` (typically 16)."""
+        """Configure the shared :class:`DigitCNN` backbone.
+
+        Parameters
+        ----------
+        input_size : int
+            Square spatial size of incoming batches (typically 16 for USPS).
+        """
         # Reuse the shared backbone and head; DigitCNN sizes the classifier
         # from the 64-channel backbone output (64 * feature_dim**2).
         super().__init__(input_size=input_size)
