@@ -404,9 +404,16 @@ def run_inference(
     device: str | torch.device | None = None,
     batch_size: int = 32,
 ) -> dict[Path, int]:
-    """Run inference on a single image or a directory of images.
+    """Run inference and return a dictionary of predicted labels.
 
-    Returns a dictionary mapping image paths to predicted integer labels.
+    Returns a dictionary mapping image paths to their predicted integer labels.
+
+    Example
+    -------
+    >>> run_inference(model="svhn", input_path="digit.png")
+    {PosixPath('digit.png'): 5}
+    >>> run_inference(model="svhn", input_path="folder_of_digits/")
+    {PosixPath('folder_of_digits/img1.png'): 7, PosixPath('folder_of_digits/img2.png'): 2}
     """
     return _predict(
         model=model,
