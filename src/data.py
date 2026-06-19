@@ -58,7 +58,33 @@ class TorchvisionDataModule(BaseDataModule):
         val_seed=42,
         **kwargs
     ):
-        """Wire up the torchvision dataset class with its normalization, transforms, and DataLoader config."""
+        """Configure the dataset class, transform pipeline, and DataLoader settings.
+
+        Parameters
+        ----------
+        dataset_cls
+            A torchvision dataset class (e.g. ``datasets.MNIST``).
+        mean, std
+            Per-channel normalization stats; scalars are wrapped to tuples.
+        image_size : int or tuple of int, default 28
+            Output size for the resize transform.
+        grayscale : bool, default True
+            If True, collapse to a single channel; otherwise convert to 3-channel RGB.
+        data_dir : str, default "datasets"
+            Root directory for downloads.
+        batch_size : int, default 64
+            DataLoader batch size.
+        num_workers : int, default 2
+            DataLoader worker count.
+        download : bool, default True
+            Download the dataset if not present locally.
+        val_split : float, default 0.1
+            Fraction of the training set held out for validation.
+        val_seed : int, default 42
+            Seed for the train/val split.
+        **kwargs
+            Forwarded to the underlying dataset class.
+        """
         self.dataset_cls = dataset_cls
         self.data_dir = Path(data_dir)
         self.batch_size = batch_size
@@ -114,7 +140,7 @@ class TorchvisionDataModule(BaseDataModule):
         return self._train_val_split
 
     def train_loader(self):
-        """Return a shuffling DataLoader over the training split (val subset excluded)."""
+        """Return a shuffling DataLoader over the training split, with the validation subset excluded and partial trailing batches dropped."""
         train_dataset, _ = self._train_val_datasets()
         return DataLoader(
             train_dataset,
@@ -125,7 +151,7 @@ class TorchvisionDataModule(BaseDataModule):
         )
 
     def val_loader(self):
-        """Return a non-shuffling DataLoader over the held-out validation subset."""
+        """Return a non-shuffling DataLoader over the held-out validation subset (shares the seeded split with :meth:`train_loader`)."""
         _, val_dataset = self._train_val_datasets()
         return DataLoader(
             val_dataset,
@@ -135,7 +161,7 @@ class TorchvisionDataModule(BaseDataModule):
         )
 
     def test_loader(self):
-        """Return a non-shuffling DataLoader over the test split."""
+        """Return a non-shuffling DataLoader over the dataset's test split."""
         return DataLoader(
             self._dataset(train=False),
             batch_size=self.batch_size,
@@ -148,7 +174,27 @@ class MNISTDataModule(TorchvisionDataModule):
     """Data module for the MNIST handwritten-digit dataset."""
 
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
-        """Configure the shared :class:`TorchvisionDataModule` with MNIST defaults."""
+        """Configure :class:`TorchvisionDataModule` with MNIST defaults from :data:`DATASET_STATS`.
+
+        Parameters
+        ----------
+        mean, std : optional
+            Override the MNIST normalization stats.
+        image_size : int or tuple of int, optional
+            Override the default image size.
+        grayscale : bool, optional
+            Override the grayscale default.
+        data_dir : str, default "datasets"
+            Root directory for downloads.
+        batch_size : int, default 64
+            DataLoader batch size.
+        num_workers : int, default 2
+            DataLoader worker count.
+        download : bool, default True
+            Download if not present locally.
+        **kwargs
+            Forwarded to :class:`TorchvisionDataModule`.
+        """
         stats = DATASET_STATS["mnist"]
         super().__init__(
             dataset_cls=datasets.MNIST,
@@ -170,7 +216,29 @@ class USPSDataModule(TorchvisionDataModule):
     standard normalization (``mean=0.2471``, ``std=0.2994``).
     """
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
-        """Configure the shared :class:`TorchvisionDataModule` with USPS defaults."""
+        """Configure :class:`TorchvisionDataModule` with USPS defaults from :data:`DATASET_STATS`.
+
+        Downloads land under ``<data_dir>/USPS/``.
+
+        Parameters
+        ----------
+        mean, std : optional
+            Override the USPS normalization stats.
+        image_size : int or tuple of int, optional
+            Override the default image size.
+        grayscale : bool, optional
+            Override the grayscale default.
+        data_dir : str, default "datasets"
+            Root directory; ``USPS/`` is appended automatically.
+        batch_size : int, default 64
+            DataLoader batch size.
+        num_workers : int, default 2
+            DataLoader worker count.
+        download : bool, default True
+            Download if not present locally.
+        **kwargs
+            Forwarded to :class:`TorchvisionDataModule`.
+        """
         stats = DATASET_STATS["usps"]
         super().__init__(
             dataset_cls=datasets.USPS,
@@ -196,7 +264,31 @@ class SVHNDataModule(TorchvisionDataModule):
     deviation values.
     """
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
-        """Configure the shared :class:`TorchvisionDataModule` with SVHN defaults."""
+        """Configure :class:`TorchvisionDataModule` with SVHN defaults from :data:`DATASET_STATS`.
+
+        Downloads land under ``<data_dir>/SVHN/``. ``val_split`` and ``val_seed``
+        may be passed via ``**kwargs`` and are forwarded to the parent.
+
+        Parameters
+        ----------
+        mean, std : optional
+            Override the SVHN normalization stats.
+        image_size : int or tuple of int, optional
+            Override the default image size.
+        grayscale : bool, optional
+            Override the grayscale default.
+        data_dir : str, default "datasets"
+            Root directory; ``SVHN/`` is appended automatically.
+        batch_size : int, default 64
+            DataLoader batch size.
+        num_workers : int, default 2
+            DataLoader worker count.
+        download : bool, default True
+            Download if not present locally.
+        **kwargs
+            Forwarded to :class:`TorchvisionDataModule` (``val_split``, ``val_seed``
+            are pulled out here with their own defaults).
+        """
         stats = DATASET_STATS["svhn"]
         super().__init__(
             dataset_cls=datasets.SVHN,
@@ -245,9 +337,33 @@ DATA_MODULES = {
 
 
 def get_loaders(dataset="mnist", mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwarg):
-    """Convenience entry point: get train and test loaders for a registered dataset.
+    """Convenience entry point: train and test loaders for a registered dataset.
 
-    Example: `get_loaders(dataset="mnist", batch_size=32)`
+    Parameters
+    ----------
+    dataset : str, default "mnist"
+        Key in :data:`DATA_MODULES` (one of ``"mnist"``, ``"usps"``, ``"svhn"``).
+    mean, std : optional
+        Override the dataset's normalization stats.
+    image_size : int or tuple of int, optional
+        Override the default image size.
+    grayscale : bool, optional
+        Override the grayscale default.
+    data_dir : str, default "datasets"
+        Root directory for downloads.
+    batch_size : int, default 64
+        DataLoader batch size.
+    num_workers : int, default 2
+        DataLoader worker count.
+    download : bool, default True
+        Download the dataset if not present locally.
+    **kwarg
+        Forwarded to the chosen data module.
+
+    Returns
+    -------
+    tuple of DataLoader
+        ``(train_loader, test_loader)``.
     """
     if dataset not in DATA_MODULES:
         raise ValueError(f"Unknown dataset: {dataset}. Available: {list(DATA_MODULES.keys())}")
