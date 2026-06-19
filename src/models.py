@@ -105,7 +105,17 @@ class SVHNNet(BaseClassifier):
     """CNN specialized for 32x32 RGB SVHN digits."""
 
     def __init__(self, input_size: int, num_classes: int = 10, dropout: float = 0.3):
-        """Initialize the network architecture."""
+        """Configure the SVHN backbone and classifier head.
+
+        Parameters
+        ----------
+        input_size : int
+            Square spatial size of incoming batches (typically 32 for SVHN).
+        num_classes : int, default 10
+            Number of output classes.
+        dropout : float, default 0.3
+            Dropout probability used in the classifier head (not the feature blocks).
+        """
         super().__init__()
         self.input_size = input_size
         feature_dim = input_size // 8
