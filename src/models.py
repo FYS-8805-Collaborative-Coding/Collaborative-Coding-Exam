@@ -6,19 +6,25 @@ from torch import nn
 
 
 class BaseClassifier(nn.Module, ABC):
-    """Base class for classifier models."""
+    """Abstract base: subclasses implement :meth:`forward(batch) -> logits` of shape ``(N, num_classes)``."""
 
     @abstractmethod
     def forward(self, x):
-        """Return model logits for input batch x."""
+        """Return per-class logits for the input batch ``x``."""
         raise NotImplementedError
 
 
 class DigitCNN(BaseClassifier, ABC):
-    """Shared backbone for digit classification models.
-    
-    This base class standardizes the feature extraction layers to ensure 
-    architectural consistency across different digit datasets.
+    """Shared backbone for grayscale digit classifiers.
+
+    Default 2-conv extractor + 128→10 head; subclasses override
+    :meth:`_build_features` or :meth:`_build_classifier` to swap either piece.
+    Abstract — use :class:`MNISTNet` or :class:`USPSNet`.
+
+    Parameters
+    ----------
+    input_size : int, default 28
+        Expected square spatial size; :meth:`forward` rejects mismatches.
     """
 
     def __init__(self, input_size: int = 28):
