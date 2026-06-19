@@ -34,44 +34,24 @@ def evaluate(
 ):
     """Evaluate a trained model on a dataset.
 
-    Runs the model over every batch in ``dataloader``, collects the predicted
-    and true labels, and reports classification quality together with the
-    average inference time per sample.
+    Runs ``inference`` over every batch in ``dataloader`` and reports
+    classification quality plus average forward-pass time per sample.
 
     Parameters
     ----------
     inference : BaseInference
-        An inference instance. Its underlying model is used for batch prediction.
+        Inference instance whose underlying model handles batch prediction.
     dataloader : Iterable
-        Yields ``(images, labels)`` batches, where ``images`` is a float
-        tensor and ``labels`` is an integer tensor of true classes.
+        Yields ``(images, labels)`` batches.
     metrics : dict, optional
-        Dictionary mapping metric names to callables that accept ``(y_true, y_pred)``.
-        Defaults to precision and recall (macro-averaged).
- 
+        Mapping of metric name to ``(y_true, y_pred) -> float``. Defaults to
+        precision and recall (macro-averaged).
+
     Returns
     -------
     dict
-        A dictionary with the keys:
- 
-        ``"precision"`` : float
-            Macro-averaged precision (each class weighted equally),
-            where C is the number of classes::
-
-                (1/C) * sum( TP_i / (TP_i + FP_i) )
-
-        ``"recall"`` : float
-            Macro-averaged recall (each class weighted equally),
-            where C is the number of classes::
-
-                (1/C) * sum( TP_i / (TP_i + FN_i) )
-        ``"speed_ms"`` : float
-            Average inference time in milliseconds per sample.
- 
-    Notes
-    -----
-    Evaluation runs under :func:`torch.no_grad`, so no gradients are tracked.
-    Inference time covers only the forward pass, not data loading.
+        Keys ``"precision"``, ``"recall"`` (macro-averaged), and
+        ``"speed_ms"`` (average forward-pass time per sample, in milliseconds).
     """
     metrics = metrics or DEFAULT_METRICS
     all_preds, all_targets = [], []
