@@ -171,7 +171,10 @@ class TorchvisionDataModule(BaseDataModule):
 
 
 class MNISTDataModule(TorchvisionDataModule):
-    """Data module for the MNIST handwritten-digit dataset."""
+    """Data module for the MNIST handwritten-digit dataset.
+
+    Default normalization stats come from :data:`~src.constants.DATASET_STATS`.
+    """
 
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
         """Configure :class:`TorchvisionDataModule` with MNIST defaults from :data:`DATASET_STATS`.
@@ -212,8 +215,8 @@ class MNISTDataModule(TorchvisionDataModule):
 class USPSDataModule(TorchvisionDataModule):
     """Data module for the USPS handwritten-digit dataset.
 
-    Downloads land under ``<data_dir>/USPS/``. Defaults to USPS's
-    standard normalization (``mean=0.2471``, ``std=0.2994``).
+    Downloads land under ``<data_dir>/USPS/``. Default normalization stats
+    come from :data:`~src.constants.DATASET_STATS`.
     """
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
         """Configure :class:`TorchvisionDataModule` with USPS defaults from :data:`DATASET_STATS`.
@@ -255,13 +258,10 @@ class USPSDataModule(TorchvisionDataModule):
 
 
 class SVHNDataModule(TorchvisionDataModule):
-    """
-    Data module for the SVHN dataset.
+    """Data module for the SVHN dataset.
 
-    This module handles downloading, preprocessing, and loading the SVHN
-    training and test datasets. Images are converted to tensors and
-    normalized using the standard SVHN channel-wise mean and standard
-    deviation values.
+    Downloads land under ``<data_dir>/SVHN/``. Default normalization stats
+    come from :data:`~src.constants.DATASET_STATS`.
     """
     def __init__(self, mean=None, std=None, data_dir="datasets", batch_size=64, num_workers=2, download=True, image_size=None, grayscale=None, **kwargs):
         """Configure :class:`TorchvisionDataModule` with SVHN defaults from :data:`DATASET_STATS`.
