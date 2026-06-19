@@ -1,4 +1,4 @@
-"""Model base classes and MNIST model."""
+"""Model base classes and the MNIST, USPS, and SVHN classifiers."""
 
 from abc import ABC, abstractmethod
 

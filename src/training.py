@@ -1,10 +1,8 @@
 """Training base classes and a dataset-agnostic trainer + factory.
 
-This module provides a generic `Trainer` that implements the shared training
-loop, a small `MNISTTrainer` wrapper for backward compatibility, a
-`TrainerFactory`/registry for mapping dataset names to data/model classes,
-and a convenience `train(...)` entry point that selects the right classes
-based on a dataset name.
+Provides a generic :class:`Trainer` implementing the shared training loop, a
+:class:`TrainerFactory` mapping dataset names to data/model classes, and a
+convenience :func:`train` entry point.
 """
 
 import warnings
