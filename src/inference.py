@@ -93,7 +93,25 @@ def load_model(
     device: str | torch.device | None = None,
     **model_kwargs,
 ) -> ModelT:
-    """Instantiate ``model_cls``, load its weights from ``checkpoint_path``, and put it in eval mode on ``device``."""
+    """Instantiate ``model_cls``, load its weights, and put it in eval mode on ``device``.
+
+    Parameters
+    ----------
+    model_cls : type[torch.nn.Module]
+        Model class to instantiate.
+    checkpoint_path : str or Path
+        Path to a ``state_dict`` checkpoint; resolved against repo root or
+        packaged resources if not absolute (see :func:`_resolve_checkpoint_path`).
+    device : str or torch.device, optional
+        Auto-detected (CUDA → CPU) if ``None``.
+    **model_kwargs
+        Forwarded to ``model_cls(...)`` constructor.
+
+    Returns
+    -------
+    torch.nn.Module
+        Loaded model in eval mode on ``device``.
+    """
     device = _default_device(device)
     model = model_cls(**model_kwargs)
     model.load_state_dict(torch.load(_resolve_checkpoint_path(checkpoint_path), map_location=device, weights_only=True))
@@ -110,8 +128,20 @@ def build_transform(
 ) -> Callable[[Image.Image], torch.Tensor]:
     """Build the image transform used before inference.
 
-    When ``grayscale`` is True the image is reduced to a single channel
-    (MNIST/USPS); otherwise it is converted to 3-channel RGB (SVHN).
+    Parameters
+    ----------
+    image_size : int or tuple of int
+        Resize target; an int is interpreted as a square ``(N, N)``.
+    mean, std : tuple of float
+        Per-channel normalization stats.
+    grayscale : bool, default True
+        If True, collapse to a single channel (MNIST/USPS); otherwise convert
+        to 3-channel RGB (SVHN).
+
+    Returns
+    -------
+    Callable[[PIL.Image.Image], torch.Tensor]
+        Composed transform: channel step → resize → to-tensor → normalize.
     """
     if isinstance(image_size, int):
         image_size = (image_size, image_size)
@@ -140,7 +170,18 @@ class Inference(BaseInference):
         transform: Callable[[Image.Image], torch.Tensor],
         device: str | torch.device | None = None,
     ) -> None:
-        """Wire the model, image transform, and device for repeated prediction."""
+        """Wire the model, image transform, and device for repeated prediction.
+
+        Parameters
+        ----------
+        model : torch.nn.Module
+            Model in eval mode (or to be put there); will be moved to ``device``.
+        transform : Callable[[PIL.Image.Image], torch.Tensor]
+            Preprocessing applied to each image; should produce a single tensor
+            (no batch dim) matching what the model expects.
+        device : str or torch.device, optional
+            Auto-detected (CUDA → CPU) if ``None``.
+        """
         self.device = _default_device(device)
         self.model = model
         self.model.to(self.device)
@@ -176,7 +217,19 @@ class Inference(BaseInference):
         return logits.argmax(dim=1).tolist()
 
     def predict(self, image: str | Path | Image.Image) -> int:
-        """Return the predicted integer label for a single image."""
+        """Return the predicted integer label for a single image.
+
+        Parameters
+        ----------
+        image : str, Path, or PIL.Image.Image
+            Path to an image file (real image or ASCII-digit ``.txt``) or an
+            already-loaded PIL image.
+
+        Returns
+        -------
+        int
+            Predicted class label (argmax over logits).
+        """
         tensor = self._prepare_image(image).to(self.device)
         tensor = self._ensure_size(tensor)
         with torch.no_grad():
@@ -184,14 +237,40 @@ class Inference(BaseInference):
         return int(logits.argmax(dim=1).item())
     
     def predict_batch_tensor(self, batch: torch.Tensor) -> list[int]:
-        """Run inference on an already-transformed batch tensor (B, C, H, W)."""
+        """Run inference on an already-transformed batch tensor.
+
+        Parameters
+        ----------
+        batch : torch.Tensor
+            Batch tensor of shape ``(B, C, H, W)``, normalized as the model expects.
+            Resized via bilinear interpolation if spatial dimensions don't match.
+
+        Returns
+        -------
+        list of int
+            Predicted class labels, one per row.
+        """
         batch = self._ensure_size(batch.to(self.device))
         with torch.no_grad():
             logits = self.model(batch)
         return logits.argmax(dim=1).tolist()
 
     def predict_batch(self, images: Iterable[str | Path | Image.Image], batch_size: int = 32) -> list[int]:
-        """Return integer labels for an iterable of images, batched in chunks of ``batch_size``."""
+        """Return integer labels for an iterable of images, batched in chunks.
+
+        Parameters
+        ----------
+        images : iterable of (str, Path, or PIL.Image.Image)
+            Image paths or PIL images. Paths to ASCII-digit ``.txt`` files are
+            supported alongside real image files.
+        batch_size : int, default 32
+            Chunk size for the underlying forward passes.
+
+        Returns
+        -------
+        list of int
+            Predicted class labels in the same order as ``images``.
+        """
         all_predictions = []
         current_batch = []
 
@@ -272,7 +351,26 @@ class InferenceFactory:
 
     @classmethod
     def create(cls, model_name: str, **kwargs) -> BaseInference:
-        """Build a configured :class:`Inference` for the named model, merging ``kwargs`` with the registered defaults."""
+        """Build a configured :class:`Inference` for the named model.
+
+        Looks up ``model_name`` in :data:`INFERENCE_REGISTRY` and uses the
+        registered defaults; ``**kwargs`` overrides individual fields.
+
+        Parameters
+        ----------
+        model_name : str
+            Key in :data:`INFERENCE_REGISTRY` (e.g. ``"mnist"``, ``"usps"``,
+            ``"svhn"``, or ``"model-a"`` / ``"model-b"`` / ``"model-c"``).
+        **kwargs
+            Recognized overrides: ``checkpoint_path``, ``device``, ``image_size``,
+            ``mean``, ``std``, ``grayscale``, ``transform``. Anything else is ignored.
+
+        Returns
+        -------
+        BaseInference
+            Configured inference instance ready to call :meth:`predict` /
+            :meth:`predict_batch` / :meth:`predict_batch_tensor`.
+        """
         if model_name not in INFERENCE_REGISTRY:
             raise ValueError(f"Unknown model: {model_name}")
 
@@ -415,16 +513,26 @@ def run_inference(
     device: str | torch.device | None = None,
     batch_size: int = 32,
 ) -> dict[Path, int]:
-    """Run inference and return a dictionary of predicted labels.
+    """Run inference on a single image or a directory of images.
 
-    Returns a dictionary mapping image paths to their predicted integer labels.
+    Parameters
+    ----------
+    model : str
+        Key in :data:`INFERENCE_REGISTRY` (e.g. ``"mnist"``, ``"usps"``, ``"svhn"``).
+    input_path : str or Path
+        Single image file, directory of images, or a ``samples:NAME`` reference
+        to a packaged sample.
+    checkpoint_path : str or Path, optional
+        Override the registered default checkpoint.
+    device : str or torch.device, optional
+        Auto-detected (CUDA → CPU) if ``None``.
+    batch_size : int, default 32
+        Chunk size for the underlying forward passes.
 
-    Example
+    Returns
     -------
-    >>> run_inference(model="svhn", input_path="digit.png")
-    {PosixPath('digit.png'): 5}
-    >>> run_inference(model="svhn", input_path="folder_of_digits/")
-    {PosixPath('folder_of_digits/img1.png'): 7, PosixPath('folder_of_digits/img2.png'): 2}
+    dict[Path, int]
+        Mapping from image path to predicted integer label.
     """
     return _predict(
         model=model,
@@ -452,7 +560,22 @@ def __output_path(filename: str | Path) -> Path:
 
 
 def write_results(results: dict[Path, int], output_path: str | Path) -> Path:
-    """Write a ``{image_path: label}`` mapping to a ``.csv`` or tab-delimited ``.txt`` file."""
+    """Write a ``{image_path: label}`` mapping to a ``.csv`` or tab-delimited ``.txt`` file.
+
+    Parameters
+    ----------
+    results : dict[Path, int]
+        Mapping from image path to predicted label.
+    output_path : str or Path
+        Destination file. ``.csv`` produces ``image,prediction`` rows with a
+        header; any other extension produces tab-delimited rows without one.
+
+    Returns
+    -------
+    Path
+        The path actually written to (caller-resolved; this function never
+        renames or auto-suffixes — see :func:`__output_path` for that).
+    """
     path = Path(output_path)
     if path.suffix.lower() == ".csv":
         with path.open("w", newline="") as handle:
