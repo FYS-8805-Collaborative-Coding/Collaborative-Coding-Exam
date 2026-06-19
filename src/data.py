@@ -196,21 +196,7 @@ class SVHNDataModule(TorchvisionDataModule):
             **kwargs,
         )
     def _dataset(self, train):
-        """
-        Create an SVHN dataset instance.
-
-        Parameters
-        ----------
-        train : bool
-            If True, return the training split; otherwise, return the test
-            split.
-
-        Returns
-        -------
-        torchvision.datasets.SVHN
-            Configured SVHN dataset instance.
-        """
-        
+        """Instantiate the underlying SVHN dataset for the requested split."""
         return self.dataset_cls(
             root=str(self.data_dir),
             split="train" if train else "test",
