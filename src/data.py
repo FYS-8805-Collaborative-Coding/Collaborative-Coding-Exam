@@ -21,7 +21,7 @@ def _to_rgb(img):
 
 
 class BaseDataModule(ABC):
-    """Base class for dataset-specific data loaders."""
+    """Abstract base: subclasses provide :meth:`train_loader` and :meth:`test_loader`."""
 
     @abstractmethod
     def train_loader(self):
@@ -35,7 +35,13 @@ class BaseDataModule(ABC):
 
 
 class TorchvisionDataModule(BaseDataModule):
-    """Generic data module for standard torchvision datasets."""
+    """Generic data module wrapping a torchvision dataset class.
+
+    Builds the resize → channel → tensor → normalize transform pipeline,
+    splits the training set into train/val (seeded), and exposes train/val/test
+    DataLoaders. Subclasses (e.g. :class:`MNISTDataModule`) just supply the
+    dataset class and its normalization stats.
+    """
 
     def __init__(
         self, 
