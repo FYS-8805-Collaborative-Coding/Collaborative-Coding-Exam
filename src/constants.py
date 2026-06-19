@@ -1,3 +1,5 @@
+"""Per-dataset image statistics used by ``src.data`` to build input transforms."""
+
 DATASET_STATS = {
     "mnist": {"mean": (0.1307,), "std": (0.3081,), "image_size": 28, "grayscale": True},
     "usps":  {"mean": (0.2471,), "std": (0.2994,), "image_size": 16, "grayscale": True},
