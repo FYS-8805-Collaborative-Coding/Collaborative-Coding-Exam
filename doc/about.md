@@ -10,7 +10,7 @@ This package supports three digit classification models:
 | `usps` | USPS — postal digits | Greyscale images |
 | `svhn` | SVHN — street view house numbers | Colour (RGB) images |
 
-All you need is a terminal (command prompt) and Python 3.10 or newer. Follow the steps below in order.
+All you need is a terminal (command prompt) and **Python 3.10 – 3.12**. Follow the steps below in order.
 
 **Step 1 — Install the package**
 
@@ -114,7 +114,7 @@ Classifies every readable image inside. Unreadable files are skipped silently.
 ## Need help?
 
 - Run `ccexam-infer --help` to see all available arguments and their descriptions.
-- Make sure Python 3.10 or newer is installed — check with `python --version`.
+- Make sure **Python 3.10 – 3.12** is installed — check with `python --version`.
 - If `ccexam-infer` is not found after installing, close and reopen your terminal. If it still fails, use the module form as a fallback — it works regardless of `PATH`:
   ```bash
   python -m ccexam.inference --model svhn --input /path/to/image.png
