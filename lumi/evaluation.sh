@@ -39,12 +39,12 @@ set -euo pipefail
 set -x
 
 DATASET="${SLURM_JOB_NAME#eval-}"
-CHECKPOINT="weights/${DATASET}.pth"
+CHECKPOINT="src/weights/${DATASET}.pth"
 
 if [[ ! -f "$CHECKPOINT" ]]; then
     echo "Checkpoint not found: $CHECKPOINT" >&2
     echo "Available checkpoints:" >&2
-    ls weights/*.pth 2>/dev/null >&2
+    ls src/weights/*.pth 2>/dev/null >&2
     exit 1
 fi
 
