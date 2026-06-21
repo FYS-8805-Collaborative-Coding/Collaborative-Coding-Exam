@@ -9,8 +9,8 @@ This document includes a User Guide for installation and CLI usage, an API Refer
 :caption: Table of contents
 
 about.md
-api.md
 development.md
 lumi.md
 individual.md
+api.md
 :::

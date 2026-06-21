@@ -11,9 +11,7 @@ python -m src.training
 python -m src.training --dataset mnist --epochs 5 --batch-size 32 --device cuda
 ```
 
-The checkpoint is written to `weights/mnist.pth` by default. The current
-training entry point supports `mnist` and can be extended with more datasets
-through the registry in `src/training.py`.
+The checkpoint is written to `src/weights/<dataset>.pth` by default. Training supports `mnist`, `usps`, and `svhn` out of the box; additional datasets can be registered in `src/training.py`.
 
 ### Using a config file
 
@@ -89,10 +87,20 @@ and factory wiring.
 
 We use a branch → pull request → review workflow. All changes to `main` require at least one approved review — direct pushes are not allowed.
 
+**If you have write access to the repository:**
+
 1. Open an issue describing your change
 2. Create a branch and commit your work (reference the issue, e.g. `fixes #5`)
 3. Open a pull request towards `main`
 4. Get a review, address feedback, then merge
+
+**If you do not have write access (external contributors):**
+
+1. Fork the repository on GitHub
+2. Clone your fork locally: `git clone https://github.com/<your-username>/Collaborative-Coding-Exam.git`
+3. Create a branch in your fork and commit your work
+4. Open a pull request from your fork towards `main` of this repository
+5. Get a review, address feedback, then merge
 
 See [CONTRIBUTION.md](CONTRIBUTION.md) for the full guide.
 

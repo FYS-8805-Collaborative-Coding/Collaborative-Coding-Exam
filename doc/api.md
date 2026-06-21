@@ -131,11 +131,13 @@ print(metrics["accuracy"])
 
 Maps dataset names to `DatasetSpec` objects (data module class, model class, default checkpoint path).
 
-| Key | Model | Default checkpoint |
-|---|---|---|
-| `"mnist"` | `MNISTNet` | `weights/mnist.pth` |
-| `"usps"` | `USPSNet` | `weights/usps.pth` |
-| `"svhn"` | `SVHNNet` | `weights/svhn.pth` |
+| Key | Model | Default checkpoint (file location) | CLI / API argument |
+|---|---|---|---|
+| `"mnist"` | `MNISTNet` | `src/weights/mnist.pth` | `weights/mnist.pth` |
+| `"usps"` | `USPSNet` | `src/weights/usps.pth` | `weights/usps.pth` |
+| `"svhn"` | `SVHNNet` | `src/weights/svhn.pth` | `weights/svhn.pth` |
+
+> Paths are resolved relative to `src/` via `SRC_ROOT`. Pass only the `weights/<name>.pth` portion when using `--checkpoint-path` or `checkpoint_path=`.
 
 ---
 
