@@ -102,6 +102,6 @@ We use a branch → pull request → review workflow. All changes to `main` requ
 4. Open a pull request from your fork towards `main` of this repository
 5. Get a review, address feedback, then merge
 
-See [CONTRIBUTION.md](https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/blob/main/CONTRIBUTION.md) for the full guide.
+See [CONTRIBUTION.md](https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/blob/main/CONTRIBUTION.md#contributing) for the full guide.
 
 ---
