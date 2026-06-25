@@ -75,6 +75,29 @@ In `src/training.py`, the log statements live in the library code. `Trainer.trai
 
 Because logging is set up inside `main()` and not in the library code, training started any other way never sets up logging. This includes `train(...)`, `TrainerFactory.create(...).train()`, and the test suite. With nothing configured, the root logger defaults to `WARNING`. So every `INFO` training message from `src/training.py` is dropped without a trace. The logging looks like it works, but only because it goes through the CLI. Anyone calling the functions directly gets no output and no error. (One more weak point in the same file: `setup_logging` uses `logging.basicConfig`, which does nothing if logging was already set up, so calling it again has no effect.)
 
+### What Was Easy and Difficult (Same Functions)
+
+**Easy.** What made the shared code easy to work on was that we rarely had to edit the same function at the same time. The code used a factory and registry pattern. So each person could add their part in separate files and then register it. For me that was the SVHN model and data module. Because of this, most new work stayed out of the common functions, and changes from different people rarely collided. When I did need to touch shared code, the base classes and registries gave a clear pattern to follow, so it was obvious where things should go.
+
+**Difficult.** The harder part was the code we all shared, where several people edited the same functions. We had no agreed standard for naming, style, or where each piece of code should go. So the shared base classes and training loop drifted between contributors and needed extra cleanup. I also found GitHub Issues less useful for tracking developer progress. Issues feel more aimed at users reporting problems. For working together as developers, a board like Trello is easier. You can see the progress and pick up tasks by moving cards between columns.
+
+### Course Tools I Had Not Used Before
+
+The two tools from the course I had not used before were **Sphinx** (for building the documentation) and **LUMI** (for running training jobs on the HPC cluster).
+
+### Running Jobs on LUMI
+
+I trained the SVHN model on LUMI by submitting a Slurm batch job (**Job-ID `19193045`**) with `sbatch`. The job ran on the `small-g` partition with one GPU, 7 CPUs, and a 30-minute time limit. The training ran inside a Singularity container (the prebuilt LAIF multitorch container, which ships ROCm-enabled PyTorch), so I did not have to install anything myself.
+
+The run trained SVHN for 5 epochs and finished in about 90 seconds on the GPU. The model reached a final training accuracy of about 0.942, and the weights were saved to `weights/svhn.pth`:
+
+```
+2026-06-12 12:17:04 | INFO | training | Training on cuda for 5 epoch(s)
+2026-06-12 12:18:25 | INFO | training | Epoch 5/5  loss=0.2103  acc=0.9421
+2026-06-12 12:18:25 | INFO | training | Done!  final_loss=0.2103  final_acc=0.9421  saved=.../weights/svhn.pth
+```
+
+My experience was that the hardest part was the setup: the batch script, the container, and the file paths. Once that worked, the job ran quickly and reliably. Checking progress with `squeue --me` and reading the `slurm-<job-id>.out` log file made it easy to follow the run.
 
 ## Myrthe Catteau
 ...
