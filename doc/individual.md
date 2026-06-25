@@ -7,46 +7,48 @@ These are the individual contributions to the exam
 ## Keyne Oei
 My main contributions were the SVHN part of the project (model and data), the command-line tools for inference and evaluation, logging, packaging and releasing the project to PyPI as `ccexam`, the bundled `samples:` input option, handling any image input (with or without a file extension, and folders), and the README presentation (banner, badges, header).
 
+### Contribution:
+
 ### 1. SVHN Model and Data
 
-I added the SVHN framework of the project.
+This work added the SVHN part of the project.
 
-- **Model (`SVHNNet`).** I implemented a CNN for 32×32 RGB SVHN digits. It is separate from the simpler `DigitCNN` used by MNIST/USPS, because SVHN's photo digits are harder than clean handwritten ones. The network has three blocks. Each block has two `Conv2d(3×3, padding=1)` layers, each followed by `BatchNorm2d` and `ReLU`, and then a `2×2 MaxPool`. The number of channels grows `3 → 32 → 64 → 128`. The image size halves at each block (`32×32 → 16×16 → 8×8 → 4×4`). The classifier flattens the `128×4×4` features and applies `Dropout(0.3) → Linear(128·4² → 256) → ReLU → Dropout(0.3) → Linear(256 → 10)`.
-- **Data (`SVHNDataModule`).** I added SVHN to the data module. Unlike MNIST/USPS, torchvision's SVHN uses `split="train"/"test"` instead of `train=True/False`. So the data module checks which dataset it is and passes the right argument. SVHN is read from the `train_32x32.mat` and `test_32x32.mat` files. It is kept as 3-channel RGB (not converted to grayscale) and normalized with SVHN's mean/std.
-- **Integration.** I registered `svhn` in the training list, the data-module list, and the inference list. Such that `--dataset svhn` and `--model svhn` work in the training, evaluation, and inference tools with no extra changes.
+- **Model (`SVHNNet`).** `SVHNNet` is a CNN for 32×32 RGB SVHN digits. It is separate from the simpler `DigitCNN` used by MNIST/USPS, because SVHN's photo digits are harder than clean handwritten ones. The network has three blocks. Each block has two `Conv2d(3×3, padding=1)` layers, each followed by `BatchNorm2d` and `ReLU`, and then a `2×2 MaxPool`. The number of channels grows `3 → 32 → 64 → 128`. The image size halves at each block (`32×32 → 16×16 → 8×8 → 4×4`). The classifier flattens the `128×4×4` features and applies `Dropout(0.3) → Linear(128·4² → 256) → ReLU → Dropout(0.3) → Linear(256 → 10)`.
+- **Data (`SVHNDataModule`).** `SVHNDataModule` adds SVHN to the data layer. Unlike MNIST/USPS, torchvision's SVHN uses `split="train"/"test"` instead of `train=True/False`. So the data module checks which dataset it is and passes the right argument. SVHN is read from the `train_32x32.mat` and `test_32x32.mat` files. It is kept as 3-channel RGB (not converted to grayscale) and normalized with SVHN's mean/std.
+- **Integration.** Registering `svhn` in the training list, the data-module list, and the inference list makes `--dataset svhn` and `--model svhn` work in the training, evaluation, and inference tools with no extra changes.
 
 ### 2. Command-Line Tools for Inference and Evaluation
 
-I implemented the command-line tools that make the package usable from the terminal for both inference and evaluation.
+The command-line tools make the package usable from the terminal, covering both inference and evaluation.
 
 - **Inference tool** (`python -m src.inference`, and the installed `ccexam-infer` command). It takes `--model` to pick the classifier, `--input` for the image or folder to classify, `--device` (cpu/cuda/mps), `--checkpoint-path` to use different weights, and `--log-level`. By default it prints each prediction to the terminal.
-- **Saving predictions.** I added `--output`/`-o` so predictions can also be saved to a file. The format follows the extension: `.csv` writes an `image,prediction` table with a header, and `.txt` writes tab-separated lines. Any folders in the path are created for you, and an existing file is never overwritten.
+- **Saving predictions.** The `--output`/`-o` option saves predictions to a file. The format follows the extension: `.csv` writes an `image,prediction` table with a header, and `.txt` writes tab-separated lines. Any folders in the path are created for you, and an existing file is never overwritten.
 - **Evaluation tool** (`python -m src.evaluation`). It takes `--dataset`, `--checkpoint-path`, `--batch-size`, `--num-workers`, and `--device`. It loads the matching test set through the data module and reports precision, recall, and average inference speed.
-- **Error handling.** I added error handling so bad input gives a clear message and a non-zero exit code.
+- **Error handling.** Bad input now gives a clear message and a non-zero exit code, instead of a long traceback.
 
 ### 3. Logging
 
-- I added logging to the evaluation, inference, and training code. This replaced one-off `print` statements with a shared logger and a single format (`timestamp | level | name | message`), set up in `src/utils.py`.
+- Logging now runs across the evaluation, inference, and training code. It replaced one-off `print` statements with a shared logger and a single format (`timestamp | level | name | message`), set up in `src/utils.py`.
 - `setup_logging` turns it on and `get_logger` gives a logger per file.
-- This gives every run readable output user can control with `--log-level`.
+- Every run gets readable output the user can control with `--log-level`.
 
 ### 4. Packaging and PyPI Release (`ccexam`)
 
-- I packaged the project and published it to PyPI as [`ccexam`](https://pypi.org/project/ccexam/), so it installs with one `pip install ccexam`.
-- I wrote `pyproject.toml` with a `package-dir` setting that keeps the code in `src/` but installs and imports it as `ccexam`, and I added the `ccexam-infer` command.
-- I included the trained weights and sample images in the package, so inference works right after installing with no extra downloads.
-- I changed the imports between files to relative imports, so the installed package imports correctly as `ccexam`. (A plain `from src.…` import works in the repo but breaks once installed.)
-- I added CI/PyPI/Python/License badges, fixed the install instructions, and made the releases.
+- The project is packaged and published to PyPI as [`ccexam`](https://pypi.org/project/ccexam/), so it installs with one `pip install ccexam`.
+- The `pyproject.toml` file keeps the code in `src/` but installs and imports it as `ccexam`, and it adds the `ccexam-infer` command.
+- The trained weights and sample images are bundled in the package, so inference works right after installing with no extra downloads.
+- The imports between files were changed to relative imports, so the installed package imports correctly as `ccexam`. (A plain `from src.…` import works in the repo but breaks once installed.)
+- The package also gained CI/PyPI/Python/License badges and corrected install instructions, and the releases were published.
 
 ### 5. Sample Images and the `samples:` Input Option
 
-- I moved the trained weights and example images inside the package and added a `samples:` input option, so the tool can be tried without your own files.
+- The trained weights and example images now live inside the package, and a `samples:` input option lets the tool be tried without your own files.
 - Writing `--input samples:svhn_digit_5.png` points to an image bundled in the package, so it works right after `pip install`.
 - An unknown name prints the list of available samples.
 
 ### 6. Handling Any Image Input (Files, Folders, and No Extension)
 
-I changed how `--input` works so inference takes a single image or a whole folder. It decides what is an image by its content rather than its file extension.
+The `--input` option now takes a single image or a whole folder. It decides what is an image by its content rather than its file extension.
 
 - **Single file or folder.** Given one file, it classifies that file; given a folder, it classifies every valid image inside (sorted by name). The Python API works the same way: a single image returns one label, a folder returns a list of labels.
 - **Checked by content, not extension.** Instead of trusting the file name, each file is checked by trying to open it as an image (with PIL). So a real image is accepted even if it has the wrong extension or **no extension at all**, while a non-image (a `.pdf`, or a text file renamed to `.png`) is rejected with a clear `Invalid input` message and a non-zero exit code.
@@ -56,10 +58,10 @@ Together with the `samples:` option above, `--input` now handles a single image,
 
 ### 7. README Presentation and Repository Upkeep
 
-- I made the centered README header (logo, title, author line, badges, and section links) and added the banner image.
-- I kept the model-card numbers (precision, recall, inference time) up to date.
-- After moving the samples into the package, I fixed the inference command paths in the docs so the examples still work.
-- I did several smaller fixes: changing the default `--num-workers` for evaluation to avoid a worker-shutdown hang, moving the RGB conversion into a module-level `_to_rgb` function so the dataset transform can be pickled by DataLoader workers on newer Python, adding tests for the model classes, and fixing the Sphinx documentation build.
+- The centered README header (logo, title, author line, badges, and section links) and the banner image were added.
+- The model-card numbers (precision, recall, inference time) were kept up to date.
+- After the samples moved into the package, the inference command paths in the docs were fixed so the examples still work.
+- Several smaller fixes followed: changing the default `--num-workers` for evaluation to avoid a worker-shutdown hang, moving the RGB conversion into a module-level `_to_rgb` function so the dataset transform can be pickled by DataLoader workers on newer Python, adding tests for the model classes, and fixing the Sphinx documentation build.
 
 ### Secret Task
 
