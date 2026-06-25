@@ -102,7 +102,47 @@ The run trained SVHN for 5 epochs and finished in about 90 seconds on the GPU. T
 My experience was that the hardest part was the setup: the batch script, the container, and the file paths. Once that worked, the job ran quickly and reliably. Checking progress with `squeue --me` and reading the `slurm-<job-id>.out` log file made it easy to follow the run.
 
 ## Myrthe Catteau
-...
+
+I was originally part of the SVHN pipeline team. However, my background differs significantly from most of the other contributors. I work within renewable energy, have no machine learning experience, and had never used GitHub before this course. Because of this, I focused my contributions on documentation, usability, and testing rather than code development.
+
+### Implementation tasks and choices
+My three main contributions were:
+
+#### 1. Setting up the Sphinx Documentation
+
+I set up the Sphinx documentation used for the GitHub Pages website. I followed the workflow introduced during the course while adapting it to the repository's existing structure and configuration.
+
+#### 2. Restructuring the README
+
+I reorganised the README to create a more logical flow for new users, and wrote introductory sections and the guideline for further use of the code. I did not change the technical content written by other collaborators, but reordered sections and moved some information to the GitHub Pages documentation so that the README remained concise.
+
+#### 3. Acting as a Pseudo Client
+
+Once the repository was considered functional, I tested it by following the documentation as a new user would. This helped verify that the instructions were understandable for someone without prior machine learning experience. Overall, the documentation was clear, and the few problems I encountered were due to my own mistakes rather than shortcomings in the instructions.
+
+### Reflection
+
+I found documentation work relatively straightforward, as it allowed me to contribute independently while improving the project's accessibility. It was not always easy to know which part of the documentation was usefull to work on, since it was continuously being updated by others. The most difficult aspect was participating in discussions about machine learning implementation and reviewing code changes. My limited experience made it difficult to evaluate technical solutions or contribute directly to code development. This meant I had fewer opportunities to work on the same functions as other contributors, but it also highlighted the importance of documentation, testing, and user experience in collaborative projects, which is something I had not given much thought prior to this course.
+
+### Course Tools Used
+
+Almost every tool introduced in the course was new to me. The most important was GitHub, including branches, pull requests, and issues. Learning GitHub was a major part of my learning experience. I also learned how to use Sphinx and GitHub Pages to generate and publish project documentation.
+
+### Experience Running Jobs on LUMI
+
+Working on LUMI was particularly interesting because I expect to use HPC systems later in my PhD work. I found running a job relatively straightforward. I ran the training file for SVHN and saved the weights. It ran successfully on the first attempt (**Job-ID `19345748`**). The most challenging part for me was cloning the repository on the HPC system and navigating branches through the command line rather than through the GitHub web interface.
+
+### Secret Task
+
+My secret task was assigned late in the project. Since a coding-focused task was not practical given my background, Kristoffer and I instead explored ways to test the repository.
+
+First, I attempted to make changes to the main branch without approval, but the repository protections worked as intended and prevented this.
+
+Second, I tested how the models handled unexpected inputs by uploading unrelated images, random numbers, and non-numerical data. The models generally still returned predictions rather than producing error messages. The main exception was incorrectly formatted images, which were not recognised as valid input. I intended to open a GitHub issue about this behaviour, but a similar issue (#128) had already been raised before I had the chance.
+
+### Conclusion
+
+I would have liked to contribute more directly to the code, and if the project had been closer to my own field, I think I would have been able to do so more easily. At the same time, I accepted that my limited coding and machine learning background meant that documentation, structure, and usability were the areas where I could contribute most effectively, and helped where I could to the best of my abilities. Even so, working on these smaller tasks taught me a great deal and resulted in a steep learning curve about how a collaborative project can be organised and managed, and about the tools available to support that process, which was the goal I set out to acchieve by taking this course. 
 
 ## Rahul Baburajan
 My main contributions to the project were the original MNIST pipeline, the refactoring of inference toward a factory-style structure, ASCII text input support for inference, validation data support during training, and LUMI training scripts and logs. I also made smaller but important repository quality improvements, including documentation link fixes and README command alignments. Altogether, these contributions were made through 22 direct non-merge commits which can be verified using this command: 
