@@ -172,7 +172,7 @@ Beyond implementation work, I helped keep the repository maintainable by alignin
 ...
 
 ## Siyan Chen
-My main task was to contribute the USPS dataset support, including the data module, model architecture, registry integration, and tests. Alongside this, I set up the initial project structure and CI/CD workflows, implemented and maintained the GitHub Pages documentation, added LUMI training and evaluation support, reviewed most of the pull requests from other contributors, and made several correctness fixes to the shared code that benefited all three datasets. These contributions span 39 direct non-merge commits which can be verified using this command:
+My main task was to contribute the USPS dataset support, including the data module, model architecture, registry integration, and tests. Alongside this, I set up the initial project structure and CI/CD workflows, implemented and maintained the GitHub Pages documentation, added LUMI training and evaluation support, reviewed most of the pull requests from other contributors, and made several correctness fixes to the shared code that benefited all three datasets. These contributions can be verified in the commit history using the following command:
 
 ```bash
 git log main --author='chensy618\|Siyan Chen' --no-merges --format='%h %ad %an <%ae> %s' --date=short
