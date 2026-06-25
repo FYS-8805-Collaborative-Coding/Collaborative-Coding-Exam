@@ -1,6 +1,6 @@
 # provide links for downloading the datesets
-1. MNIST 
+1. MNIST: https://www.kaggle.com/datasets/hojjatk/mnist-dataset 
 
 2. SVHN: http://ufldl.stanford.edu/housenumbers/
 
-3. USPS
+3. USPS: http://ufldl.stanford.edu/housenumbers/ (potentially https://www.kaggle.com/datasets/stanfordu/street-view-house-numbers)

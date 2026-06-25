@@ -76,4 +76,93 @@ Beyond implementation work, I helped keep the repository maintainable by alignin
 ...
 
 ## Siyan Chen
-...
+My main task was to contribute the USPS dataset support, including the data module, model architecture, registry integration, and tests. Alongside this, I set up the initial project structure and CI/CD workflows, implemented and maintained the GitHub Pages documentation, added LUMI training and evaluation support, reviewed most of the pull requests from other contributors, and made several correctness fixes to the shared code that benefited all three datasets. These contributions span 39 direct non-merge commits which can be verified using this command:
+
+```bash
+git log main --author='chensy618\|Siyan Chen' --no-merges --format='%h %ad %an <%ae> %s' --date=short
+```
+
+## Implementation Tasks and Choices
+
+This section describes the main technical tasks I contributed during the project in detail.
+
+### 1. Repository Setup
+
+I set up the initial repository structure and CI/CD workflow skeleton so that the project had a shared starting point for later implementation work. Commit `9c70f12` created the initial project structure: placeholder source files, the `CITATION.cff` file with author metadata, `datasets/dataset_links.txt`, `environment.yml`, and the four GitHub Actions workflow files as `# TODO` stubs. Commit `c0229c5` completed the implementation of all four workflows: format, test, docs, and release. To avoid failing CI notifications while the rest of the codebase was still being built out, each workflow step used a soft-fail pattern (`2>/dev/null || echo "TODO: ..."`) so pipelines stayed green during early development. This was useful because the repository needed CI/CD structure before all source files, tests, and documentation were complete. The soft-fail setup allowed the team to keep a consistent workflow layout from the beginning without blocking early development. 
+
+### 2. USPS Model Design
+
+For USPS support, I followed the existing modular structure of the project instead of creating a separate pipeline. This design choice made USPS consistent with the other supported datasets and allowed the existing CLI, training, evaluation, and inference entry points to reuse the same shared interfaces.
+
+Before finalizing the model, I discussed the model choice with Andrea. We considered several options, including SVM, MLP, and CNN models. After testing these alternatives, the CNN achieved the highest accuracy, so we chose it as the final USPS model. This choice worked well because USPS images are small `16×16` grayscale digit images, and convolutional layers can capture local digit features more effectively than the simpler baselines.
+
+The core USPS contribution covered three parts: dataset integration, model design, and test/checkpoint support. First, commit `7d7dedd` added `USPSDataModule` in `src/data.py` with the correct USPS normalization statistics, and implemented `USPSNet` in `src/models.py` as a two-block CNN designed for 16×16 grayscale inputs. USPS was also registered in the dataset registry, so it could be selected automatically through the same project workflow as MNIST and SVHN. The model architecture was kept compact because USPS images are small grayscale images. A two-block CNN was sufficient for extracting local digit features while avoiding unnecessary complexity. Batch normalization and ReLU were used to make training more stable, max pooling reduced the spatial feature size, and the final fully connected layers mapped the extracted features to the ten digit classes. Second, commits `2f372b6` and `a5158f2` added 316 lines of tests in `tests/test_data.py`. These tests covered normal data loading, edge cases, validation scenarios, dataset routing, loader behavior, normalization, and parameter forwarding. This was important because USPS support touched shared dataset-loading code, so the tests helped ensure that adding USPS did not break MNIST or SVHN behavior. Third, commit `f32bedf` added a pretrained USPS checkpoint alongside the model. This made USPS usable as a complete supported model rather than only a dataset definition, allowing users to run inference or evaluation without retraining first. 
+
+### 3. Training and Evaluation Fixes and Improvements
+
+I also made several fixes to the shared training and evaluation code so that all supported datasets could use the same workflow more reliably. Relevant commits are shown below:
+
+- `d4e3460` (`Fixes #93`): `DataLoader` objects were being created inside the epoch loop. I moved them outside the loop so the loaders are constructed once per training run.
+- `a6a8620` (`Fixes #94`): Device selection was extended to support Apple Silicon GPUs through the MPS backend.
+- `25f9057` (`Fixes #95, #97, #100`): I added a LUMI evaluation script and fixed the LUMI training script so both scripts run from the repository root and write logs to the correct `lumi/logs` directory. I also updated evaluation precision and recall from micro averaging to macro averaging so each class contributes equally to the final metric.
+- `6bbba7b` (`Fixes #110, #111, #112, #113`): I fixed several training, evaluation, and inference warnings and platform-related issues, including safer model loading with `weights_only=True` and Mac/MPS-related cleanup behavior.
+- `30ec436` (`Fixes #119`): I added config-file support for training, allowing dataset-specific training settings to be loaded through `--config` while still letting command-line arguments override config defaults.
+- `e0da851` (`Fixes #123`): After noticing signs of overfitting in the training logs, I discussed the issue with Rahul and updated the learning rate to `3e-4` to make the optimization more stable.
+- `038f3a0`: I fixed the weight/checkpoint path problem so training, inference, evaluation, and tests resolved model weights consistently from the expected location.
+
+These fixes made the shared training and evaluation workflow more robust, easier to reproduce, and more consistent across all three supported datasets.
+
+### 4. GitHub Pages and Documentation
+
+I also worked on the GitHub Pages and Sphinx documentation site so that the project could be understood and used without reading the source code directly. Across commits `ccf65af`, `cde08d6`, `47e519d`, and `0f0154d`, I built out most of the documentation structure and updated the content as the codebase changed.
+
+The documentation covered several parts of the project. I wrote a beginner-friendly Getting Started guide (`ccf65af`) covering installation, running inference on a single image or a folder, and common troubleshooting tips. I also created API reference pages for the main modules, including inference, training, models, and data handling, so users could understand how the shared functions and classes were organized.
+
+In addition to the general documentation, I added development-related guides and LUMI usage instructions. These pages explained how to work with the repository structure, how to run training and evaluation jobs on LUMI, and how the dataset-specific workflows were connected to the shared command-line interface. I also updated the README with more accurate instructions and sample images for MNIST, USPS, and SVHN, so the three supported datasets were documented consistently.
+
+The main implementation choice was to keep the documentation aligned with the modular structure of the codebase. Instead of writing separate instructions for each dataset from scratch, I documented the shared workflow and then explained how MNIST, USPS, and SVHN fit into it. This made the documentation easier to maintain and helped users understand that the three datasets follow the same overall training, evaluation, and inference pipeline.
+
+### 5. Review and Tests
+
+In addition to my own implementation tasks, I also reviewed many pull requests from other contributors and helped resolve merge conflicts when changes affected the same shared files.
+
+As other contributors refactored the codebase, the test suite regularly broke and needed updating. Commits `70a7fec`, `1884c6f`, and `d888c8f` fixed a series of failures in `tests/test_training.py` caused by changes to the fake `torch` module used in unit tests. The `torch.ops` namespace was missing attributes expected by newer versions of `torchvision`, and the module paths for `data` and `models` had changed to `src.data` and `src.models` after the package restructuring. Commit `f4587ad` resolved a test failure in `tests/test_inference.py` triggered by a change in `src/inference.py`. These fixes kept the CI green and unblocked other contributors' pull requests. 
+
+I also tested the Windows setup, including training, inference, and evaluation, to check that the shared workflow worked outside the main macOS development environment.
+
+### Secret Task
+
+My secret task was to secretly introduce subtle issues into the codebase.
+
+**Attempt 1 — Training loop order (`d939c76`):** Moved `optimizer.zero_grad()` from before the forward pass to after `optimizer.step()`. This looked like a possible gradient-handling issue, but in this project it did not have a strong practical effect because gradients were still cleared once per batch. 
+
+**Attempt 2 — MaxPool kernel size (detected by CI):** Changed `nn.MaxPool2d(2)` to `nn.MaxPool2d(3)` in `USPSNet`. The original architecture used `MaxPool2d(2)` in both layers, producing 64×4×4 feature maps for the classifier head. Changing the second pool to `MaxPool2d(3)` reduced the spatial dimensions further, causing a shape mismatch in the classifier head. The CI test suite caught this automatically. Commit `e612f6a` reverted the pool size back to 2, and the architecture was later properly updated in `6bbba7b`.
+
+### What I Found Easy and Difficult
+
+**Easy:** Adding the USPS data module and model followed the existing MNIST structure closely, so the interface contract was clear from the start. Writing tests for `data.py` was also straightforward once the first module was in place. Note that, with the help of LLMs and AI coding agents, reusing existing module patterns and drafting initial code became much easier.
+
+**Difficult:** Resolving merge conflicts was one of the most difficult parts of the project, especially in shared files such as `src/training.py`. Several contributors were editing the same training pipeline at the same time, so the conflicts were not just simple text conflicts. I had to compare overlapping changes carefully, keep the parts that matched the final shared design, and run tests again to make sure the resolved version still worked.
+
+Larger refactors were especially challenging because many conflicts remained after rebasing, and other contributors continued to update the same files while the conflicts were being resolved. For example, Riccardo's larger refactor pull request stayed open for a long time, partly because it touched many shared files and had to be reconciled with ongoing updates from other contributors.
+
+Several fixes also required understanding the interaction between PyTorch internals and the operating system. The MPS DataLoader hang, for instance, only appeared on Apple Silicon and required careful reading of PyTorch multiprocessing behavior.
+
+### Tools from the Course Used
+
+- **GitHub Actions** — This was my first time writing CI workflow YAML. I implemented the test, format, docs, and release workflows, and learned how to define jobs, steps, triggers, and simple fallback behavior for early development.
+- **LUMI / Slurm** — I was already familiar with submitting jobs on Olivia, but this project helped me learn how to build a working environment on an HPC system more systematically, including storage allocation, Singularity containers, working-directory handling, and writing batch scripts that behave consistently on the cluster.
+- **Sphinx** — I learned how to use Sphinx to build and organize the project documentation site.
+- **Structured PR and issue workflow** — I learned a more collaborative and disciplined GitHub workflow than I had used before. Every change was tracked through a GitHub issue, discussed in pull requests, reviewed by other contributors, and merged only after the team agreed on the implementation.
+
+### Experience Running Jobs on LUMI
+
+I submitted USPS training on LUMI-G (AMD MI250x GPUs) via `lumi/train.sh`, 50 epochs, batch size 32, learning rate `3e-4`. Job **19372444** ran successfully and reached `val_acc=0.963` by the first epoch. Logs are at `lumi/logs/usps_19372444.err` and `lumi/logs/usps_19372444.out`.
+
+The first submission produced empty log files because the weight path was wrong (`weights/` instead of `src/weights/`). After fixing this in commit `038f3a0` and resubmitting, the job completed in under 2 minutes of GPU time.
+
+### Conclusion
+
+My primary role in this project was to deliver end-to-end USPS support and help maintain the shared project infrastructure. I set up the initial repository structure and CI workflows, contributed the USPS data module, model, registry integration, and tests, and made improvements to the shared training and evaluation workflow. I also worked on the GitHub Pages documentation site and ran USPS training on LUMI.
+
+The most challenging part was working in a shared codebase with multiple contributors. Resolving merge conflicts required understanding how different changes fit into the final design, rather than simply choosing one version over another. Some fixes also required understanding platform-specific behavior in PyTorch.
