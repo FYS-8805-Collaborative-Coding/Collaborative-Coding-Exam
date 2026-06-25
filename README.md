@@ -4,7 +4,7 @@
 
 <div align="center">
 <h1 align="center">ACME Digit Classification</h1>
-<h4 align="center"><em>A unified framework for handwritten-digit recognition — MNIST · SVHN · USPS</em></h4>
+<h4 align="center"><em>A unified framework for single-digit recognition — MNIST · SVHN · USPS</em></h4>
 <h4 align="center"><em>FYS-8805 Collaborative Coding Exam · UiT The Arctic University of Norway</em></h4>
 <h5 align="center"><em>Siyan Chen · Andrea Løkke · Riccardo Gelato · Rahul Baburajan · Keyne Oei · Myrthe Catteau</em></h5>
 </div>
@@ -29,7 +29,7 @@
 </p>
 
 ---
-The repository provides a unified interface for training, evaluating, and deploying digit classification models for three customer datasets:
+The repository provides a unified interface for training, evaluating, and deploying single digit classification models for three customer datasets:
 
 - **Customer A:** MNIST
 - **Customer B:** SVHN
