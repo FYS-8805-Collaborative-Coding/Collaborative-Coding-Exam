@@ -178,15 +178,15 @@ My main task was to contribute the USPS dataset support, including the data modu
 git log main --author='chensy618\|Siyan Chen' --no-merges --format='%h %ad %an <%ae> %s' --date=short
 ```
 
-## Implementation Tasks and Choices
+### Implementation Tasks and Choices
 
 This section describes the main technical tasks I contributed during the project in detail.
 
-### 1. Repository Setup
+#### 1. Repository Setup
 
 I set up the initial repository structure and CI/CD workflow skeleton so that the project had a shared starting point for later implementation work. Commit `9c70f12` created the initial project structure: placeholder source files, the `CITATION.cff` file with author metadata, `datasets/dataset_links.txt`, `environment.yml`, and the four GitHub Actions workflow files as `# TODO` stubs. Commit `c0229c5` completed the implementation of all four workflows: format, test, docs, and release. To avoid failing CI notifications while the rest of the codebase was still being built out, each workflow step used a soft-fail pattern (`2>/dev/null || echo "TODO: ..."`) so pipelines stayed green during early development. This was useful because the repository needed CI/CD structure before all source files, tests, and documentation were complete. The soft-fail setup allowed the team to keep a consistent workflow layout from the beginning without blocking early development. 
 
-### 2. USPS Model Design
+#### 2. USPS Model Design
 
 For USPS support, I followed the existing modular structure of the project instead of creating a separate pipeline. This design choice made USPS consistent with the other supported datasets and allowed the existing CLI, training, evaluation, and inference entry points to reuse the same shared interfaces.
 
@@ -194,7 +194,7 @@ Before finalizing the model, I discussed the model choice with Andrea. We consid
 
 The core USPS contribution covered three parts: dataset integration, model design, and test/checkpoint support. First, commit `7d7dedd` added `USPSDataModule` in `src/data.py` with the correct USPS normalization statistics, and implemented `USPSNet` in `src/models.py` as a two-block CNN designed for 16×16 grayscale inputs. USPS was also registered in the dataset registry, so it could be selected automatically through the same project workflow as MNIST and SVHN. The model architecture was kept compact because USPS images are small grayscale images. A two-block CNN was sufficient for extracting local digit features while avoiding unnecessary complexity. Batch normalization and ReLU were used to make training more stable, max pooling reduced the spatial feature size, and the final fully connected layers mapped the extracted features to the ten digit classes. Second, commits `2f372b6` and `a5158f2` added 316 lines of tests in `tests/test_data.py`. These tests covered normal data loading, edge cases, validation scenarios, dataset routing, loader behavior, normalization, and parameter forwarding. This was important because USPS support touched shared dataset-loading code, so the tests helped ensure that adding USPS did not break MNIST or SVHN behavior. Third, commit `f32bedf` added a pretrained USPS checkpoint alongside the model. This made USPS usable as a complete supported model rather than only a dataset definition, allowing users to run inference or evaluation without retraining first. 
 
-### 3. Training and Evaluation Fixes and Improvements
+#### 3. Training and Evaluation Fixes and Improvements
 
 I also made several fixes to the shared training and evaluation code so that all supported datasets could use the same workflow more reliably. Relevant commits are shown below:
 
@@ -208,7 +208,7 @@ I also made several fixes to the shared training and evaluation code so that all
 
 These fixes made the shared training and evaluation workflow more robust, easier to reproduce, and more consistent across all three supported datasets.
 
-### 4. GitHub Pages and Documentation
+#### 4. GitHub Pages and Documentation
 
 I also worked on the GitHub Pages and Sphinx documentation site so that the project could be understood and used without reading the source code directly. Across commits `ccf65af`, `cde08d6`, `47e519d`, and `0f0154d`, I built out most of the documentation structure and updated the content as the codebase changed.
 
@@ -218,7 +218,7 @@ In addition to the general documentation, I added development-related guides and
 
 The main implementation choice was to keep the documentation aligned with the modular structure of the codebase. Instead of writing separate instructions for each dataset from scratch, I documented the shared workflow and then explained how MNIST, USPS, and SVHN fit into it. This made the documentation easier to maintain and helped users understand that the three datasets follow the same overall training, evaluation, and inference pipeline.
 
-### 5. Review and Tests
+#### 5. Review and Tests
 
 In addition to my own implementation tasks, I also reviewed many pull requests from other contributors and helped resolve merge conflicts when changes affected the same shared files.
 
@@ -253,7 +253,7 @@ Several fixes also required understanding the interaction between PyTorch intern
 
 ### Experience Running Jobs on LUMI
 
-I submitted USPS training on LUMI-G (AMD MI250x GPUs) via `lumi/train.sh`, 50 epochs, batch size 32, learning rate `3e-4`. Job **19372444** ran successfully and reached `val_acc=0.963` by the first epoch. Logs are at `lumi/logs/usps_19372444.err` and `lumi/logs/usps_19372444.out`.
+I submitted USPS training on LUMI-G (AMD MI250x GPUs) via `lumi/train.sh` (**Job-ID `19372444`**), using the `standard-g` partition with one GPU, 7 CPUs, and 60 GB of GPU memory. The run used 50 epochs, batch size 32, and learning rate `3e-4`. The job ran successfully and reached `val_acc=0.963` by the first epoch. Logs can be found in [lumi/logs/usps_19372444.err](https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/blob/main/lumi/logs/usps_19372444.err).
 
 The first submission produced empty log files because the weight path was wrong (`weights/` instead of `src/weights/`). After fixing this in commit `038f3a0` and resubmitting, the job completed in under 2 minutes of GPU time.
 
