@@ -145,6 +145,7 @@ Second, I tested how the models handled unexpected inputs by uploading unrelated
 I would have liked to contribute more directly to the code, and if the project had been closer to my own field, I think I would have been able to do so more easily. At the same time, I accepted that my limited coding and machine learning background meant that documentation, structure, and usability were the areas where I could contribute most effectively, and helped where I could to the best of my abilities. Even so, working on these smaller tasks taught me a great deal and resulted in a steep learning curve about how a collaborative project can be organised and managed, and about the tools available to support that process, which was the goal I set out to acchieve by taking this course. 
 
 ## Rahul Baburajan
+
 My main contributions to the project were the original MNIST pipeline, the refactoring of inference toward a factory-style structure, ASCII text input support for inference, validation data support during training, and LUMI training scripts and logs. I also made smaller but important repository quality improvements, including documentation link fixes and README command alignments. Altogether, these contributions were made through 22 direct non-merge commits which can be verified using this command: 
 
 ```bash
@@ -152,6 +153,8 @@ git log main --author='rahul.baburajan@uit.no' --no-merges --format='%h %ad %an 
 ```
 
 I trained the MNIST model on LUMI (**Job-ID `19201793`**) and its logs can be found in [lumi/logs/mnist_19201793.err](https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/blob/main/lumi/logs/mnist_19201793.err)
+
+My favourite contribution to the project is the preview card image of digits floating through Northern lights(even though it is nano banana that did the heavy lifting).
 
 ### 1. Initial MNIST Pipeline
 
@@ -178,11 +181,11 @@ I contributed training support that made the project more reproducible and usefu
 
 ### 4. ASCII Text Input Support for Inference
 
-I implemented support for ASCII digit inputs so inference could accept text-based digit images in addition to standard image files. Commit `dea2dd6` added the initial ASCII text handling functionalities and sample ASCII digit files to test on. Later commits extended this support to handle different foreground and background character conventions in ASCII samples, while also refining tests.
+I implemented support for ASCII digit inputs so inference could accept text-based digit images in addition to standard image files. Commit `dea2dd6` added the initial ASCII text handling functionality and sample ASCII digit files to test on. Later commits extended this support to handle different foreground and background character conventions in ASCII samples, while also refining tests.
 
 The contribution included:
 
-- ASCII sample digits like as `ascii_digit_0.txt`, `ascii_digit_2.txt` and `ascii_digit_8.txt`. 
+- ASCII sample digits such as `ascii_digit_0.txt`, `ascii_digit_2.txt` and `ascii_digit_8.txt`. 
 - Utility logic for reading and converting ASCII digit representations.
 - Inference integration so valid text inputs could enter the inference pipeline.
 - Tests for ASCII parsing and supported symbol conventions.
@@ -193,9 +196,21 @@ I contributed documentation and repository maintenance improvements that made th
 - fixed README link formatting, aligned instructions with the actual codebase behavior and updated sample and weight handling documentation. 
 - maintained contribution related documentation links, reducing setup friction and improving the overall clarity of the project.
 
+### What I found easy/difficult
+
+**Easy**. I found it relatively easy to work on the shared functions once the project started moving toward factory and registry patterns. The MNIST pipeline gave a clear baseline to build from, and later the same structure made it easier to connect data modules, models, training, and inference without rewriting the whole codebase. Once the factory pattern was in place adding new datasets or model aliases, could be done by adding new components into the registry rather than changing every function manually.
+
+**Difficult** Resolving merge conflicts even when its on a README file was quite hard to get a hang of initially. When it happened in the core files like inference file it was even hard. Small changes in these files could affect all the other dataset workflows and hence understanding and converting to a factory pattern was necessary. Deciding on common conventions was hard when we were working as isloated developers. For instance whether to name the model mnist or model-a, where different parts of the code did differently was hard to resolve until we met in person. There were similar issues when deciding on the other naming conventions. Testing end to end all the different ways to use the repository for training, testing and inference so that an external user can easily make use of this repository was time consuming particularly because it has to be done everytime after code changes was made. Adding the relevant test cases reduced this work however some platform dependent issues(mac vs windows) still had to be checked manually.
+
+### Course Tools I Had Not Used Before.
+The main course tools I used for the project that I had not worked with before were GitHub Actions, Sphinx documentation, and Python package publishing workflows. GitHub Actions was used to automate parts of the repository workflow, including running tests and building documentation which significanly helped the project. I also learned how Sphinx can be used to generate project documentation and how this process can be automated through GitHub Actions. In addition, I gained experience with integrating the project with `pip`, which helped me understand how a repository can be packaged and made easier for external users to install and run.
+
+### Experience Running Jobs on LUMI
+Since I had been using Lumi for some time now, I did not face many issues in this regard. Also since our repository had only commonly used libraries, existing Lumi containers were sufficient which greatly removed a lot of effort required. 
+
 ### Secret Task 
 My secret task is to intentionally introduce issues into the codebase that would later require review and correction by other contributors. 
-- I added hardcoded dataset normalization values directly in the training and inference logic, instead of keeping these values in a shared source of truth. The idea was this would easily create issues if not careful because the normalisation values used during training should match with the test and inference time. It was later corrected by Ricardo by centralizing the dataset statistics and updating the relevant data, training, inference, and evaluation code to use them consistently.
+- I added hardcoded dataset normalization values directly in the training and inference logic, instead of keeping these values in a shared source of truth. The idea was this would easily create issues if not careful because the normalisation values used during training should match with the test and inference time. It was later corrected by Riccardo by centralizing the dataset statistics and updating the relevant data, training, inference, and evaluation code to use them consistently.
 - In the inference API, I made the return shape not consistent across different input cases. Depending on whether the input was a single file or a directory, the function could return different kinds of shapes as output, which made the interface harder to integrate with downstream usecases. This was later fixed by Riccardo by aligning the function behavior with the expected API and making the output structure consistent.
 
 ### Conclusion
