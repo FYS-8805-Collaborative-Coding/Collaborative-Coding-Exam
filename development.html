@@ -1,0 +1,243 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model development &mdash; Collaborative-coding-exam 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Running on LUMI" href="lumi.html" />
+    <link rel="prev" title="About this code" href="about.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Collaborative-coding-exam
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About this code</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Model development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#training">Training</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#using-a-config-file">Using a config file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluation">Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contributing-to-the-code">Contributing to the code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="lumi.html">Running on LUMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="individual.html">Individual contributions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Collaborative-coding-exam</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Model development</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/development.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="model-development">
+<h1>Model development<a class="headerlink" href="#model-development" title="Link to this heading"></a></h1>
+<section id="training">
+<h2>Training<a class="headerlink" href="#training" title="Link to this heading"></a></h2>
+<p>You can run training from the repository root with the CLI. All arguments are entirely optional; running the command without any flags will automatically train on the default <code class="docutils literal notranslate"><span class="pre">mnist</span></code> dataset:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run with absolute defaults (MNIST, 1 epoch, batch size 64, automatic device selection)</span>
+python<span class="w"> </span>-m<span class="w"> </span>src.training
+
+<span class="c1"># Run with custom configuration overrides</span>
+python<span class="w"> </span>-m<span class="w"> </span>src.training<span class="w"> </span>--dataset<span class="w"> </span>mnist<span class="w"> </span>--epochs<span class="w"> </span><span class="m">5</span><span class="w"> </span>--batch-size<span class="w"> </span><span class="m">32</span><span class="w"> </span>--device<span class="w"> </span>cuda
+</pre></div>
+</div>
+<p>The checkpoint is written to <code class="docutils literal notranslate"><span class="pre">src/weights/&lt;dataset&gt;.pth</span></code> by default. Training supports <code class="docutils literal notranslate"><span class="pre">mnist</span></code>, <code class="docutils literal notranslate"><span class="pre">usps</span></code>, and <code class="docutils literal notranslate"><span class="pre">svhn</span></code> out of the box; additional datasets can be registered in <code class="docutils literal notranslate"><span class="pre">src/training.py</span></code>.</p>
+<section id="using-a-config-file">
+<h3>Using a config file<a class="headerlink" href="#using-a-config-file" title="Link to this heading"></a></h3>
+<p>Instead of passing all flags on the command line, you can use a config file with <code class="docutils literal notranslate"><span class="pre">--config</span></code> (<code class="docutils literal notranslate"><span class="pre">-c</span></code>). The <code class="docutils literal notranslate"><span class="pre">configs/</span></code> directory contains ready-made configs for each dataset:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>src.training<span class="w"> </span>--config<span class="w"> </span>configs/mnist.cfg
+python<span class="w"> </span>-m<span class="w"> </span>src.training<span class="w"> </span>--config<span class="w"> </span>configs/svhn.cfg
+python<span class="w"> </span>-m<span class="w"> </span>src.training<span class="w"> </span>--config<span class="w"> </span>configs/usps.cfg
+</pre></div>
+</div>
+<p>A config file is a plain <code class="docutils literal notranslate"><span class="pre">key=value</span></code> text file (lines starting with <code class="docutils literal notranslate"><span class="pre">#</span></code> are comments):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># configs/mnist.cfg</span>
+<span class="n">dataset</span><span class="o">=</span><span class="n">mnist</span>
+<span class="n">epochs</span><span class="o">=</span><span class="mi">50</span>
+<span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span>
+</pre></div>
+</div>
+<p>Any CLI flag you pass explicitly will override the corresponding value in the config file — the priority order is <strong>CLI flag &gt; config file &gt; built-in default</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use the config but run only 5 epochs instead of 50</span>
+python<span class="w"> </span>-m<span class="w"> </span>src.training<span class="w"> </span>--config<span class="w"> </span>configs/mnist.cfg<span class="w"> </span>--epochs<span class="w"> </span><span class="m">5</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="evaluation">
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Link to this heading"></a></h2>
+<p>After training, evaluate a model on its test set from the repository root:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Evaluate the default MNIST model on CPU</span>
+python<span class="w"> </span>-m<span class="w"> </span>src.evaluation<span class="w"> </span>--dataset<span class="w"> </span>mnist
+
+<span class="c1"># Evaluate with a custom checkpoint on NVIDIA GPU</span>
+python<span class="w"> </span>-m<span class="w"> </span>src.evaluation<span class="w"> </span>--dataset<span class="w"> </span>svhn<span class="w"> </span>--checkpoint-path<span class="w"> </span>weights/svhn.pth<span class="w"> </span>--device<span class="w"> </span>cuda
+
+<span class="c1"># Evaluate on Apple Silicon</span>
+python<span class="w"> </span>-m<span class="w"> </span>src.evaluation<span class="w"> </span>--dataset<span class="w"> </span>svhn<span class="w"> </span>--checkpoint-path<span class="w"> </span>weights/svhn.pth<span class="w"> </span>--device<span class="w"> </span>mps
+</pre></div>
+</div>
+<p>The command prints macro-averaged precision, macro-averaged recall, and average
+inference time per sample. The test data is downloaded automatically on the first
+run to the directory given by <code class="docutils literal notranslate"><span class="pre">--data-dir</span></code> (default: <code class="docutils literal notranslate"><span class="pre">datasets/</span></code>).</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Argument</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--dataset</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mnist</span></code></p></td>
+<td><p>Dataset to evaluate on: <code class="docutils literal notranslate"><span class="pre">mnist</span></code>, <code class="docutils literal notranslate"><span class="pre">usps</span></code>, or <code class="docutils literal notranslate"><span class="pre">svhn</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--checkpoint-path</span></code></p></td>
+<td><p><em>(registered default)</em></p></td>
+<td><p>Path to a <code class="docutils literal notranslate"><span class="pre">.pth</span></code> checkpoint file.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--batch-size</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">256</span></code></p></td>
+<td><p>Number of samples per batch.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--data-dir</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">datasets</span></code></p></td>
+<td><p>Root directory for dataset downloads.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--num-workers</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+<td><p>Number of DataLoader worker processes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--device</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">cpu</span></code></p></td>
+<td><p>PyTorch device: <code class="docutils literal notranslate"><span class="pre">cpu</span></code>, <code class="docutils literal notranslate"><span class="pre">cuda</span></code> (NVIDIA GPU), or <code class="docutils literal notranslate"><span class="pre">mps</span></code> (Apple Silicon).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--log-level</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">INFO</span></code></p></td>
+<td><p>Logging verbosity: <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>, <code class="docutils literal notranslate"><span class="pre">INFO</span></code>, <code class="docutils literal notranslate"><span class="pre">WARNING</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h2>
+<p>Run the basic tests with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>-q
+</pre></div>
+</div>
+<p>The tests are lightweight and only validate the training CLI, argument parsing,
+and factory wiring.</p>
+</section>
+<hr class="docutils" />
+<section id="contributing-to-the-code">
+<h2>Contributing to the code<a class="headerlink" href="#contributing-to-the-code" title="Link to this heading"></a></h2>
+<p>We use a branch → pull request → review workflow. All changes to <code class="docutils literal notranslate"><span class="pre">main</span></code> require at least one approved review — direct pushes are not allowed.</p>
+<p><strong>If you have write access to the repository:</strong></p>
+<ol class="arabic simple">
+<li><p>Open an issue describing your change</p></li>
+<li><p>Create a branch and commit your work (reference the issue, e.g. <code class="docutils literal notranslate"><span class="pre">fixes</span> <span class="pre">#5</span></code>)</p></li>
+<li><p>Open a pull request towards <code class="docutils literal notranslate"><span class="pre">main</span></code></p></li>
+<li><p>Get a review, address feedback, then merge</p></li>
+</ol>
+<p><strong>If you do not have write access (external contributors):</strong></p>
+<ol class="arabic simple">
+<li><p>Fork the repository on GitHub</p></li>
+<li><p>Clone your fork locally: <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/&lt;your-username&gt;/Collaborative-Coding-Exam.git</span></code></p></li>
+<li><p>Create a branch in your fork and commit your work</p></li>
+<li><p>Open a pull request from your fork towards <code class="docutils literal notranslate"><span class="pre">main</span></code> of this repository</p></li>
+<li><p>Get a review, address feedback, then merge</p></li>
+</ol>
+<p>See <a class="reference external" href="https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/blob/main/CONTRIBUTION.md#contributing">CONTRIBUTION.md</a> for the full guide.</p>
+<hr class="docutils" />
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="about.html" class="btn btn-neutral float-left" title="About this code" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="lumi.html" class="btn btn-neutral float-right" title="Running on LUMI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

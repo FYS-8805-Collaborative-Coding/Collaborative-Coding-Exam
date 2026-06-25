@@ -1,0 +1,614 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Individual contributions &mdash; Collaborative-coding-exam 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2709fde1"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="Running on LUMI" href="lumi.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Collaborative-coding-exam
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About this code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Model development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lumi.html">Running on LUMI</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Individual contributions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#andrea-dahlmo-lokke">Andrea Dahlmo Løkke</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#contribution-workflow-and-repository-governance">1. Contribution Workflow and Repository Governance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#readme-model-cards-and-project-documentation">2. README, Model Cards, and Project Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#evaluation-pipeline">3. Evaluation Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#training-configuration-and-lumi-scripts">4. Training Configuration and LUMI Scripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#usps-dataset-support-and-folder-standardization">5. USPS Dataset Support and Folder Standardization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#codebase-wide-docstring-standardization">6. Codebase-wide Docstring Standardization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#secret-task">Secret Task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#what-i-found-easy-difficult-about-working-on-the-same-functions">What I found easy/difficult about working on the same functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tools-from-the-course-i-did-not-know-before">Tools from the course I did not know before</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#experience-with-lumi">Experience with LUMI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#keyne-oei">Keyne Oei</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#contribution">Contribution:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#svhn-model-and-data">1. SVHN Model and Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-line-tools-for-inference-and-evaluation">2. Command-Line Tools for Inference and Evaluation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logging">3. Logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#packaging-and-pypi-release-ccexam">4. Packaging and PyPI Release (<code class="docutils literal notranslate"><span class="pre">ccexam</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sample-images-and-the-samples-input-option">5. Sample Images and the <code class="docutils literal notranslate"><span class="pre">samples:</span></code> Input Option</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#handling-any-image-input-files-folders-and-no-extension">6. Handling Any Image Input (Files, Folders, and No Extension)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#readme-presentation-and-repository-upkeep">7. README Presentation and Repository Upkeep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Secret Task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#what-was-easy-and-difficult-same-functions">What Was Easy and Difficult (Same Functions)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#course-tools-i-had-not-used-before">Course Tools I Had Not Used Before</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-jobs-on-lumi">Running Jobs on LUMI</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#myrthe-catteau">Myrthe Catteau</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#implementation-tasks-and-choices">Implementation tasks and choices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#setting-up-the-sphinx-documentation">1. Setting up the Sphinx Documentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#restructuring-the-readme">2. Restructuring the README</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#acting-as-a-pseudo-client">3. Acting as a Pseudo Client</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#reflection">Reflection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#course-tools-used">Course Tools Used</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#experience-running-jobs-on-lumi">Experience Running Jobs on LUMI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Secret Task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rahul-baburajan">Rahul Baburajan</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#initial-mnist-pipeline">1. Initial MNIST Pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inference-architecture-and-generalization">2. Inference Architecture and Generalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#training-validation-lumi-scripts-logs-and-model-artifacts">3. Training, Validation, LUMI Scripts, Logs, and Model Artifacts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ascii-text-input-support-for-inference">4. ASCII Text Input Support for Inference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#documentation-and-repository-hygiene">5. Documentation and Repository Hygiene</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#what-i-found-easy-difficult">What I found easy/difficult</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Course Tools I Had Not Used Before.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Experience Running Jobs on LUMI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Secret Task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#riccardo-gelato">Riccardo Gelato</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#implementation-tasks">1. Implementation Tasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#implementation-choices">2. Implementation Choices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">3. What I Found Easy / Difficult</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#new-tools-from-the-course">4. New Tools from the Course</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">5. Experience Running Jobs on LUMI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">6. Secret Task</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#siyan-chen">Siyan Chen</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id11">Implementation Tasks and Choices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#repository-setup">1. Repository Setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#usps-model-design">2. USPS Model Design</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#training-and-evaluation-fixes-and-improvements">3. Training and Evaluation Fixes and Improvements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#github-pages-and-documentation">4. GitHub Pages and Documentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#review-and-tests">5. Review and Tests</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id12">Secret Task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#what-i-found-easy-and-difficult">What I Found Easy and Difficult</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tools-from-the-course-used">Tools from the Course Used</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id13">Experience Running Jobs on LUMI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id14">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Collaborative-coding-exam</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Individual contributions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/individual.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="individual-contributions">
+<h1>Individual contributions<a class="headerlink" href="#individual-contributions" title="Link to this heading"></a></h1>
+<p>These are the individual contributions to the exam</p>
+<section id="andrea-dahlmo-lokke">
+<h2>Andrea Dahlmo Løkke<a class="headerlink" href="#andrea-dahlmo-lokke" title="Link to this heading"></a></h2>
+<p>My main contributions to the project included formulating the contribution workflow, setting up the backbone of the README, the initial implementation of the evaluation script, and generalizing the codebase both in terms of modularity and docstring standardization. I also contributed by actively reviewing and merging pull requests, with attention to upholding the contribution standards we had set. The contributions were made through 35 commits following the contribution standards, which can be confirmed by the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">log</span> <span class="n">main</span> <span class="o">--</span><span class="n">author</span><span class="o">=</span><span class="s1">&#39;andrea.d.lokke@uit.no&#39;</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">merges</span> <span class="o">--</span><span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%h </span><span class="si">%a</span><span class="s1">d </span><span class="si">%a</span><span class="s1">n &lt;</span><span class="si">%a</span><span class="s1">e&gt; </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">--</span><span class="n">date</span><span class="o">=</span><span class="n">short</span> <span class="o">|</span> <span class="n">wc</span> <span class="o">-</span><span class="n">l</span>
+</pre></div>
+</div>
+<section id="contribution-workflow-and-repository-governance">
+<h3>1. Contribution Workflow and Repository Governance<a class="headerlink" href="#contribution-workflow-and-repository-governance" title="Link to this heading"></a></h3>
+<p>My initial contribution was to set up branch protection on main with no admin bypass, so each pull request requires one approved review before merging. I additionally formulated the contribution workflow in CONTRIBUTING.md (commit <code class="docutils literal notranslate"><span class="pre">45d940b</span></code>), establishing a sustainable contribution standard for the repository. The workflow is based directly on the course material, using issues, feature branches, and pull requests as the collaboration mechanism. I also tried to uphold these standards during PR reviews; on a few occasions a PR was large or messy enough that I could have merged it as-is, but I asked the contributor to clean it up first so we actually followed the workflow we had set for ourselves.</p>
+</section>
+<section id="readme-model-cards-and-project-documentation">
+<h3>2. README, Model Cards, and Project Documentation<a class="headerlink" href="#readme-model-cards-and-project-documentation" title="Link to this heading"></a></h3>
+<p>I set up the initial barebone structure of the README file, including installation and inference instruction sections, and the model card structure (commits <code class="docutils literal notranslate"><span class="pre">9ce672b</span></code> and <code class="docutils literal notranslate"><span class="pre">f5161e7</span></code>). Later, I updated the USPS model card (commit <code class="docutils literal notranslate"><span class="pre">e7c0586</span></code>) and made general model card corrections regarding precision and recall (commit <code class="docutils literal notranslate"><span class="pre">c440077</span></code>, linked to my secret task), along with smaller README fixes.</p>
+</section>
+<section id="evaluation-pipeline">
+<h3>3. Evaluation Pipeline<a class="headerlink" href="#evaluation-pipeline" title="Link to this heading"></a></h3>
+<p>I set up a modular evaluation script for calculating precision, recall, and inference time (commit <code class="docutils literal notranslate"><span class="pre">6d7a460</span></code>). I made an initial effort on this script because it was important for my secret task (below). The script became the basis for the metric values reported in the model cards across all three datasets, and made it straightforward to re-evaluate models whenever weights changed. That is exactly what happened after the secret task bug was fixed (PR #135), when I re-ran the evaluation and updated the model cards with the corrected numbers.</p>
+</section>
+<section id="training-configuration-and-lumi-scripts">
+<h3>4. Training Configuration and LUMI Scripts<a class="headerlink" href="#training-configuration-and-lumi-scripts" title="Link to this heading"></a></h3>
+<p>The overall structure of the LUMI training script was already set up by one of my collaborators, but it only worked for one model. I implemented a generalized version that handles all models (commit <code class="docutils literal notranslate"><span class="pre">fe4e93d</span></code>) along with individual configuration files for each model’s parameters (commit <code class="docutils literal notranslate"><span class="pre">1e6b523</span></code>). The configuration files also serve as a record of the training hyperparameters used for each model, instead of having to remember them or track them in a separate file.</p>
+</section>
+<section id="usps-dataset-support-and-folder-standardization">
+<h3>5. USPS Dataset Support and Folder Standardization<a class="headerlink" href="#usps-dataset-support-and-folder-standardization" title="Link to this heading"></a></h3>
+<p>I added test images from the USPS dataset as samples for testing the models (commit <code class="docutils literal notranslate"><span class="pre">e1b6e86</span></code>). I also standardized the folder structure of the downloaded datasets. The MNIST dataset was initially downloaded to <code class="docutils literal notranslate"><span class="pre">datasets/MNIST/</span></code>, so I ensured the same convention was followed for SVHN and USPS (commits <code class="docutils literal notranslate"><span class="pre">b977400</span></code> and <code class="docutils literal notranslate"><span class="pre">ff0e31a</span></code>). This standardization made the overall structure of the datasets folder much cleaner.</p>
+</section>
+<section id="codebase-wide-docstring-standardization">
+<h3>6. Codebase-wide Docstring Standardization<a class="headerlink" href="#codebase-wide-docstring-standardization" title="Link to this heading"></a></h3>
+<p>As one of my final tasks, I made a pass over the entire codebase to standardize docstrings. I used <code class="docutils literal notranslate"><span class="pre">interrogate</span></code> to assess docstring coverage, which initially sat at 60%. Many existing docstrings were also not optimal, so there was a lot to work through. The task was carried out in multiple PRs, where each touched between 1-3 files with a common theme (e.g. adding docstrings to functions missing one in <code class="docutils literal notranslate"><span class="pre">training.py</span></code> and <code class="docutils literal notranslate"><span class="pre">evaluation.py</span></code>). To avoid bloating the codebase with large docstrings, I implemented a multi-level scheme: every public API has full Parameters/Returns blocks, base classes have a short contract statement, and internal functions suffice with a single descriptive sentence. All docstrings were formatted consistently within their level. The task ended up spanning eight PRs, where some filled out missing docstrings (#171, #173, #177, #178, #179) and some improved the quality of existing ones (#183, #184, #185).</p>
+<p>After passing through the docstrings, I restructured the API documentation to follow a logical workflow (commit <code class="docutils literal notranslate"><span class="pre">ef5128d</span></code>).</p>
+</section>
+<section id="secret-task">
+<h3>Secret Task<a class="headerlink" href="#secret-task" title="Link to this heading"></a></h3>
+<p>My task was to make the <code class="docutils literal notranslate"><span class="pre">evaluation.py</span></code> script fail silently. I thought that an error producing the wrong numbers would be the most hidden, yet still runnable, kind of silent failure.
+I implemented the script to calculate precision, recall, and inference time for our trained models. I used the <code class="docutils literal notranslate"><span class="pre">sklearn</span></code> functions <code class="docutils literal notranslate"><span class="pre">precision_score</span></code> and <code class="docutils literal notranslate"><span class="pre">recall_score</span></code>, and passed the argument <code class="docutils literal notranslate"><span class="pre">average='micro'</span></code> instead of <code class="docutils literal notranslate"><span class="pre">average='macro'</span></code>. This reduces both scores to plain accuracy, producing seemingly identical precision and recall values for the model being evaluated.
+The bug was identified and fixed in PR #135. I helped by re-running the evaluation script and re-filling the model cards with the corrected values.</p>
+</section>
+<section id="what-i-found-easy-difficult-about-working-on-the-same-functions">
+<h3>What I found easy/difficult about working on the same functions<a class="headerlink" href="#what-i-found-easy-difficult-about-working-on-the-same-functions" title="Link to this heading"></a></h3>
+<p>What I found most difficult was that we did not plan out who was going to do what. The only way to know whether a task was being worked on was to check if there was an issue for it, and whether anyone was assigned. Sometimes issues had an assignee, sometimes not, and sometimes implementations came in without a preliminary issue. This happened mostly at the start of the exam, though, and it did not take long until everyone followed the workflow we had defined. I actually ended up enjoying looking through the issues to see the progress of the project. A conversation or group chat is not necessarily easier to manage, since discussions tend to get lost in the noise. Issues proved to be a solid way to keep a concise record of what needs to be done.</p>
+<p>Another thing I found difficult was both conveying my own implementation ideas and understanding the other collaborators’ ideas. Sometimes I felt overwhelmed by the many ways to solve a single problem.</p>
+<p>I am grateful that the collaborators with an inclination towards coding took it upon themselves to implement the bulk of the codebase, as it would have taken me significantly longer to do the same task. Beyond commits and PRs, I also focused on contributing to discussions about modularity and general code design, where I often brought ideas that others implemented. The beauty of collaboration is that each collaborator can contribute with their expertise, which played to our advantage given the diversity of the group. I feel like I was able to identify and contribute to tasks that suited my base of knowledge, and the group was always positive about my efforts.</p>
+</section>
+<section id="tools-from-the-course-i-did-not-know-before">
+<h3>Tools from the course I did not know before<a class="headerlink" href="#tools-from-the-course-i-did-not-know-before" title="Link to this heading"></a></h3>
+<p>I learned a lot in this course, as I was only getting started with git version control in my own projects. I was not familiar with how to use branches, pull requests, and merges, but now I feel confident navigating this workflow. There were many tools that were new to me, but I will mention a few that made the biggest difference:</p>
+<ul class="simple">
+<li><p>Branch protection rules on GitHub: protecting the main branch from unwanted or error-prone merges</p></li>
+<li><p>Cross-referencing issues in commit messages using keywords like <code class="docutils literal notranslate"><span class="pre">fixes</span> <span class="pre">#X</span></code> to automatically close issues on merge</p></li>
+<li><p>The distinction between cloning (for collaborators) and forking (for external contributors)</p></li>
+<li><p>Jupyter notebook sharing: “content-aware” version control using <code class="docutils literal notranslate"><span class="pre">nbdime</span></code>, and Binder for sharing notebooks</p></li>
+<li><p>Automated testing tools: writing test functions in separate test scripts was completely new to me</p></li>
+<li><p>Snakemake: being able to run scripts step-wise based on predefined rules was something I did not know about, but found extremely useful</p></li>
+<li><p>Creating pip-installable Python packages and deploying them to PyPI. I knew about this before the course, but I did not feel confident in how to do it.</p></li>
+<li><p>Containers: this is something I also knew of before the course, but I was more intimidated by it than inspired to use it.</p></li>
+</ul>
+</section>
+<section id="experience-with-lumi">
+<h3>Experience with LUMI<a class="headerlink" href="#experience-with-lumi" title="Link to this heading"></a></h3>
+<p>During the project I wrote and ran the generalized <code class="docutils literal notranslate"><span class="pre">lumi/train.sh</span></code> script (commit <code class="docutils literal notranslate"><span class="pre">fe4e93d</span></code>) several times on LUMI to test the script. Getting a good overview of the SLURM parameters and what each one controlled was a bit difficult to begin with, but it became clearer once I had submitted a few jobs. I forgot to commit the resulting log files to the repository, so I tried to log in at a later point, but some error occurred. I discussed with one of the lecturers in the course, and they said that there was some technical problems on the LUMI project that may have caused this issue. Therefore, I do not have the log files nor the job-ID to prove I ran jobs on LUMI.</p>
+<p>Beyond the project work itself, the LUMI workshop was very useful, and I learned a lot. Although some parts went above my head, I got a decent grip of what running programs on a supercomputer entails. Learning more about containers and how useful they are was the single most useful lesson from the workshop. I generally want to navigate in the CLI, but I rather used the GUI since it was easier to understand what was being done. That was especially important to me since I did not want to do anything wrong in the terminal of a supercomputer, just in case.</p>
+</section>
+<section id="conclusion">
+<h3>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading"></a></h3>
+<p>My contributions were a combination of changes to the code base through commits and merged PRs, and a more conversational side where I opened a lot of issues (both to scope upcoming work and to flag bugs I found through testing) and engaged in discussions about modularity and standardization. I also think that defining the contribution workflow early gave a solid foundation for the collaboration to thrive on. These are habits I want to bring with me into future collaborative projects.</p>
+</section>
+</section>
+<section id="keyne-oei">
+<h2>Keyne Oei<a class="headerlink" href="#keyne-oei" title="Link to this heading"></a></h2>
+<p>My main contributions were the SVHN part of the project (model and data), the command-line tools for inference and evaluation, logging, packaging and releasing the project to PyPI as <code class="docutils literal notranslate"><span class="pre">ccexam</span></code>, the bundled <code class="docutils literal notranslate"><span class="pre">samples:</span></code> input option, handling any image input (with or without a file extension, and folders), and the README presentation (banner, badges, header).</p>
+<section id="contribution">
+<h3>Contribution:<a class="headerlink" href="#contribution" title="Link to this heading"></a></h3>
+</section>
+<section id="svhn-model-and-data">
+<h3>1. SVHN Model and Data<a class="headerlink" href="#svhn-model-and-data" title="Link to this heading"></a></h3>
+<p>This work added the SVHN part of the project.</p>
+<ul class="simple">
+<li><p><strong>Model (<code class="docutils literal notranslate"><span class="pre">SVHNNet</span></code>).</strong> <code class="docutils literal notranslate"><span class="pre">SVHNNet</span></code> is a CNN for 32×32 RGB SVHN digits. It is separate from the simpler <code class="docutils literal notranslate"><span class="pre">DigitCNN</span></code> used by MNIST/USPS, because SVHN’s photo digits are harder than clean handwritten ones. The network has three blocks. Each block has two <code class="docutils literal notranslate"><span class="pre">Conv2d(3×3,</span> <span class="pre">padding=1)</span></code> layers, each followed by <code class="docutils literal notranslate"><span class="pre">BatchNorm2d</span></code> and <code class="docutils literal notranslate"><span class="pre">ReLU</span></code>, and then a <code class="docutils literal notranslate"><span class="pre">2×2</span> <span class="pre">MaxPool</span></code>. The number of channels grows <code class="docutils literal notranslate"><span class="pre">3</span> <span class="pre">→</span> <span class="pre">32</span> <span class="pre">→</span> <span class="pre">64</span> <span class="pre">→</span> <span class="pre">128</span></code>. The image size halves at each block (<code class="docutils literal notranslate"><span class="pre">32×32</span> <span class="pre">→</span> <span class="pre">16×16</span> <span class="pre">→</span> <span class="pre">8×8</span> <span class="pre">→</span> <span class="pre">4×4</span></code>). The classifier flattens the <code class="docutils literal notranslate"><span class="pre">128×4×4</span></code> features and applies <code class="docutils literal notranslate"><span class="pre">Dropout(0.3)</span> <span class="pre">→</span> <span class="pre">Linear(128·4²</span> <span class="pre">→</span> <span class="pre">256)</span> <span class="pre">→</span> <span class="pre">ReLU</span> <span class="pre">→</span> <span class="pre">Dropout(0.3)</span> <span class="pre">→</span> <span class="pre">Linear(256</span> <span class="pre">→</span> <span class="pre">10)</span></code>.</p></li>
+<li><p><strong>Data (<code class="docutils literal notranslate"><span class="pre">SVHNDataModule</span></code>).</strong> <code class="docutils literal notranslate"><span class="pre">SVHNDataModule</span></code> adds SVHN to the data layer. Unlike MNIST/USPS, torchvision’s SVHN uses <code class="docutils literal notranslate"><span class="pre">split=&quot;train&quot;/&quot;test&quot;</span></code> instead of <code class="docutils literal notranslate"><span class="pre">train=True/False</span></code>. So the data module checks which dataset it is and passes the right argument. SVHN is read from the <code class="docutils literal notranslate"><span class="pre">train_32x32.mat</span></code> and <code class="docutils literal notranslate"><span class="pre">test_32x32.mat</span></code> files. It is kept as 3-channel RGB (not converted to grayscale) and normalized with SVHN’s mean/std.</p></li>
+<li><p><strong>Integration.</strong> Registering <code class="docutils literal notranslate"><span class="pre">svhn</span></code> in the training list, the data-module list, and the inference list makes <code class="docutils literal notranslate"><span class="pre">--dataset</span> <span class="pre">svhn</span></code> and <code class="docutils literal notranslate"><span class="pre">--model</span> <span class="pre">svhn</span></code> work in the training, evaluation, and inference tools with no extra changes.</p></li>
+</ul>
+</section>
+<section id="command-line-tools-for-inference-and-evaluation">
+<h3>2. Command-Line Tools for Inference and Evaluation<a class="headerlink" href="#command-line-tools-for-inference-and-evaluation" title="Link to this heading"></a></h3>
+<p>The command-line tools make the package usable from the terminal, covering both inference and evaluation.</p>
+<ul class="simple">
+<li><p><strong>Inference tool</strong> (<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">src.inference</span></code>, and the installed <code class="docutils literal notranslate"><span class="pre">ccexam-infer</span></code> command). It takes <code class="docutils literal notranslate"><span class="pre">--model</span></code> to pick the classifier, <code class="docutils literal notranslate"><span class="pre">--input</span></code> for the image or folder to classify, <code class="docutils literal notranslate"><span class="pre">--device</span></code> (cpu/cuda/mps), <code class="docutils literal notranslate"><span class="pre">--checkpoint-path</span></code> to use different weights, and <code class="docutils literal notranslate"><span class="pre">--log-level</span></code>. By default it prints each prediction to the terminal.</p></li>
+<li><p><strong>Saving predictions.</strong> The <code class="docutils literal notranslate"><span class="pre">--output</span></code>/<code class="docutils literal notranslate"><span class="pre">-o</span></code> option saves predictions to a file. The format follows the extension: <code class="docutils literal notranslate"><span class="pre">.csv</span></code> writes an <code class="docutils literal notranslate"><span class="pre">image,prediction</span></code> table with a header, and <code class="docutils literal notranslate"><span class="pre">.txt</span></code> writes tab-separated lines. Any folders in the path are created for you, and an existing file is never overwritten.</p></li>
+<li><p><strong>Evaluation tool</strong> (<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">src.evaluation</span></code>). It takes <code class="docutils literal notranslate"><span class="pre">--dataset</span></code>, <code class="docutils literal notranslate"><span class="pre">--checkpoint-path</span></code>, <code class="docutils literal notranslate"><span class="pre">--batch-size</span></code>, <code class="docutils literal notranslate"><span class="pre">--num-workers</span></code>, and <code class="docutils literal notranslate"><span class="pre">--device</span></code>. It loads the matching test set through the data module and reports precision, recall, and average inference speed.</p></li>
+<li><p><strong>Error handling.</strong> Bad input now gives a clear message and a non-zero exit code, instead of a long traceback.</p></li>
+</ul>
+</section>
+<section id="logging">
+<h3>3. Logging<a class="headerlink" href="#logging" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Logging now runs across the evaluation, inference, and training code. It replaced one-off <code class="docutils literal notranslate"><span class="pre">print</span></code> statements with a shared logger and a single format (<code class="docutils literal notranslate"><span class="pre">timestamp</span> <span class="pre">|</span> <span class="pre">level</span> <span class="pre">|</span> <span class="pre">name</span> <span class="pre">|</span> <span class="pre">message</span></code>), set up in <code class="docutils literal notranslate"><span class="pre">src/utils.py</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">setup_logging</span></code> turns it on and <code class="docutils literal notranslate"><span class="pre">get_logger</span></code> gives a logger per file.</p></li>
+<li><p>Every run gets readable output the user can control with <code class="docutils literal notranslate"><span class="pre">--log-level</span></code>.</p></li>
+</ul>
+</section>
+<section id="packaging-and-pypi-release-ccexam">
+<h3>4. Packaging and PyPI Release (<code class="docutils literal notranslate"><span class="pre">ccexam</span></code>)<a class="headerlink" href="#packaging-and-pypi-release-ccexam" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The project is packaged and published to PyPI as <a class="reference external" href="https://pypi.org/project/ccexam/"><code class="docutils literal notranslate"><span class="pre">ccexam</span></code></a>, so it installs with one <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">ccexam</span></code>.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> file keeps the code in <code class="docutils literal notranslate"><span class="pre">src/</span></code> but installs and imports it as <code class="docutils literal notranslate"><span class="pre">ccexam</span></code>, and it adds the <code class="docutils literal notranslate"><span class="pre">ccexam-infer</span></code> command.</p></li>
+<li><p>The trained weights and sample images are bundled in the package, so inference works right after installing with no extra downloads.</p></li>
+<li><p>The imports between files were changed to relative imports, so the installed package imports correctly as <code class="docutils literal notranslate"><span class="pre">ccexam</span></code>. (A plain <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">src.…</span></code> import works in the repo but breaks once installed.)</p></li>
+<li><p>The package also gained CI/PyPI/Python/License badges and corrected install instructions, and the releases were published.</p></li>
+</ul>
+</section>
+<section id="sample-images-and-the-samples-input-option">
+<h3>5. Sample Images and the <code class="docutils literal notranslate"><span class="pre">samples:</span></code> Input Option<a class="headerlink" href="#sample-images-and-the-samples-input-option" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The trained weights and example images now live inside the package, and a <code class="docutils literal notranslate"><span class="pre">samples:</span></code> input option lets the tool be tried without your own files.</p></li>
+<li><p>Writing <code class="docutils literal notranslate"><span class="pre">--input</span> <span class="pre">samples:svhn_digit_5.png</span></code> points to an image bundled in the package, so it works right after <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code>.</p></li>
+<li><p>An unknown name prints the list of available samples.</p></li>
+</ul>
+</section>
+<section id="handling-any-image-input-files-folders-and-no-extension">
+<h3>6. Handling Any Image Input (Files, Folders, and No Extension)<a class="headerlink" href="#handling-any-image-input-files-folders-and-no-extension" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">--input</span></code> option now takes a single image or a whole folder. It decides what is an image by its content rather than its file extension.</p>
+<ul class="simple">
+<li><p><strong>Single file or folder.</strong> Given one file, it classifies that file; given a folder, it classifies every valid image inside (sorted by name). The Python API works the same way: a single image returns one label, a folder returns a list of labels.</p></li>
+<li><p><strong>Checked by content, not extension.</strong> Instead of trusting the file name, each file is checked by trying to open it as an image (with PIL). So a real image is accepted even if it has the wrong extension or <strong>no extension at all</strong>, while a non-image (a <code class="docutils literal notranslate"><span class="pre">.pdf</span></code>, or a text file renamed to <code class="docutils literal notranslate"><span class="pre">.png</span></code>) is rejected with a clear <code class="docutils literal notranslate"><span class="pre">Invalid</span> <span class="pre">input</span></code> message and a non-zero exit code.</p></li>
+<li><p><strong>Folders keep going.</strong> When classifying a folder, files that can’t be read are skipped with a logged note instead of stopping the whole run, so one bad file doesn’t break the batch.</p></li>
+</ul>
+<p>Together with the <code class="docutils literal notranslate"><span class="pre">samples:</span></code> option above, <code class="docutils literal notranslate"><span class="pre">--input</span></code> now handles a single image, a folder of images, an image with no extension, and a bundled sample in the same way, with clear error messages throughout.</p>
+</section>
+<section id="readme-presentation-and-repository-upkeep">
+<h3>7. README Presentation and Repository Upkeep<a class="headerlink" href="#readme-presentation-and-repository-upkeep" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>The centered README header (logo, title, author line, badges, and section links) and the banner image were added.</p></li>
+<li><p>The model-card numbers (precision, recall, inference time) were kept up to date.</p></li>
+<li><p>After the samples moved into the package, the inference command paths in the docs were fixed so the examples still work.</p></li>
+<li><p>Several smaller fixes followed: changing the default <code class="docutils literal notranslate"><span class="pre">--num-workers</span></code> for evaluation to avoid a worker-shutdown hang, moving the RGB conversion into a module-level <code class="docutils literal notranslate"><span class="pre">_to_rgb</span></code> function so the dataset transform can be pickled by DataLoader workers on newer Python, adding tests for the model classes, and fixing the Sphinx documentation build.</p></li>
+</ul>
+</section>
+<section id="id1">
+<h3>Secret Task<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>My secret task was to introduce a subtle mistake for other contributors to review and correct for file <code class="docutils literal notranslate"><span class="pre">src/training.py</span></code>. The change is in how that file configures logging, which I introduced with the logging work in commit <code class="docutils literal notranslate"><span class="pre">005f232</span></code>.</p>
+<p>In <code class="docutils literal notranslate"><span class="pre">src/training.py</span></code>, the log statements live in the library code. <code class="docutils literal notranslate"><span class="pre">Trainer.train()</span></code> writes <code class="docutils literal notranslate"><span class="pre">INFO</span></code>/<code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> log messages throughout the training loop. But <code class="docutils literal notranslate"><span class="pre">setup_logging()</span></code> is called <strong>only inside the CLI entry point</strong>, the <code class="docutils literal notranslate"><span class="pre">main()</span></code> function of <code class="docutils literal notranslate"><span class="pre">src/training.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># src/training.py — inside main()</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logging</span>
+    <span class="n">setup_logging</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Because logging is set up inside <code class="docutils literal notranslate"><span class="pre">main()</span></code> and not in the library code, training started any other way never sets up logging. This includes <code class="docutils literal notranslate"><span class="pre">train(...)</span></code>, <code class="docutils literal notranslate"><span class="pre">TrainerFactory.create(...).train()</span></code>, and the test suite. With nothing configured, the root logger defaults to <code class="docutils literal notranslate"><span class="pre">WARNING</span></code>. So every <code class="docutils literal notranslate"><span class="pre">INFO</span></code> training message from <code class="docutils literal notranslate"><span class="pre">src/training.py</span></code> is dropped without a trace. The logging looks like it works, but only because it goes through the CLI. Anyone calling the functions directly gets no output and no error. (One more weak point in the same file: <code class="docutils literal notranslate"><span class="pre">setup_logging</span></code> uses <code class="docutils literal notranslate"><span class="pre">logging.basicConfig</span></code>, which does nothing if logging was already set up, so calling it again has no effect.)</p>
+</section>
+<section id="what-was-easy-and-difficult-same-functions">
+<h3>What Was Easy and Difficult (Same Functions)<a class="headerlink" href="#what-was-easy-and-difficult-same-functions" title="Link to this heading"></a></h3>
+<p><strong>Easy.</strong> What made the shared code easy to work on was that we rarely had to edit the same function at the same time. The code used a factory and registry pattern. So each person could add their part in separate files and then register it. For me that was the SVHN model and data module. Because of this, most new work stayed out of the common functions, and changes from different people rarely collided. When I did need to touch shared code, the base classes and registries gave a clear pattern to follow, so it was obvious where things should go.</p>
+<p><strong>Difficult.</strong> The harder part was the code we all shared, where several people edited the same functions. We had no agreed standard for naming, style, or where each piece of code should go. So the shared base classes and training loop drifted between contributors and needed extra cleanup. I also found GitHub Issues less useful for tracking developer progress. Issues feel more aimed at users reporting problems. For working together as developers, a board like Trello is easier. You can see the progress and pick up tasks by moving cards between columns.</p>
+</section>
+<section id="course-tools-i-had-not-used-before">
+<h3>Course Tools I Had Not Used Before<a class="headerlink" href="#course-tools-i-had-not-used-before" title="Link to this heading"></a></h3>
+<p>The two tools from the course I had not used before were <strong>Sphinx</strong> (for building the documentation) and <strong>LUMI</strong> (for running training jobs on the HPC cluster).</p>
+</section>
+<section id="running-jobs-on-lumi">
+<h3>Running Jobs on LUMI<a class="headerlink" href="#running-jobs-on-lumi" title="Link to this heading"></a></h3>
+<p>I trained the SVHN model on LUMI by submitting a Slurm batch job (<strong>Job-ID <code class="docutils literal notranslate"><span class="pre">19193045</span></code></strong>) with <code class="docutils literal notranslate"><span class="pre">sbatch</span></code>. The job ran on the <code class="docutils literal notranslate"><span class="pre">small-g</span></code> partition with one GPU, 7 CPUs, and a 30-minute time limit. The training ran inside a Singularity container (the prebuilt LAIF multitorch container, which ships ROCm-enabled PyTorch), so I did not have to install anything myself.</p>
+<p>The run trained SVHN for 5 epochs and finished in about 90 seconds on the GPU. The model reached a final training accuracy of about 0.942, and the weights were saved to <code class="docutils literal notranslate"><span class="pre">weights/svhn.pth</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2026-06-12 12:17:04 | INFO | training | Training on cuda for 5 epoch(s)
+2026-06-12 12:18:25 | INFO | training | Epoch 5/5  loss=0.2103  acc=0.9421
+2026-06-12 12:18:25 | INFO | training | Done!  final_loss=0.2103  final_acc=0.9421  saved=.../weights/svhn.pth
+</pre></div>
+</div>
+<p>My experience was that the hardest part was the setup: the batch script, the container, and the file paths. Once that worked, the job ran quickly and reliably. Checking progress with <code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">--me</span></code> and reading the <code class="docutils literal notranslate"><span class="pre">slurm-&lt;job-id&gt;.out</span></code> log file made it easy to follow the run.</p>
+</section>
+</section>
+<section id="myrthe-catteau">
+<h2>Myrthe Catteau<a class="headerlink" href="#myrthe-catteau" title="Link to this heading"></a></h2>
+<p>I was originally part of the SVHN pipeline team. However, my background differs significantly from most of the other contributors. I work within renewable energy, have no machine learning experience, and had never used GitHub before this course. Because of this, I focused my contributions on documentation, usability, and testing rather than code development.</p>
+<section id="implementation-tasks-and-choices">
+<h3>Implementation tasks and choices<a class="headerlink" href="#implementation-tasks-and-choices" title="Link to this heading"></a></h3>
+<p>My three main contributions were:</p>
+<section id="setting-up-the-sphinx-documentation">
+<h4>1. Setting up the Sphinx Documentation<a class="headerlink" href="#setting-up-the-sphinx-documentation" title="Link to this heading"></a></h4>
+<p>I set up the Sphinx documentation used for the GitHub Pages website. I followed the workflow introduced during the course while adapting it to the repository’s existing structure and configuration.</p>
+</section>
+<section id="restructuring-the-readme">
+<h4>2. Restructuring the README<a class="headerlink" href="#restructuring-the-readme" title="Link to this heading"></a></h4>
+<p>I reorganised the README to create a more logical flow for new users, and wrote introductory sections and the guideline for further use of the code. I did not change the technical content written by other collaborators, but reordered sections and moved some information to the GitHub Pages documentation so that the README remained concise.</p>
+</section>
+<section id="acting-as-a-pseudo-client">
+<h4>3. Acting as a Pseudo Client<a class="headerlink" href="#acting-as-a-pseudo-client" title="Link to this heading"></a></h4>
+<p>Once the repository was considered functional, I tested it by following the documentation as a new user would. This helped verify that the instructions were understandable for someone without prior machine learning experience. Overall, the documentation was clear, and the few problems I encountered were due to my own mistakes rather than shortcomings in the instructions.</p>
+</section>
+</section>
+<section id="reflection">
+<h3>Reflection<a class="headerlink" href="#reflection" title="Link to this heading"></a></h3>
+<p>I found documentation work relatively straightforward, as it allowed me to contribute independently while improving the project’s accessibility. It was not always easy to know which part of the documentation was usefull to work on, since it was continuously being updated by others. The most difficult aspect was participating in discussions about machine learning implementation and reviewing code changes. My limited experience made it difficult to evaluate technical solutions or contribute directly to code development. This meant I had fewer opportunities to work on the same functions as other contributors, but it also highlighted the importance of documentation, testing, and user experience in collaborative projects, which is something I had not given much thought prior to this course.</p>
+</section>
+<section id="course-tools-used">
+<h3>Course Tools Used<a class="headerlink" href="#course-tools-used" title="Link to this heading"></a></h3>
+<p>Almost every tool introduced in the course was new to me. The most important was GitHub, including branches, pull requests, and issues. Learning GitHub was a major part of my learning experience. I also learned how to use Sphinx and GitHub Pages to generate and publish project documentation.</p>
+</section>
+<section id="experience-running-jobs-on-lumi">
+<h3>Experience Running Jobs on LUMI<a class="headerlink" href="#experience-running-jobs-on-lumi" title="Link to this heading"></a></h3>
+<p>Working on LUMI was particularly interesting because I expect to use HPC systems later in my PhD work. I found running a job relatively straightforward. I ran the training file for SVHN and saved the weights. It ran successfully on the first attempt (<strong>Job-ID <code class="docutils literal notranslate"><span class="pre">19345748</span></code></strong>). The most challenging part for me was cloning the repository on the HPC system and navigating branches through the command line rather than through the GitHub web interface.</p>
+</section>
+<section id="id2">
+<h3>Secret Task<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p>My secret task was assigned late in the project. Since a coding-focused task was not practical given my background, Kristoffer and I instead explored ways to test the repository.</p>
+<p>First, I attempted to make changes to the main branch without approval, but the repository protections worked as intended and prevented this.</p>
+<p>Second, I tested how the models handled unexpected inputs by uploading unrelated images, random numbers, and non-numerical data. The models generally still returned predictions rather than producing error messages. The main exception was incorrectly formatted images, which were not recognised as valid input. I intended to open a GitHub issue about this behaviour, but a similar issue (#128) had already been raised before I had the chance.</p>
+</section>
+<section id="id3">
+<h3>Conclusion<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<p>I would have liked to contribute more directly to the code, and if the project had been closer to my own field, I think I would have been able to do so more easily. At the same time, I accepted that my limited coding and machine learning background meant that documentation, structure, and usability were the areas where I could contribute most effectively, and helped where I could to the best of my abilities. Even so, working on these smaller tasks taught me a great deal and resulted in a steep learning curve about how a collaborative project can be organised and managed, and about the tools available to support that process, which was the goal I set out to acchieve by taking this course.</p>
+</section>
+</section>
+<section id="rahul-baburajan">
+<h2>Rahul Baburajan<a class="headerlink" href="#rahul-baburajan" title="Link to this heading"></a></h2>
+<p>My main contributions to the project were the original MNIST pipeline, the refactoring of inference toward a factory-style structure, ASCII text input support for inference, validation data support during training, and LUMI training scripts and logs. I also made smaller but important repository quality improvements, including documentation link fixes and README command alignments. Altogether, these contributions were made through 22 direct non-merge commits which can be verified using this command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>log<span class="w"> </span>main<span class="w"> </span>--author<span class="o">=</span><span class="s1">&#39;rahul.baburajan@uit.no&#39;</span><span class="w"> </span>--no-merges<span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;%h %ad %an &lt;%ae&gt; %s&#39;</span><span class="w"> </span>--date<span class="o">=</span>short
+</pre></div>
+</div>
+<p>My favourite contribution to the project is the preview card image of digits floating through Northern lights(even though it is nano banana that did the heavy lifting).</p>
+<section id="initial-mnist-pipeline">
+<h3>1. Initial MNIST Pipeline<a class="headerlink" href="#initial-mnist-pipeline" title="Link to this heading"></a></h3>
+<p>I implemented the first substantial MNIST support across the core package. This included the data-loading module, model definition, training entry point, inference entry point, package exports, and contributor-facing instructions. The central commit for this contribution is <code class="docutils literal notranslate"><span class="pre">8361b79</span></code>.</p>
+<p>This contribution gave the repository its first complete path from data to model training and inference. It also provided a base that later contributors extended for USPS and SVHN support.</p>
+</section>
+<section id="inference-architecture-and-generalization">
+<h3>2. Inference Architecture and Generalization<a class="headerlink" href="#inference-architecture-and-generalization" title="Link to this heading"></a></h3>
+<p>I refactored inference to be less MNIST specific and easier to extend. Commit <code class="docutils literal notranslate"><span class="pre">95bfaae</span></code> was the main architectural contribution, adding a factory style inference structure in <code class="docutils literal notranslate"><span class="pre">src/inference.py</span></code>. It also removed unwanted abstractions and MNIST specific classes from the inference path, making it suitable for extending to other datasets.</p>
+<p>This work improved the repository in three practical ways:</p>
+<ul class="simple">
+<li><p>It made inference easier to configure through explicit model and checkpoint handling.</p></li>
+<li><p>It reduced assumptions that tied inference only to MNIST.</p></li>
+<li><p>It created a better foundation for later multi-dataset inference work.</p></li>
+</ul>
+</section>
+<section id="training-validation-lumi-scripts-logs-and-model-artifacts">
+<h3>3. Training, Validation, LUMI Scripts, Logs, and Model Artifacts<a class="headerlink" href="#training-validation-lumi-scripts-logs-and-model-artifacts" title="Link to this heading"></a></h3>
+<p>I contributed training support that made the project more reproducible and useful beyond local experiments.</p>
+<ul class="simple">
+<li><p>Added validation dataset support so the training workflow could separate training and validation behavior more clearly, and improved robustness in test environments with simplified torch tests.</p></li>
+<li><p>Added and organized LUMI related training artifacts, including training scripts, logs, configuration files, and trained model weights for MNIST, SVHN, and USPS.</p></li>
+<li><p>Updated the README with MNIST model card details and model performance information and inference speed updates.</p></li>
+</ul>
+</section>
+<section id="ascii-text-input-support-for-inference">
+<h3>4. ASCII Text Input Support for Inference<a class="headerlink" href="#ascii-text-input-support-for-inference" title="Link to this heading"></a></h3>
+<p>I implemented support for ASCII digit inputs so inference could accept text-based digit images in addition to standard image files. Commit <code class="docutils literal notranslate"><span class="pre">dea2dd6</span></code> added the initial ASCII text handling functionality and sample ASCII digit files to test on. Later commits extended this support to handle different foreground and background character conventions in ASCII samples, while also refining tests.</p>
+<p>The contribution included:</p>
+<ul class="simple">
+<li><p>ASCII sample digits such as <code class="docutils literal notranslate"><span class="pre">ascii_digit_0.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">ascii_digit_2.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">ascii_digit_8.txt</span></code>.</p></li>
+<li><p>Utility logic for reading and converting ASCII digit representations.</p></li>
+<li><p>Inference integration so valid text inputs could enter the inference pipeline.</p></li>
+<li><p>Tests for ASCII parsing and supported symbol conventions.</p></li>
+</ul>
+</section>
+<section id="documentation-and-repository-hygiene">
+<h3>5. Documentation and Repository Hygiene<a class="headerlink" href="#documentation-and-repository-hygiene" title="Link to this heading"></a></h3>
+<p>I contributed documentation and repository maintenance improvements that made the project easier for collaborators to use and contribute to.</p>
+<ul class="simple">
+<li><p>fixed README link formatting, aligned instructions with the actual codebase behavior and updated sample and weight handling documentation.</p></li>
+<li><p>maintained contribution related documentation links, reducing setup friction and improving the overall clarity of the project.</p></li>
+</ul>
+</section>
+<section id="what-i-found-easy-difficult">
+<h3>What I found easy/difficult<a class="headerlink" href="#what-i-found-easy-difficult" title="Link to this heading"></a></h3>
+<p><strong>Easy</strong>. I found it relatively easy to work on the shared functions once the project started moving toward factory and registry patterns. The MNIST pipeline gave a clear baseline to build from, and later the same structure made it easier to connect data modules, models, training, and inference without rewriting the whole codebase. Once the factory pattern was in place adding new datasets or model aliases, could be done by adding new components into the registry rather than changing every function manually.</p>
+<p><strong>Difficult</strong> Resolving merge conflicts even when its on a README file was quite hard to get a hang of initially. When it happened in the core files like inference file it was even hard. Small changes in these files could affect all the other dataset workflows and hence understanding and converting to a factory pattern was necessary. Deciding on common conventions was hard when we were working as isloated developers. For instance whether to name the model mnist or model-a, where different parts of the code did differently was hard to resolve until we met in person. There were similar issues when deciding on the other naming conventions. Testing end to end all the different ways to use the repository for training, testing and inference so that an external user can easily make use of this repository was time consuming particularly because it has to be done everytime after code changes was made. Adding the relevant test cases reduced this work however some platform dependent issues(mac vs windows) still had to be checked manually.</p>
+</section>
+<section id="id4">
+<h3>Course Tools I Had Not Used Before.<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<p>The main course tools I used for the project that I had not worked with before were GitHub Actions, Sphinx documentation, and Python package publishing workflows. GitHub Actions was used to automate parts of the repository workflow, including running tests and building documentation which significanly helped the project. I also learned how Sphinx can be used to generate project documentation and how this process can be automated through GitHub Actions. In addition, I gained experience with integrating the project with <code class="docutils literal notranslate"><span class="pre">pip</span></code>, which helped me understand how a repository can be packaged and made easier for external users to install and run.</p>
+</section>
+<section id="id5">
+<h3>Experience Running Jobs on LUMI<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<p>Since I had been using Lumi for some time now, I did not face many issues in this regard. Also since our repository had only commonly used libraries, existing Lumi containers were sufficient which greatly removed a lot of effort required.</p>
+<p>I trained the MNIST model on LUMI (<strong>Job-ID <code class="docutils literal notranslate"><span class="pre">19201793</span></code></strong>) and its logs can be found in <a class="reference external" href="https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/blob/main/lumi/logs/mnist_19201793.err">lumi/logs/mnist_19201793.err</a></p>
+</section>
+<section id="id6">
+<h3>Secret Task<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<p>My secret task is to intentionally introduce issues into the codebase that would later require review and correction by other contributors.</p>
+<ul class="simple">
+<li><p>I added hardcoded dataset normalization values directly in the training and inference logic, instead of keeping these values in a shared source of truth. The idea was this would easily create issues if not careful because the normalisation values used during training should match with the test and inference time. It was later corrected by Riccardo by centralizing the dataset statistics and updating the relevant data, training, inference, and evaluation code to use them consistently.</p></li>
+<li><p>In the inference API, I made the return shape not consistent across different input cases. Depending on whether the input was a single file or a directory, the function could return different kinds of shapes as output, which made the interface harder to integrate with downstream usecases. This was later fixed by Riccardo by aligning the function behavior with the expected API and making the output structure consistent.</p></li>
+</ul>
+</section>
+<section id="id7">
+<h3>Conclusion<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<p>My main role in this repository was to implement and maintain core machine learning workflow functionality particularly for the MNIST segment but also making sure that other dataset segments can be easily integrated in a easy manner. I contributed the initial MNIST data, model, training, and inference pipeline, which gave the project a working end to end baseline. I then refactored inference toward a more extensible factory style structure, removed assumptions that tied inference too closely to MNIST, and made checkpoint handling more explicit.</p>
+<p>I also improved the training workflow by adding validation dataset support and by contributing LUMI-related scripts, logs, and trained weight artifacts. These changes helped the repository move from local experimentation toward more reproducible model training and evaluation. I documented the resulting model details and performance information in the README through MNIST model card and inference speed updates.</p>
+<p>Another major contribution was ASCII text input support for inference. I added utilities for parsing text-based digit images, integrated those utilities into the inference pipeline, created ASCII digit samples, and added focused tests for ASCII handling. I later extended this support to handle multiple foreground/background conventions, making the feature more flexible for simple text based digit examples.</p>
+<p>Beyond implementation work, I helped keep the repository maintainable by aligning README instructions with the code, fixing documentation links, updating setup instructions to use HTTPS, maintaining contribution guide links, and integrating several pull requests and handling issues from external users.</p>
+</section>
+</section>
+<section id="riccardo-gelato">
+<h2>Riccardo Gelato<a class="headerlink" href="#riccardo-gelato" title="Link to this heading"></a></h2>
+<p>Me and Rahul Baburajan were responsible for Customer A: the MNIST Dataset.</p>
+<section id="implementation-tasks">
+<h3>1. Implementation Tasks<a class="headerlink" href="#implementation-tasks" title="Link to this heading"></a></h3>
+<p>I worked on most of the core files (<code class="docutils literal notranslate"><span class="pre">training.py</span></code>, <code class="docutils literal notranslate"><span class="pre">data.py</span></code>, <code class="docutils literal notranslate"><span class="pre">models.py</span></code>, <code class="docutils literal notranslate"><span class="pre">inference.py</span></code>, and <code class="docutils literal notranslate"><span class="pre">evaluation.py</span></code>), focusing on increasing the modularity of the project and ensuring that modules could interact with each other with minimal knowledge of the underlying codebase. I also aimed to reduce code bloat and improve the overall extendability of the project. In addition, I contributed to writing <code class="docutils literal notranslate"><span class="pre">instructions.md</span></code> and the <code class="docutils literal notranslate"><span class="pre">README</span></code>, wrote test functions for <code class="docutils literal notranslate"><span class="pre">training.py</span></code> and <code class="docutils literal notranslate"><span class="pre">inference.py</span></code>, and contributed to the other test suites.</p>
+</section>
+<section id="implementation-choices">
+<h3>2. Implementation Choices<a class="headerlink" href="#implementation-choices" title="Link to this heading"></a></h3>
+<p>The main programming pattern I adopted to reduce bloat and increase modularity was the <strong>Factory Pattern</strong>, which allowed the creation of objects (trainers, loaders, inference pipelines) without tightly coupling the calling code to specific implementations. This pattern was applied across <code class="docutils literal notranslate"><span class="pre">training.py</span></code>, <code class="docutils literal notranslate"><span class="pre">inference.py</span></code>, and <code class="docutils literal notranslate"><span class="pre">data.py</span></code>. We also made heavy use of abstract base classes and polymorphism to further increase modularity and flexibility.</p>
+<p>A specific focus of mine was increasing the coupling between <code class="docutils literal notranslate"><span class="pre">evaluation.py</span></code> and <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> to reduce code repetition. I also worked to eliminate hardcoded variables across the different files, grouping them instead in a centralised <code class="docutils literal notranslate"><span class="pre">constants.py</span></code> script.</p>
+</section>
+<section id="id8">
+<h3>3. What I Found Easy / Difficult<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<p>After introducing the Factory Pattern, merge conflicts became easier to resolve, since module boundaries were clearer and responsibilities better separated.</p>
+<p>The main challenge was introducing the unified <code class="docutils literal notranslate"><span class="pre">constants.py</span></code>. This change required simultaneous modifications across multiple files and proved far more complex than anticipated — it caused numerous conflicts and required updates to the test suite as well. Another significant challenge was increasing the coupling between <code class="docutils literal notranslate"><span class="pre">evaluation.py</span></code> and <code class="docutils literal notranslate"><span class="pre">inference.py</span></code>, as this required modifying files that were being concurrently edited by colleagues for different purposes, which meant carefully resolving conflicts while preserving all introduced functionality.</p>
+</section>
+<section id="new-tools-from-the-course">
+<h3>4. New Tools from the Course<a class="headerlink" href="#new-tools-from-the-course" title="Link to this heading"></a></h3>
+<p>I had used GitHub before, but had never worked with branching and pull requests in a collaborative setting. I also deepened my knowledge of conda environment management, running jobs on supercomputers such as LUMI, and software testing practices.</p>
+</section>
+<section id="id9">
+<h3>5. Experience Running Jobs on LUMI<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<p>I was previously accustomed to running jobs via the command line (PuTTY) on Karoline. LUMI’s interface made this process considerably more intuitive, and once the job script was correctly configured, submitting training runs was straightforward. I ran <strong>Job-ID 19344734</strong>. Monitoring progress with <code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">--me</span></code> and reading the <code class="docutils literal notranslate"><span class="pre">slurm-&lt;job-id&gt;.out</span></code> log file made it easy to follow the run in real time.</p>
+</section>
+<section id="id10">
+<h3>6. Secret Task<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<p>My secret task was to introduce a subtle bug into <code class="docutils literal notranslate"><span class="pre">src/models.py</span></code>. I did so by hardcoding the batch size in two places.</p>
+<p>The first instance was in the <code class="docutils literal notranslate"><span class="pre">forward</span></code> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># batch size hardcoded to 64</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This bug was promptly detected and corrected by Rahul Baburajan, preventing further disruption.</p>
+<p>The second instance was subtler — in <code class="docutils literal notranslate"><span class="pre">_build_classifier</span></code>, the <code class="docutils literal notranslate"><span class="pre">in_features</span></code> parameter was silently ignored in favour of a hardcoded value:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_build_classifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Override to adjust the input features based on the smaller feature map.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_build_classifier</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_dim</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This bug went unnoticed for longer, only surfacing during more purposeful training and evaluation runs. Once caught, it was promptly fixed by Keyne Oei and Andrea Løkke by simply removing the override entirely and letting the parent class handle the method directly.</p>
+</section>
+</section>
+<section id="siyan-chen">
+<h2>Siyan Chen<a class="headerlink" href="#siyan-chen" title="Link to this heading"></a></h2>
+<p>My main task was to contribute the USPS dataset support, including the data module, model architecture, registry integration, and tests. Alongside this, I set up the initial project structure and CI/CD workflows, implemented and maintained the GitHub Pages documentation, added LUMI training and evaluation support, reviewed most of the pull requests from other contributors, and made several correctness fixes to the shared code that benefited all three datasets. These contributions can be verified in the commit history using the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>log<span class="w"> </span>main<span class="w"> </span>--author<span class="o">=</span><span class="s1">&#39;chensy618\|Siyan Chen&#39;</span><span class="w"> </span>--no-merges<span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;%h %ad %an &lt;%ae&gt; %s&#39;</span><span class="w"> </span>--date<span class="o">=</span>short
+</pre></div>
+</div>
+<section id="id11">
+<h3>Implementation Tasks and Choices<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<p>This section describes the main technical tasks I contributed during the project in detail.</p>
+<section id="repository-setup">
+<h4>1. Repository Setup<a class="headerlink" href="#repository-setup" title="Link to this heading"></a></h4>
+<p>I set up the initial repository structure and CI/CD workflow skeleton so that the project had a shared starting point for later implementation work. Commit <code class="docutils literal notranslate"><span class="pre">9c70f12</span></code> created the initial project structure: placeholder source files, the <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file with author metadata, <code class="docutils literal notranslate"><span class="pre">datasets/dataset_links.txt</span></code>, <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code>, and the four GitHub Actions workflow files as <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">TODO</span></code> stubs. Commit <code class="docutils literal notranslate"><span class="pre">c0229c5</span></code> completed the implementation of all four workflows: format, test, docs, and release. To avoid failing CI notifications while the rest of the codebase was still being built out, each workflow step used a soft-fail pattern (<code class="docutils literal notranslate"><span class="pre">2&gt;/dev/null</span> <span class="pre">||</span> <span class="pre">echo</span> <span class="pre">&quot;TODO:</span> <span class="pre">...&quot;</span></code>) so pipelines stayed green during early development. This was useful because the repository needed CI/CD structure before all source files, tests, and documentation were complete. The soft-fail setup allowed the team to keep a consistent workflow layout from the beginning without blocking early development.</p>
+</section>
+<section id="usps-model-design">
+<h4>2. USPS Model Design<a class="headerlink" href="#usps-model-design" title="Link to this heading"></a></h4>
+<p>For USPS support, I followed the existing modular structure of the project instead of creating a separate pipeline. This design choice made USPS consistent with the other supported datasets and allowed the existing CLI, training, evaluation, and inference entry points to reuse the same shared interfaces.</p>
+<p>Before finalizing the model, I discussed the model choice with Andrea. We considered several options, including SVM, MLP, and CNN models. After testing these alternatives, the CNN achieved the highest accuracy, so we chose it as the final USPS model. This choice worked well because USPS images are small <code class="docutils literal notranslate"><span class="pre">16×16</span></code> grayscale digit images, and convolutional layers can capture local digit features more effectively than the simpler baselines.</p>
+<p>The core USPS contribution covered three parts: dataset integration, model design, and test/checkpoint support. First, commit <code class="docutils literal notranslate"><span class="pre">7d7dedd</span></code> added <code class="docutils literal notranslate"><span class="pre">USPSDataModule</span></code> in <code class="docutils literal notranslate"><span class="pre">src/data.py</span></code> with the correct USPS normalization statistics, and implemented <code class="docutils literal notranslate"><span class="pre">USPSNet</span></code> in <code class="docutils literal notranslate"><span class="pre">src/models.py</span></code> as a two-block CNN designed for 16×16 grayscale inputs. USPS was also registered in the dataset registry, so it could be selected automatically through the same project workflow as MNIST and SVHN. The model architecture was kept compact because USPS images are small grayscale images. A two-block CNN was sufficient for extracting local digit features while avoiding unnecessary complexity. Batch normalization and ReLU were used to make training more stable, max pooling reduced the spatial feature size, and the final fully connected layers mapped the extracted features to the ten digit classes. Second, commits <code class="docutils literal notranslate"><span class="pre">2f372b6</span></code> and <code class="docutils literal notranslate"><span class="pre">a5158f2</span></code> added 316 lines of tests in <code class="docutils literal notranslate"><span class="pre">tests/test_data.py</span></code>. These tests covered normal data loading, edge cases, validation scenarios, dataset routing, loader behavior, normalization, and parameter forwarding. This was important because USPS support touched shared dataset-loading code, so the tests helped ensure that adding USPS did not break MNIST or SVHN behavior. Third, commit <code class="docutils literal notranslate"><span class="pre">f32bedf</span></code> added a pretrained USPS checkpoint alongside the model. This made USPS usable as a complete supported model rather than only a dataset definition, allowing users to run inference or evaluation without retraining first.</p>
+</section>
+<section id="training-and-evaluation-fixes-and-improvements">
+<h4>3. Training and Evaluation Fixes and Improvements<a class="headerlink" href="#training-and-evaluation-fixes-and-improvements" title="Link to this heading"></a></h4>
+<p>I also made several fixes to the shared training and evaluation code so that all supported datasets could use the same workflow more reliably. Relevant commits are shown below:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">d4e3460</span></code> (<code class="docutils literal notranslate"><span class="pre">Fixes</span> <span class="pre">#93</span></code>): <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> objects were being created inside the epoch loop. I moved them outside the loop so the loaders are constructed once per training run.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">a6a8620</span></code> (<code class="docutils literal notranslate"><span class="pre">Fixes</span> <span class="pre">#94</span></code>): Device selection was extended to support Apple Silicon GPUs through the MPS backend.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">25f9057</span></code> (<code class="docutils literal notranslate"><span class="pre">Fixes</span> <span class="pre">#95,</span> <span class="pre">#97,</span> <span class="pre">#100</span></code>): I added a LUMI evaluation script and fixed the LUMI training script so both scripts run from the repository root and write logs to the correct <code class="docutils literal notranslate"><span class="pre">lumi/logs</span></code> directory. I also updated evaluation precision and recall from micro averaging to macro averaging so each class contributes equally to the final metric.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">6bbba7b</span></code> (<code class="docutils literal notranslate"><span class="pre">Fixes</span> <span class="pre">#110,</span> <span class="pre">#111,</span> <span class="pre">#112,</span> <span class="pre">#113</span></code>): I fixed several training, evaluation, and inference warnings and platform-related issues, including safer model loading with <code class="docutils literal notranslate"><span class="pre">weights_only=True</span></code> and Mac/MPS-related cleanup behavior.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">30ec436</span></code> (<code class="docutils literal notranslate"><span class="pre">Fixes</span> <span class="pre">#119</span></code>): I added config-file support for training, allowing dataset-specific training settings to be loaded through <code class="docutils literal notranslate"><span class="pre">--config</span></code> while still letting command-line arguments override config defaults.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">e0da851</span></code> (<code class="docutils literal notranslate"><span class="pre">Fixes</span> <span class="pre">#123</span></code>): After noticing signs of overfitting in the training logs, I discussed the issue with Rahul and updated the learning rate to <code class="docutils literal notranslate"><span class="pre">3e-4</span></code> to make the optimization more stable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">038f3a0</span></code>: I fixed the weight/checkpoint path problem so training, inference, evaluation, and tests resolved model weights consistently from the expected location.</p></li>
+</ul>
+<p>These fixes made the shared training and evaluation workflow more robust, easier to reproduce, and more consistent across all three supported datasets.</p>
+</section>
+<section id="github-pages-and-documentation">
+<h4>4. GitHub Pages and Documentation<a class="headerlink" href="#github-pages-and-documentation" title="Link to this heading"></a></h4>
+<p>I also worked on the GitHub Pages and Sphinx documentation site so that the project could be understood and used without reading the source code directly. Across commits <code class="docutils literal notranslate"><span class="pre">ccf65af</span></code>, <code class="docutils literal notranslate"><span class="pre">cde08d6</span></code>, <code class="docutils literal notranslate"><span class="pre">47e519d</span></code>, and <code class="docutils literal notranslate"><span class="pre">0f0154d</span></code>, I built out most of the documentation structure and updated the content as the codebase changed.</p>
+<p>The documentation covered several parts of the project. I wrote a beginner-friendly Getting Started guide (<code class="docutils literal notranslate"><span class="pre">ccf65af</span></code>) covering installation, running inference on a single image or a folder, and common troubleshooting tips. I also created API reference pages for the main modules, including inference, training, models, and data handling, so users could understand how the shared functions and classes were organized.</p>
+<p>In addition to the general documentation, I added development-related guides and LUMI usage instructions. These pages explained how to work with the repository structure, how to run training and evaluation jobs on LUMI, and how the dataset-specific workflows were connected to the shared command-line interface. I also updated the README with more accurate instructions and sample images for MNIST, USPS, and SVHN, so the three supported datasets were documented consistently.</p>
+<p>The main implementation choice was to keep the documentation aligned with the modular structure of the codebase. Instead of writing separate instructions for each dataset from scratch, I documented the shared workflow and then explained how MNIST, USPS, and SVHN fit into it. This made the documentation easier to maintain and helped users understand that the three datasets follow the same overall training, evaluation, and inference pipeline.</p>
+</section>
+<section id="review-and-tests">
+<h4>5. Review and Tests<a class="headerlink" href="#review-and-tests" title="Link to this heading"></a></h4>
+<p>In addition to my own implementation tasks, I also reviewed many pull requests from other contributors and helped resolve merge conflicts when changes affected the same shared files.</p>
+<p>As other contributors refactored the codebase, the test suite regularly broke and needed updating. Commits <code class="docutils literal notranslate"><span class="pre">70a7fec</span></code>, <code class="docutils literal notranslate"><span class="pre">1884c6f</span></code>, and <code class="docutils literal notranslate"><span class="pre">d888c8f</span></code> fixed a series of failures in <code class="docutils literal notranslate"><span class="pre">tests/test_training.py</span></code> caused by changes to the fake <code class="docutils literal notranslate"><span class="pre">torch</span></code> module used in unit tests. The <code class="docutils literal notranslate"><span class="pre">torch.ops</span></code> namespace was missing attributes expected by newer versions of <code class="docutils literal notranslate"><span class="pre">torchvision</span></code>, and the module paths for <code class="docutils literal notranslate"><span class="pre">data</span></code> and <code class="docutils literal notranslate"><span class="pre">models</span></code> had changed to <code class="docutils literal notranslate"><span class="pre">src.data</span></code> and <code class="docutils literal notranslate"><span class="pre">src.models</span></code> after the package restructuring. Commit <code class="docutils literal notranslate"><span class="pre">f4587ad</span></code> resolved a test failure in <code class="docutils literal notranslate"><span class="pre">tests/test_inference.py</span></code> triggered by a change in <code class="docutils literal notranslate"><span class="pre">src/inference.py</span></code>. These fixes kept the CI green and unblocked other contributors’ pull requests.</p>
+<p>I also tested the Windows setup, including training, inference, and evaluation, to check that the shared workflow worked outside the main macOS development environment.</p>
+</section>
+</section>
+<section id="id12">
+<h3>Secret Task<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<p>My secret task was to secretly introduce subtle issues into the codebase.</p>
+<p><strong>Attempt 1 — Training loop order (<code class="docutils literal notranslate"><span class="pre">d939c76</span></code>):</strong> Moved <code class="docutils literal notranslate"><span class="pre">optimizer.zero_grad()</span></code> from before the forward pass to after <code class="docutils literal notranslate"><span class="pre">optimizer.step()</span></code>. This looked like a possible gradient-handling issue, but in this project it did not have a strong practical effect because gradients were still cleared once per batch.</p>
+<p><strong>Attempt 2 — MaxPool kernel size (detected by CI):</strong> Changed <code class="docutils literal notranslate"><span class="pre">nn.MaxPool2d(2)</span></code> to <code class="docutils literal notranslate"><span class="pre">nn.MaxPool2d(3)</span></code> in <code class="docutils literal notranslate"><span class="pre">USPSNet</span></code>. The original architecture used <code class="docutils literal notranslate"><span class="pre">MaxPool2d(2)</span></code> in both layers, producing 64×4×4 feature maps for the classifier head. Changing the second pool to <code class="docutils literal notranslate"><span class="pre">MaxPool2d(3)</span></code> reduced the spatial dimensions further, causing a shape mismatch in the classifier head. The CI test suite caught this automatically. Commit <code class="docutils literal notranslate"><span class="pre">e612f6a</span></code> reverted the pool size back to 2, and the architecture was later properly updated in <code class="docutils literal notranslate"><span class="pre">6bbba7b</span></code>.</p>
+</section>
+<section id="what-i-found-easy-and-difficult">
+<h3>What I Found Easy and Difficult<a class="headerlink" href="#what-i-found-easy-and-difficult" title="Link to this heading"></a></h3>
+<p><strong>Easy:</strong> Adding the USPS data module and model followed the existing MNIST structure closely, so the interface contract was clear from the start. Writing tests for <code class="docutils literal notranslate"><span class="pre">data.py</span></code> was also straightforward once the first module was in place. Note that, with the help of LLMs and AI coding agents, reusing existing module patterns and drafting initial code became much easier.</p>
+<p><strong>Difficult:</strong> Resolving merge conflicts was one of the most difficult parts of the project, especially in shared files such as <code class="docutils literal notranslate"><span class="pre">src/training.py</span></code>. Several contributors were editing the same training pipeline at the same time, so the conflicts were not just simple text conflicts. I had to compare overlapping changes carefully, keep the parts that matched the final shared design, and run tests again to make sure the resolved version still worked.</p>
+<p>Larger refactors were especially challenging because many conflicts remained after rebasing, and other contributors continued to update the same files while the conflicts were being resolved. For example, Riccardo’s larger refactor pull request stayed open for a long time, partly because it touched many shared files and had to be reconciled with ongoing updates from other contributors.</p>
+<p>Several fixes also required understanding the interaction between PyTorch internals and the operating system. The MPS DataLoader hang, for instance, only appeared on Apple Silicon and required careful reading of PyTorch multiprocessing behavior.</p>
+</section>
+<section id="tools-from-the-course-used">
+<h3>Tools from the Course Used<a class="headerlink" href="#tools-from-the-course-used" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>GitHub Actions</strong> — This was my first time writing CI workflow YAML. I implemented the test, format, docs, and release workflows, and learned how to define jobs, steps, triggers, and simple fallback behavior for early development.</p></li>
+<li><p><strong>LUMI / Slurm</strong> — I was already familiar with submitting jobs on Olivia, but this project helped me learn how to build a working environment on an HPC system more systematically, including storage allocation, Singularity containers, working-directory handling, and writing batch scripts that behave consistently on the cluster.</p></li>
+<li><p><strong>Sphinx</strong> — I learned how to use Sphinx to build and organize the project documentation site.</p></li>
+<li><p><strong>Structured PR and issue workflow</strong> — I learned a more collaborative and disciplined GitHub workflow than I had used before. Every change was tracked through a GitHub issue, discussed in pull requests, reviewed by other contributors, and merged only after the team agreed on the implementation.</p></li>
+</ul>
+</section>
+<section id="id13">
+<h3>Experience Running Jobs on LUMI<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<p>I submitted USPS training on LUMI-G (AMD MI250x GPUs) via <code class="docutils literal notranslate"><span class="pre">lumi/train.sh</span></code> (<strong>Job-ID <code class="docutils literal notranslate"><span class="pre">19372444</span></code></strong>), using the <code class="docutils literal notranslate"><span class="pre">standard-g</span></code> partition with one GPU, 7 CPUs, and 60 GB of GPU memory. The run used 50 epochs, batch size 32, and learning rate <code class="docutils literal notranslate"><span class="pre">3e-4</span></code>. The job ran successfully and reached <code class="docutils literal notranslate"><span class="pre">val_acc=0.963</span></code> by the first epoch. Logs can be found in <a class="reference external" href="https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/blob/main/lumi/logs/usps_19372444.err">lumi/logs/usps_19372444.err</a>.</p>
+<p>The first submission produced empty log files because the weight path was wrong (<code class="docutils literal notranslate"><span class="pre">weights/</span></code> instead of <code class="docutils literal notranslate"><span class="pre">src/weights/</span></code>). After fixing this in commit <code class="docutils literal notranslate"><span class="pre">038f3a0</span></code> and resubmitting, the job completed in under 2 minutes of GPU time.</p>
+</section>
+<section id="id14">
+<h3>Conclusion<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<p>My primary role in this project was to deliver end-to-end USPS support and help maintain the shared project infrastructure. I set up the initial repository structure and CI workflows, contributed the USPS data module, model, registry integration, and tests, and made improvements to the shared training and evaluation workflow. I also worked on the GitHub Pages documentation site and ran USPS training on LUMI.</p>
+<p>The most challenging part was working in a shared codebase with multiple contributors. Resolving merge conflicts required understanding how different changes fit into the final design, rather than simply choosing one version over another. Some fixes also required understanding platform-specific behavior in PyTorch.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="lumi.html" class="btn btn-neutral float-left" title="Running on LUMI" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Authors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
