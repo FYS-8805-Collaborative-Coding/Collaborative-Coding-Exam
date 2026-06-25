@@ -111,6 +111,8 @@ My main contributions to the project were the original MNIST pipeline, the refac
 git log main --author='rahul.baburajan@uit.no' --no-merges --format='%h %ad %an <%ae> %s' --date=short
 ```
 
+I trained the MNIST model on LUMI (**Job-ID `19201793`**) and its logs can be found in [lumi/logs/mnist_19201793.err](https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/blob/main/lumi/logs/mnist_19201793.err)
+
 ### 1. Initial MNIST Pipeline
 
 I implemented the first substantial MNIST support across the core package. This included the data-loading module, model definition, training entry point, inference entry point, package exports, and contributor-facing instructions. The central commit for this contribution is `8361b79`. 
