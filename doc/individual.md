@@ -152,8 +152,6 @@ My main contributions to the project were the original MNIST pipeline, the refac
 git log main --author='rahul.baburajan@uit.no' --no-merges --format='%h %ad %an <%ae> %s' --date=short
 ```
 
-I trained the MNIST model on LUMI (**Job-ID `19201793`**) and its logs can be found in [lumi/logs/mnist_19201793.err](https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/blob/main/lumi/logs/mnist_19201793.err)
-
 My favourite contribution to the project is the preview card image of digits floating through Northern lights(even though it is nano banana that did the heavy lifting).
 
 ### 1. Initial MNIST Pipeline
@@ -207,6 +205,8 @@ The main course tools I used for the project that I had not worked with before w
 
 ### Experience Running Jobs on LUMI
 Since I had been using Lumi for some time now, I did not face many issues in this regard. Also since our repository had only commonly used libraries, existing Lumi containers were sufficient which greatly removed a lot of effort required. 
+
+I trained the MNIST model on LUMI (**Job-ID `19201793`**) and its logs can be found in [lumi/logs/mnist_19201793.err](https://github.com/FYS-8805-Collaborative-Coding/Collaborative-Coding-Exam/blob/main/lumi/logs/mnist_19201793.err)
 
 ### Secret Task 
 My secret task is to intentionally introduce issues into the codebase that would later require review and correction by other contributors. 
